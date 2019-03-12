@@ -25,9 +25,11 @@ public class MainActivity extends Activity {
         ChartData[] data = readData();
         Log.d(ChartView.TAG, "data len " + data.length);
 
+        ChartView child = new ChartView(this);
+        child.setData(data[0]);
+
 
         FrameLayout frame = new FrameLayout(this);
-        ChartView child = new ChartView(this);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.gravity = Gravity.CENTER;
         child.setLayoutParams(lp);

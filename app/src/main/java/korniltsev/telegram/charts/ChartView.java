@@ -29,6 +29,8 @@ ______
 //     path animation
 //     night mode animation
 //     snap scrollbar near zeros
+//     implement empty chart
+//     implement y=0 chart
 
 // todo design
 //    overlay color seems wrong
@@ -46,9 +48,16 @@ ______
 //     animate velocity after dragging ??
 //https://github.com/facebook/redex
 
+
+//todo testing
+//     requestLayaout during drag
+//     requestLayaout during animation?
 public class ChartView extends View {
     public static final String TAG = "tg.ch";
-    private final Paint debug_paint1;//todo static
+    public static final boolean DEBUG = BuildConfig.DEBUG;
+    public static final boolean LOGGING = DEBUG;
+
+    private final Paint debug_paint1;//todo static?
     private final Paint debug_paint_green;
     private final Paint debug_paint_red;
     private final Paint scroller_overlay_paint;
@@ -59,8 +68,6 @@ public class ChartView extends View {
     private final int initial_scroller_dith;
 
 
-    private int w;
-    private int h;
 
     private final int scrollbar_height;
     private final int scroll_bar_v_padding;
@@ -70,6 +77,8 @@ public class ChartView extends View {
     private int scroller_pos = -1;
     private Rect scrollbar = new Rect();
     private int scroller_move_down_x;
+
+    private UIColumnData[] data;
 
     public ChartView(Context context) {
         super(context);
@@ -86,6 +95,8 @@ public class ChartView extends View {
         debug_paint1.setColor(0xffff0000);
         debug_paint_green = new Paint(Paint.ANTI_ALIAS_FLAG);
         debug_paint_green.setColor(0xff3CC23F);
+        debug_paint_green.setStrokeWidth(dpf(1));
+
         debug_paint_red = new Paint(Paint.ANTI_ALIAS_FLAG);
         debug_paint_red.setColor(0xffED685F);
 
@@ -99,8 +110,34 @@ public class ChartView extends View {
 
     }
 
+    public void setData(ChartData data) {
+        if (data.data.length <= 1) {
+            //todo implement
+            throw new AssertionError("data.data.length <= 1 unimplemented");
+        }
+        this.data = new UIColumnData[data.data.length-1];
+        ColumnData[] data1 = data.data;
+        int j = 0;
+        for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
+            ColumnData datum = data1[i];
+            if (datum.id.equals("x")) {
+                continue;
+            }
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setColor(datum.color);
+            paint.setStrokeWidth(dpf(1));
+            this.data[j] = new UIColumnData(datum, paint);
+            j++;
+        }
+    }
+
+    private float dpf(int dip) {
+//        todo inline & optimize for multiplication, not method call
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dip, getResources().getDisplayMetrics());
+    }
+
     private int dp(int dip) {
-        //todo inline
+        //todo inline & optimize for multiplication, not method call
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dip, getResources().getDisplayMetrics());
     }
 
@@ -118,6 +155,8 @@ public class ChartView extends View {
             throw new AssertionError("wmode != MeasureSpec.EXACTLY || wmode != MeasureSpec.AT_MOST");
         }
         int chart_space = dp(300);
+        int w;
+        int h;
         w = wsize;
         int scrollbar_top = chart_space + this.scroll_bar_v_padding;
         scrollbar.left = h_padding;//todo replace with this fields
@@ -193,13 +232,8 @@ public class ChartView extends View {
                 break;
             case MotionEvent.ACTION_MOVE:
                 //todo check pointer index
-//                if (LOGGING) Log.d("tg.chart", "touchevent MOVE " );
                 if (last_x != -1f) {
-//                    if (LOGGING) Log.d("tg.chart", "touchevent MOVE 2" );
-
                     if (dragging) {
-//                        if (LOGGING) Log.d("tg.chart", "touchevent MOVE dragging" );
-                        float move = x - last_x;
                         last_x = x;
                         if (down_target == DOWN_MOVE) {
 
@@ -216,9 +250,7 @@ public class ChartView extends View {
                             }
                             invalidate();
                         } else if (down_target == DOWN_RESIZE_LEFT) {
-//                            int imove = (int) move;
                             scroller_pos = (int) x;
-
                             if (scroller_pos < scrollbar.left) {
                                 scroller_pos = scrollbar.left;
                             }
@@ -235,12 +267,9 @@ public class ChartView extends View {
                     } else {
                         float move = x - last_x;
                         if (Math.abs(move) > touchSlop) {
-//                            if (LOGGING) Log.d("tg.chart", "touchevent DMOVE start dragging" );
                             dragging = true;
                             last_x = x;
                             return true;
-                        } else {
-//                            if (LOGGING) Log.d("tg.chart", "touchevent DMOVE ..." );
                         }
                     }
                 }
@@ -255,17 +284,6 @@ public class ChartView extends View {
         return false;
     }
 
-
-
-//    @Override
-//    public boolean dispatchTouchEvent(MotionEvent event) {
-//        todo draw debug info over charts
-//
-//        return super.dispatchTouchEvent(event);
-//    }
-
-    public static final boolean LOGGING = true;
-
     @Override
     protected void onDraw(Canvas canvas) {
         if (LOGGING) {
@@ -275,9 +293,42 @@ public class ChartView extends View {
         int dip8 = dp(20);//todo
         int dip4 = dp(4);//todo
         int dip1 = dp(1);//todo
+        int dip2 = dp(2);//todo
 
-        canvas.drawRect(scrollbar.left, scrollbar.top + dip8/2, scrollbar.left + scrollbar.width()/2, scrollbar.bottom - dip8/2, debug_paint_green);
-        canvas.drawRect(scrollbar.left + scrollbar.width()/2, scrollbar.top + dip8/2, scrollbar.right, scrollbar.bottom - dip8/2, debug_paint_red);
+        if (data != null) {
+            long max = data[0].data.maxValue;
+            long min = data[0].data.minValue;
+            //todo precompute min max
+            for (int i = 1, dataLength = data.length; i < dataLength; i++) {
+                UIColumnData datum = data[i];
+                min = Math.min(min, datum.data.minValue);
+                max = Math.max(max, datum.data.maxValue);
+            }
+            float diff = max - min;
+            int vspace = scrollbar.height() - 2 * dip2 /* 1 from top and bottom */;
+            for (UIColumnData c : data) {
+//                UIColumnData c = data[2];
+                ColumnData data = c.data;
+//            long max = data.maxValue;
+//            long min = data.minValue;
+                //todo if max == min
+
+                float x = scrollbar.left;
+                float step = scrollbar.width() / (float)(data.values.length - 1);
+
+                for (int i = 0; i < data.values.length - 1; ++i) {
+                    float cur_value = (data.values[i] - min )/ diff;
+                    float next_value = (data.values[i + 1] - min) / diff;
+                    float cur_pos = scrollbar.bottom - dip2 - cur_value * vspace;
+                    float next_pos = scrollbar.bottom - dip2 - next_value* vspace;
+                    canvas.drawLine(x, cur_pos, x + step, next_pos, c.paint);
+                    x += step;
+                }
+            }
+
+        }
+//        canvas.drawRect(scrollbar.left, scrollbar.top + dip8/2, scrollbar.left + scrollbar.width()/2, scrollbar.bottom - dip8/2, debug_paint_green);
+//        canvas.drawRect(scrollbar.left + scrollbar.width()/2, scrollbar.top + dip8/2, scrollbar.right, scrollbar.bottom - dip8/2, debug_paint_red);
 
         if (scroller_pos != scrollbar.left) {
             canvas.drawRect(scrollbar.left, scrollbar.top, scroller_pos, scrollbar.bottom, scroller_overlay_paint);
@@ -290,5 +341,15 @@ public class ChartView extends View {
         canvas.drawRect(scroller_pos + scroller_width - dip4, scrollbar.top, scroller_pos + scroller_width, scrollbar.bottom, scroller_border_paint);
         canvas.drawRect(scroller_pos + dip4, scrollbar.top, scroller_pos + scroller_width - dip4, scrollbar.top + dip1, scroller_border_paint);
         canvas.drawRect(scroller_pos + dip4, scrollbar.bottom-dip1, scroller_pos + scroller_width - dip4, scrollbar.bottom, scroller_border_paint);
+    }
+
+    public static class UIColumnData {
+        final ColumnData data;
+        final Paint paint;
+
+        public UIColumnData(ColumnData data, Paint paint) {
+            this.data = data;
+            this.paint = paint;
+        }
     }
 }

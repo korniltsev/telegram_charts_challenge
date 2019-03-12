@@ -30,9 +30,16 @@ public class ChartData {
                 long minValue = Long.MAX_VALUE;
                 for (int j = 1; j < jl; ++j) {
                     long v = column.getLong(j);
+                    if (ChartView.DEBUG && v < 0) {
+                        throw new AssertionError("v < 0");
+                    }
                     minValue = Math.min(minValue, v);
-                    maxValue = Math.min(maxValue, v);
+                    maxValue = Math.max(maxValue, v);
                     vs[j - 1] = v;
+                }
+
+                if (ChartView.DEBUG && minValue > maxValue) {
+                    throw new AssertionError("minValue > maxValue");
                 }
                 String type = o.getJSONObject("types").getString(id);
                 String name = o.getJSONObject("names").optString(id, id);
