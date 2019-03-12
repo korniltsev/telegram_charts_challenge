@@ -16,6 +16,7 @@ import java.util.Arrays;
 /*
 plan
 1. scroller + resizer
+______
 2. draw charts
 3. animate charts scale
 4. legend + rules + labels
@@ -32,6 +33,7 @@ plan
 // todo design
 //    overlay color seems wrong
 //    lollipop bg gradient
+
 // todo nice to have
 //
 //     support rtl since telegram supports
@@ -42,8 +44,10 @@ plan
 //     nice app icon
 //     spring animations?
 //     animate velocity after dragging ??
+//https://github.com/facebook/redex
 
 public class ChartView extends View {
+    public static final String TAG = "tg.ch";
     private final Paint debug_paint1;//todo static
     private final Paint debug_paint_green;
     private final Paint debug_paint_red;
@@ -264,16 +268,13 @@ public class ChartView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        canvas.save();
         if (LOGGING) {
-//            Log.d("tg.chart", String.format("scroller (%d %d) ", scroller_pos, scroller_width));
-//            Log.d("tg.chart", String.format("scrollbar %s ", scrollbar));
 //            Log.d("tg.chart", String.format("w h %d %d", getWidth(), getHeight()));
         }
 
-        int dip8 = dp(20);
-        int dip4 = dp(4);
-        int dip1 = dp(1);
+        int dip8 = dp(20);//todo
+        int dip4 = dp(4);//todo
+        int dip1 = dp(1);//todo
 
         canvas.drawRect(scrollbar.left, scrollbar.top + dip8/2, scrollbar.left + scrollbar.width()/2, scrollbar.bottom - dip8/2, debug_paint_green);
         canvas.drawRect(scrollbar.left + scrollbar.width()/2, scrollbar.top + dip8/2, scrollbar.right, scrollbar.bottom - dip8/2, debug_paint_red);
@@ -289,6 +290,5 @@ public class ChartView extends View {
         canvas.drawRect(scroller_pos + scroller_width - dip4, scrollbar.top, scroller_pos + scroller_width, scrollbar.bottom, scroller_border_paint);
         canvas.drawRect(scroller_pos + dip4, scrollbar.top, scroller_pos + scroller_width - dip4, scrollbar.top + dip1, scroller_border_paint);
         canvas.drawRect(scroller_pos + dip4, scrollbar.bottom-dip1, scroller_pos + scroller_width - dip4, scrollbar.bottom, scroller_border_paint);
-//        canvas.restore();
     }
 }
