@@ -26,7 +26,7 @@ public class MainActivity extends Activity {
         Log.d(ChartView.TAG, "data len " + data.length);
 
         ChartView child = new ChartView(this);
-        child.setData(data[0]);
+        child.setData(data[4]);
 
 
         FrameLayout frame = new FrameLayout(this);

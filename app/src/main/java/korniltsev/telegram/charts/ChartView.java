@@ -3,7 +3,9 @@ package korniltsev.telegram.charts;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
+import android.os.SystemClock;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
@@ -108,6 +110,8 @@ public class ChartView extends View {
         //todo reread on configuration change , splitscreen
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
 
+//        setLayerType(LAYER_TYPE_HARDWARE, null);
+
     }
 
     public void setData(ChartData data) {
@@ -125,6 +129,7 @@ public class ChartView extends View {
             }
             Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
             paint.setColor(datum.color);
+            paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(dpf(1));
             this.data[j] = new UIColumnData(datum, paint);
             j++;
@@ -182,6 +187,8 @@ public class ChartView extends View {
         }
     }
 
+
+    //<editor-fold desc="ScrollbarDragging">
     static final int DOWN_MOVE = 0;
     static final int DOWN_RESIZE_LEFT = 1;
     static final int DOWN_RESIZE_RIGHT = 2;
@@ -283,22 +290,30 @@ public class ChartView extends View {
         }
         return false;
     }
+    //</editor-fold>
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (LOGGING) {
-//            Log.d("tg.chart", String.format("w h %d %d", getWidth(), getHeight()));
-        }
+        long start = SystemClock.elapsedRealtimeNanos();
+        drawScrollbar(canvas);
+        long end = SystemClock.elapsedRealtimeNanos();
+        long t = end - start;
+        Log.d(TAG, "draw time " + t / 1000000f);
+    }
 
+    private void drawScrollbar(Canvas canvas) {
         int dip8 = dp(20);//todo
         int dip4 = dp(4);//todo
         int dip1 = dp(1);//todo
         int dip2 = dp(2);//todo
 
+
+        // scrollbar charts
         if (data != null) {
             long max = data[0].data.maxValue;
             long min = data[0].data.minValue;
             //todo precompute min max
+            //todo if max == min
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 UIColumnData datum = data[i];
                 min = Math.min(min, datum.data.minValue);
@@ -307,36 +322,32 @@ public class ChartView extends View {
             float diff = max - min;
             int vspace = scrollbar.height() - 2 * dip2 /* 1 from top and bottom */;
             for (UIColumnData c : data) {
-//                UIColumnData c = data[2];
                 ColumnData data = c.data;
-//            long max = data.maxValue;
-//            long min = data.minValue;
-                //todo if max == min
-
                 float x = scrollbar.left;
                 float step = scrollbar.width() / (float)(data.values.length - 1);
-
-                for (int i = 0; i < data.values.length - 1; ++i) {
-                    float cur_value = (data.values[i] - min )/ diff;
-                    float next_value = (data.values[i + 1] - min) / diff;
-                    float cur_pos = scrollbar.bottom - dip2 - cur_value * vspace;
-                    float next_pos = scrollbar.bottom - dip2 - next_value* vspace;
-                    canvas.drawLine(x, cur_pos, x + step, next_pos, c.paint);
+                c.path.reset();
+                float cur_value = (data.values[0] - min )/ diff;
+                float cur_pos = scrollbar.bottom - dip2 - cur_value * vspace;
+                c.path.moveTo(x, cur_pos);
+                for (int i = 1; i < data.values.length - 1; ++i) {
                     x += step;
+                    float next_value = (data.values[i] - min) / diff;
+                    float next_pos = scrollbar.bottom - dip2 - next_value* vspace;
+                    c.path.lineTo(x, next_pos);
                 }
+//                c.path.close();
+                canvas.drawPath(c.path, c.paint);
             }
 
         }
-//        canvas.drawRect(scrollbar.left, scrollbar.top + dip8/2, scrollbar.left + scrollbar.width()/2, scrollbar.bottom - dip8/2, debug_paint_green);
-//        canvas.drawRect(scrollbar.left + scrollbar.width()/2, scrollbar.top + dip8/2, scrollbar.right, scrollbar.bottom - dip8/2, debug_paint_red);
-
+        // scrollbar overlay
         if (scroller_pos != scrollbar.left) {
             canvas.drawRect(scrollbar.left, scrollbar.top, scroller_pos, scrollbar.bottom, scroller_overlay_paint);
         }
         if (scroller_pos != scrollbar.right - scroller_width) {
             canvas.drawRect(scroller_pos + scroller_width, scrollbar.top, scrollbar.right, scrollbar.bottom, scroller_overlay_paint);
         }
-
+        // scrollbar border
         canvas.drawRect(scroller_pos, scrollbar.top, scroller_pos + dip4, scrollbar.bottom, scroller_border_paint);
         canvas.drawRect(scroller_pos + scroller_width - dip4, scrollbar.top, scroller_pos + scroller_width, scrollbar.bottom, scroller_border_paint);
         canvas.drawRect(scroller_pos + dip4, scrollbar.top, scroller_pos + scroller_width - dip4, scrollbar.top + dip1, scroller_border_paint);
@@ -346,6 +357,8 @@ public class ChartView extends View {
     public static class UIColumnData {
         final ColumnData data;
         final Paint paint;
+        final Path path = new Path();//todo maybe precompute for cases when not animaing?
+
 
         public UIColumnData(ColumnData data, Paint paint) {
             this.data = data;
