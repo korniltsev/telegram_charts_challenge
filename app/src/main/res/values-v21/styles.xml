@@ -1,0 +1,20 @@
+<resources>
+
+    <style name="StatisticsTheme" parent="android:Theme.Material.Light.NoActionBar" >
+        <!--<item name="android:actionBarStyle">@style/MyActionBarTheme</item>-->
+        <item name="android:colorPrimary">#517DA2</item>
+        <!--<item name="android:colorPrimary">@color/colorPrimary</item>-->
+        <item name="android:colorPrimaryDark">#426382</item>
+        <item name="android:colorAccent">#00eeff</item>
+
+
+    </style>
+
+    <!--<style name="MyActionBarTheme" parent="@android:style/Widget.Holo.Light.ActionBar">-->
+        <!--<item name="android:background">#eeff00</item>-->
+    <!--</style>-->
+
+
+
+
+</resources>
