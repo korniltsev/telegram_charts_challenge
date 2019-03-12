@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class ChartData {
+
     final ColumnData[] data;
 
     public ChartData(ColumnData[] data) {
@@ -25,8 +26,13 @@ public class ChartData {
                 String id = column.getString(0);
                 int jl = column.length();
                 long[] vs = new long[jl - 1];
+                long maxValue = Long.MIN_VALUE;
+                long minValue = Long.MAX_VALUE;
                 for (int j = 1; j < jl; ++j) {
-                    vs[j - 1] = column.getLong(j);
+                    long v = column.getLong(j);
+                    minValue = Math.min(minValue, v);
+                    maxValue = Math.min(maxValue, v);
+                    vs[j - 1] = v;
                 }
                 String type = o.getJSONObject("types").getString(id);
                 String name = o.getJSONObject("names").optString(id, id);
@@ -37,7 +43,8 @@ public class ChartData {
                 } else {
                     color = Color.parseColor(strcolor);
                 }
-                jcolumn[i] = new ColumnData(id, name, vs, type, color);
+
+                jcolumn[i] = new ColumnData(id, name, vs, maxValue, minValue, type, color);
             }
             ret[c] = new ChartData(jcolumn);
         }
