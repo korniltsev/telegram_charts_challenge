@@ -17,11 +17,15 @@ import java.util.Arrays;
 
 /*
 plan
-1. scroller + resizer
+scroller + resizer
+draw charts
 ______
-2. draw charts
-3. animate charts scale
-4. legend + rules + labels
+charts vertical scale animation
+charts color animation
+toolbar + night mode
+
+animate charts scale
+legend + rules + labels
  */
 
 
