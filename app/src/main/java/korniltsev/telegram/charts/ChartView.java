@@ -62,6 +62,7 @@ public class ChartView extends View {
     public static final String TAG = "tg.ch";
     public static final boolean DEBUG = BuildConfig.DEBUG;
     public static final boolean LOGGING = DEBUG;
+    public static final String COLUMN_ID_X = "x";
 
     private final Paint debug_paint1;//todo static?
     private final Paint debug_paint_green;
@@ -128,7 +129,7 @@ public class ChartView extends View {
         int j = 0;
         for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
             ColumnData datum = data1[i];
-            if (datum.id.equals("x")) {
+            if (datum.id.equals(COLUMN_ID_X)) {
                 continue;
             }
             Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -138,6 +139,17 @@ public class ChartView extends View {
             this.data[j] = new UIColumnData(datum, paint);
             j++;
         }
+    }
+
+    public void setChecked(String id, boolean isChecked) {
+        for (int i = 0, dataLength = data.length; i < dataLength; i++) {
+            UIColumnData datum = data[i];
+            if (datum.data.id.equals(id)) {
+                datum.checked = isChecked;
+                invalidate();
+            }
+        }
+
     }
 
     private float dpf(int dip) {
@@ -298,11 +310,11 @@ public class ChartView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        long start = SystemClock.elapsedRealtimeNanos();
+//        long start = SystemClock.elapsedRealtimeNanos();
         drawScrollbar(canvas);
-        long end = SystemClock.elapsedRealtimeNanos();
-        long t = end - start;
-        Log.d(TAG, "draw time " + t / 1000000f);
+//        long end = SystemClock.elapsedRealtimeNanos();
+//        long t = end - start;
+//        Log.d(TAG, "draw time " + t / 1000000f);
     }
 
     private void drawScrollbar(Canvas canvas) {
@@ -314,33 +326,45 @@ public class ChartView extends View {
 
         // scrollbar charts
         if (data != null) {
-            long max = data[0].data.maxValue;
-            long min = data[0].data.minValue;
+            long max = Long.MIN_VALUE;
+            long min = Long.MAX_VALUE;
             //todo precompute min max
             //todo if max == min
-            for (int i = 1, dataLength = data.length; i < dataLength; i++) {
+            for (int i = 0, dataLength = data.length; i < dataLength; i++) {
                 UIColumnData datum = data[i];
-                min = Math.min(min, datum.data.minValue);
-                max = Math.max(max, datum.data.maxValue);
-            }
-            float diff = max - min;
-            int vspace = scrollbar.height() - 2 * dip2 /* 1 from top and bottom */;
-            for (UIColumnData c : data) {
-                ColumnData data = c.data;
-                float x = scrollbar.left;
-                float step = scrollbar.width() / (float)(data.values.length - 1);
-                c.path.reset();
-                float cur_value = (data.values[0] - min )/ diff;
-                float cur_pos = scrollbar.bottom - dip2 - cur_value * vspace;
-                c.path.moveTo(x, cur_pos);
-                for (int i = 1; i < data.values.length - 1; ++i) {
-                    x += step;
-                    float next_value = (data.values[i] - min) / diff;
-                    float next_pos = scrollbar.bottom - dip2 - next_value* vspace;
-                    c.path.lineTo(x, next_pos);
+                if (datum.checked) {
+                    min = Math.min(min, datum.data.minValue);
+                    max = Math.max(max, datum.data.maxValue);
                 }
+            }
+            if (max == min) {
+                throw new RuntimeException("unimplemented");//todo implement
+            }
+            if (max == Long.MIN_VALUE || min == Long.MAX_VALUE) {
+
+            } else {
+                float diff = max - min;
+                int vspace = scrollbar.height() - 2 * dip2 /* 1 from top and bottom */;
+                for (UIColumnData c : data) {
+                    if (!c.checked) {
+                        continue;
+                    }
+                    ColumnData data = c.data;
+                    float x = scrollbar.left;
+                    float step = scrollbar.width() / (float)(data.values.length - 1);
+                    c.path.reset();
+                    float cur_value = (data.values[0] - min )/ diff;
+                    float cur_pos = scrollbar.bottom - dip2 - cur_value * vspace;
+                    c.path.moveTo(x, cur_pos);
+                    for (int i = 1; i < data.values.length - 1; ++i) {
+                        x += step;
+                        float next_value = (data.values[i] - min) / diff;
+                        float next_pos = scrollbar.bottom - dip2 - next_value* vspace;
+                        c.path.lineTo(x, next_pos);
+                    }
 //                c.path.close();
-                canvas.drawPath(c.path, c.paint);
+                    canvas.drawPath(c.path, c.paint);
+                }
             }
 
         }
@@ -358,11 +382,13 @@ public class ChartView extends View {
         canvas.drawRect(scroller_pos + dip4, scrollbar.bottom-dip1, scroller_pos + scroller_width - dip4, scrollbar.bottom, scroller_border_paint);
     }
 
+
+
     public static class UIColumnData {
         final ColumnData data;
         final Paint paint;
         final Path path = new Path();//todo maybe precompute for cases when not animaing?
-
+        public boolean checked = true;
 
         public UIColumnData(ColumnData data, Paint paint) {
             this.data = data;

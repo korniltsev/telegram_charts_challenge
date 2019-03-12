@@ -5,7 +5,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,15 +28,33 @@ public class MainActivity extends Activity {
         ChartData[] data = readData();
         Log.d(ChartView.TAG, "data len " + data.length);
 
-        ChartView child = new ChartView(this);
-        child.setData(data[4]);
+        ChartData datum = data[4];
 
+        final ChartView chart = new ChartView(this);
+        chart.setData(datum);
 
-        FrameLayout frame = new FrameLayout(this);
-        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout frame = new LinearLayout(this);
+        frame.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.gravity = Gravity.CENTER;
-        child.setLayoutParams(lp);
-        frame.addView(child);
+        chart.setLayoutParams(lp);
+        frame.addView(chart);
+        for (final ColumnData c : datum.data) {
+            if (c.id.equals(ChartView.COLUMN_ID_X)) {
+                continue;
+            }
+            CheckBox cb = new CheckBox(this);
+            cb.setText(c.name);
+            cb.setChecked(true);
+            cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    chart.setChecked(c.id, isChecked);
+                }
+            });
+            frame.addView(cb);
+
+        }
         setContentView(frame);
     }
 
