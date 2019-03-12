@@ -31,7 +31,7 @@ plan
 
 // todo design
 //    overlay color seems wrong
-
+//    lollipop bg gradient
 // todo nice to have
 //
 //     support rtl since telegram supports
@@ -51,6 +51,8 @@ public class ChartView extends View {
     private final Paint scroller_border_paint;
 
     private final int touchSlop;
+    private final int resize_touch_area2;
+    private final int initial_scroller_dith;
 
 
     private int w;
@@ -63,6 +65,7 @@ public class ChartView extends View {
     private int scroller_width;
     private int scroller_pos = -1;
     private Rect scrollbar = new Rect();
+    private int scroller_move_down_x;
 
     public ChartView(Context context) {
         super(context);
@@ -72,7 +75,8 @@ public class ChartView extends View {
         scroll_bar_v_padding = dp(8);
         h_padding = dp(16);
 
-        scroller_width = dp(86);
+        initial_scroller_dith = scroller_width = dp(86);
+        resize_touch_area2 = dp(20);
 
         debug_paint1 = new Paint();
         debug_paint1.setColor(0xffff0000);
@@ -109,7 +113,7 @@ public class ChartView extends View {
         if (wmode != MeasureSpec.EXACTLY && wmode != MeasureSpec.AT_MOST) {
             throw new AssertionError("wmode != MeasureSpec.EXACTLY || wmode != MeasureSpec.AT_MOST");
         }
-        int chart_space = dp(100);
+        int chart_space = dp(300);
         w = wsize;
         int scrollbar_top = chart_space + this.scroll_bar_v_padding;
         scrollbar.left = h_padding;//todo replace with this fields
@@ -135,71 +139,110 @@ public class ChartView extends View {
         }
     }
 
-//    float scroller_down_x = -1f;
-//    float scroller_down_y = -1f;
+    static final int DOWN_MOVE = 0;
+    static final int DOWN_RESIZE_LEFT = 1;
+    static final int DOWN_RESIZE_RIGHT = 2;
     float last_x = -1f;
-//    float last_y = -1f;
-    //    float lastx = -1f;
+    int resze_scroller_right = -1;
+    int down_target = -1;
     boolean dragging;
 
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (LOGGING) Log.d("tg.chart", "touchevent " + event);
         int action = event.getActionMasked();
+        if (action != MotionEvent.ACTION_MOVE) {
+            if (LOGGING) Log.d("tg.chart", "touchevent " + event);
+        }
         float x = event.getX();
         float y = event.getY();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
                 //todo check scroll edges
-                if (y >= scrollbar.top && y <= scrollbar.bottom
-                        && x >= scroller_pos && x <= scroller_pos + scroller_width) {
-                    if (LOGGING) Log.d("tg.chart", "touchevent DOWN inside scrollbar" );
-                    //todo check x inside scroller
-                    last_x = x;
-                    return true;
-//                    scroller_down_y = y;
+                boolean b = y >= scrollbar.top && y <= scrollbar.bottom;
+                if (b) {
+                    if (Math.abs(x - scroller_pos) <= resize_touch_area2) {
+                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize left" );
+                        last_x = x;
+                        down_target = DOWN_RESIZE_LEFT;
+                        resze_scroller_right = scroller_pos + scroller_width;
+                        return true;
+                    } else if (Math.abs(x - (scroller_pos + scroller_width) ) < resize_touch_area2) {
+                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize right" );
+                        last_x = x;
+                        down_target = DOWN_RESIZE_RIGHT;
+                        return true;
+                    } else if (x >= scroller_pos && x <= scroller_pos + scroller_width) {
+                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN inside scrollbar" );
+                        //todo check x inside scroller
+                        last_x = x;
+                        scroller_move_down_x = (int) (x - scroller_pos);
+                        down_target = DOWN_MOVE;
+                        return true;
+                    } else {
+                        //todo check scroll edges
+                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss" );
+                    }
                 } else {
-                    //todo check scroll edges
                     if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss" );
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
                 //todo check pointer index
-                if (LOGGING) Log.d("tg.chart", "touchevent MOVE " );
+//                if (LOGGING) Log.d("tg.chart", "touchevent MOVE " );
                 if (last_x != -1f) {
-                    if (LOGGING) Log.d("tg.chart", "touchevent MOVE 2" );
+//                    if (LOGGING) Log.d("tg.chart", "touchevent MOVE 2" );
 
                     if (dragging) {
-                        if (LOGGING) Log.d("tg.chart", "touchevent MOVE dragging" );
+//                        if (LOGGING) Log.d("tg.chart", "touchevent MOVE dragging" );
                         float move = x - last_x;
                         last_x = x;
-                        scroller_pos += move;
-                        scroller_pos = Math.min(Math.max(scroller_pos, scrollbar.left), scrollbar.right - scroller_width);
+                        if (down_target == DOWN_MOVE) {
+
+                            scroller_pos = (int) (x - scroller_move_down_x);
+                            scroller_pos = Math.min(Math.max(scroller_pos, scrollbar.left), scrollbar.right - scroller_width);
+                        } else if (down_target == DOWN_RESIZE_RIGHT) {
+                            scroller_width = (int) (x - scroller_pos);
+                            if (scroller_pos + scroller_width > scrollbar.right) {
+                                scroller_width = scrollbar.right - scroller_pos;
+                            }
+                            // check the scrollbar is not too small
+                            if (scroller_width < initial_scroller_dith  ) {
+                                scroller_width = initial_scroller_dith;
+                            }
+                            invalidate();
+                        } else if (down_target == DOWN_RESIZE_LEFT) {
+//                            int imove = (int) move;
+                            scroller_pos = (int) x;
+
+                            if (scroller_pos < scrollbar.left) {
+                                scroller_pos = scrollbar.left;
+                            }
+                            scroller_width = resze_scroller_right - scroller_pos;
+                            if (scroller_width < initial_scroller_dith  ) {
+                                scroller_width = initial_scroller_dith;
+                                scroller_pos = resze_scroller_right - scroller_width;
+                            }
+                            invalidate();
+                        }
 
                         invalidate();
                         return true;
                     } else {
                         float move = x - last_x;
                         if (Math.abs(move) > touchSlop) {
-                            if (LOGGING) Log.d("tg.chart", "touchevent DMOVE start dragging" );
+//                            if (LOGGING) Log.d("tg.chart", "touchevent DMOVE start dragging" );
                             dragging = true;
                             last_x = x;
-//                            last_y = y;
-//                            scroller_pos += move;
-//                            scroller_pos = Math.min(Math.max(scroller_pos, scrollbar.left), scrollbar.right - scroller_width);
-//                            invalidate();
                             return true;
                         } else {
-                            if (LOGGING) Log.d("tg.chart", "touchevent DMOVE ..." );
+//                            if (LOGGING) Log.d("tg.chart", "touchevent DMOVE ..." );
                         }
                     }
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
-//                scroller_down_x = -1;
                 last_x = -1;
-//                scroller_down_y = -1;
                 dragging = false;
                 break;
             default:
@@ -223,17 +266,17 @@ public class ChartView extends View {
     protected void onDraw(Canvas canvas) {
 //        canvas.save();
         if (LOGGING) {
-            Log.d("tg.chart", String.format("scroller (%d %d) ", scroller_pos, scroller_width));
-            Log.d("tg.chart", String.format("scrollbar %s ", scrollbar));
-            Log.d("tg.chart", String.format("w h %d %d", getWidth(), getHeight()));
+//            Log.d("tg.chart", String.format("scroller (%d %d) ", scroller_pos, scroller_width));
+//            Log.d("tg.chart", String.format("scrollbar %s ", scrollbar));
+//            Log.d("tg.chart", String.format("w h %d %d", getWidth(), getHeight()));
         }
 
         int dip8 = dp(20);
         int dip4 = dp(4);
         int dip1 = dp(1);
 
-        canvas.drawRect(scrollbar.left, scrollbar.top + dip8, scrollbar.left + scrollbar.width()/2, scrollbar.bottom - dip8, debug_paint_green);
-        canvas.drawRect(scrollbar.left + scrollbar.width()/2, scrollbar.top + dip8, scrollbar.right, scrollbar.bottom - dip8, debug_paint_red);
+        canvas.drawRect(scrollbar.left, scrollbar.top + dip8/2, scrollbar.left + scrollbar.width()/2, scrollbar.bottom - dip8/2, debug_paint_green);
+        canvas.drawRect(scrollbar.left + scrollbar.width()/2, scrollbar.top + dip8/2, scrollbar.right, scrollbar.bottom - dip8/2, debug_paint_red);
 
         if (scroller_pos != scrollbar.left) {
             canvas.drawRect(scrollbar.left, scrollbar.top, scroller_pos, scrollbar.bottom, scroller_overlay_paint);
