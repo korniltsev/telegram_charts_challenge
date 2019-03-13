@@ -1,5 +1,9 @@
 package korniltsev.telegram.charts;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.PropertyValuesHolder;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -11,6 +15,7 @@ import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.animation.DecelerateInterpolator;
 
 import java.util.Arrays;
 
@@ -43,7 +48,7 @@ legend + rules + labels
 //    lollipop bg gradient
 
 // todo nice to have
-//
+//      consider ValueAnimator fork with stripped functionalities, trace allocations and executions before duing though
 //     support rtl since telegram supports
 //     support split screen?
 //     adjust theme for smooth transition
@@ -143,13 +148,34 @@ public class ChartView extends View {
 
     public void setChecked(String id, boolean isChecked) {
         for (int i = 0, dataLength = data.length; i < dataLength; i++) {
-            UIColumnData datum = data[i];
+            final UIColumnData datum = data[i];
             if (datum.data.id.equals(id)) {
                 datum.checked = isChecked;
+                final ValueAnimator valueAnimator = ValueAnimator.ofFloat(datum.alpha, isChecked ? 1f : 0f);
+                valueAnimator.setDuration(160);
+                valueAnimator.setInterpolator(new DecelerateInterpolator());
+                valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        float v = (float) valueAnimator.getAnimatedValue();//todo boxing
+//                        float f = 1.0f -  valueAnimator.getAnimatedFraction();
+//                        Log.d(TAG, "anim " + v + " " + f);
+                        datum.alpha = v;//todo do not draw if alpha is 255
+                        datum.paint.setAlpha((int) (255 * v));
+                        invalidate();
+                    }
+                });
+                valueAnimator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                    }
+                });
+                valueAnimator.start();
                 invalidate();
+                break;
             }
         }
-
     }
 
     private float dpf(int dip) {
@@ -217,9 +243,9 @@ public class ChartView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getActionMasked();
-        if (action != MotionEvent.ACTION_MOVE) {
-            if (LOGGING) Log.d("tg.chart", "touchevent " + event);
-        }
+//        if (action != MotionEvent.ACTION_MOVE) {
+//            if (LOGGING) Log.d("tg.chart", "touchevent " + event);
+//        }
         float x = event.getX();
         float y = event.getY();
         switch (action) {
@@ -332,10 +358,10 @@ public class ChartView extends View {
             //todo if max == min
             for (int i = 0, dataLength = data.length; i < dataLength; i++) {
                 UIColumnData datum = data[i];
-                if (datum.checked) {
+//                if (datum.checked) {
                     min = Math.min(min, datum.data.minValue);
                     max = Math.max(max, datum.data.maxValue);
-                }
+//                }
             }
             if (max == min) {
                 throw new RuntimeException("unimplemented");//todo implement
@@ -346,9 +372,9 @@ public class ChartView extends View {
                 float diff = max - min;
                 int vspace = scrollbar.height() - 2 * dip2 /* 1 from top and bottom */;
                 for (UIColumnData c : data) {
-                    if (!c.checked) {
-                        continue;
-                    }
+//                    if (!c.checked) {
+//                        continue;
+//                    }
                     ColumnData data = c.data;
                     float x = scrollbar.left;
                     float step = scrollbar.width() / (float)(data.values.length - 1);
@@ -389,10 +415,13 @@ public class ChartView extends View {
         final Paint paint;
         final Path path = new Path();//todo maybe precompute for cases when not animaing?
         public boolean checked = true;
+        public float alpha = 1.0f;
 
         public UIColumnData(ColumnData data, Paint paint) {
             this.data = data;
             this.paint = paint;
         }
     }
+
+
 }
