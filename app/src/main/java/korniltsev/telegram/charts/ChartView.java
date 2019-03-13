@@ -20,19 +20,18 @@ import android.view.animation.DecelerateInterpolator;
 plan
 scroller + resizer
 draw charts
+scrollbar scale + alpha animation
 ______
-charts vertical scale animation
-charts color animation
+draw charts
+charts scale + alpha anim
 toolbar + night mode
-
-animate charts scale
 legend + rules + labels
+tooltip
+pointer anim
  */
 
 
 // todo
-//     path animation
-//     night mode animation
 //     snap scrollbar near zeros
 //     implement empty chart
 //     implement y=0 chart
@@ -58,6 +57,9 @@ legend + rules + labels
 //todo testing
 //     requestLayaout during drag
 //     requestLayaout during animation?
+//     test on old device
+//     monkey test
+//     fuzz test
 public class ChartView extends View {
     public static final String TAG = "tg.ch";
     public static final boolean DEBUG = BuildConfig.DEBUG;
