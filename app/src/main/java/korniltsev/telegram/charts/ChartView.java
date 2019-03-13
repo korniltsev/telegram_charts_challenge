@@ -41,7 +41,7 @@ pointer anim
 //    lollipop bg gradient
 
 // todo nice to have
-//      consider ValueAnimator fork with stripped functionalities, trace allocations and executions before duing though
+//      consider ValueAnimator fork with stripped functionalities, trace allocations and executions before doing though
 //     support rtl since telegram supports
 //     support split screen?
 //     adjust theme for smooth transition
@@ -87,7 +87,7 @@ public class ChartView extends View {
     private Rect scrollbar = new Rect();
     private int scroller_move_down_x;
 
-    private UIColumnData[] data;
+    private UIColumnData[] scrollerEntries;
 
     public ChartView(Context context) {
         super(context);
@@ -124,9 +124,9 @@ public class ChartView extends View {
     public void setData(ChartData data) {
         if (data.data.length <= 1) {
             //todo implement
-            throw new AssertionError("data.data.length <= 1 unimplemented");
+            throw new AssertionError("scrollerEntries.scrollerEntries.length <= 1 unimplemented");
         }
-        this.data = new UIColumnData[data.data.length - 1];
+        this.scrollerEntries = new UIColumnData[data.data.length - 1];
         ColumnData[] data1 = data.data;
         int j = 0;
         long max = Long.MIN_VALUE;
@@ -142,14 +142,14 @@ public class ChartView extends View {
             paint.setStrokeWidth(dpf(1));
             min = Math.min(min, datum.minValue);
             max = Math.max(max, datum.maxValue);
-            this.data[j] = new UIColumnData(datum, paint);
+            this.scrollerEntries[j] = new UIColumnData(datum, paint);
             j++;
         }
         //todo if max == min
         if (max == min) {
             throw new RuntimeException("unimplemented");//todo implement
         }
-        for (UIColumnData datum : this.data) {
+        for (UIColumnData datum : this.scrollerEntries) {
             datum.min = min;
             datum.max = max;
         }
@@ -158,8 +158,8 @@ public class ChartView extends View {
 
     public void setChecked(String id, boolean isChecked) {
         UIColumnData foundById = null;
-        for (int i = 0, dataLength = data.length; i < dataLength; i++) {
-            final UIColumnData datum = data[i];
+        for (int i = 0, dataLength = scrollerEntries.length; i < dataLength; i++) {
+            final UIColumnData datum = scrollerEntries[i];
             if (datum.data.id.equals(id)) {
                 foundById = datum;
                 break;
@@ -174,8 +174,8 @@ public class ChartView extends View {
     private void animateScrollbar(boolean isChecked, UIColumnData foundById) {
         long max = Long.MIN_VALUE;
         long min = Long.MAX_VALUE;
-        for (int i = 0, dataLength = data.length; i < dataLength; i++) {
-            UIColumnData datum = data[i];
+        for (int i = 0, dataLength = scrollerEntries.length; i < dataLength; i++) {
+            UIColumnData datum = scrollerEntries[i];
             if (datum.checked) {
                 min = Math.min(min, datum.data.minValue);
                 max = Math.max(max, datum.data.maxValue);
@@ -199,8 +199,8 @@ public class ChartView extends View {
         }
 
 
-        for (int i = 0, dataLength = data.length; i < dataLength; i++) {
-            final UIColumnData datum = data[i];
+        for (int i = 0, dataLength = scrollerEntries.length; i < dataLength; i++) {
+            final UIColumnData datum = scrollerEntries[i];
             if (datum.checked) {
                 final long fromMax = datum.max;
                 final long fromMin = datum.min;
@@ -267,8 +267,8 @@ public class ChartView extends View {
         if (scroller_pos == -1) {
             scroller_pos = scrollbar.right - scroller_width;
         }
-        if (data != null) {
-            for (UIColumnData datum : data) {
+        if (scrollerEntries != null) {
+            for (UIColumnData datum : scrollerEntries) {
                 datum.pathDirty = true;
             }
             //todo test and cancel animation if needed?
@@ -399,11 +399,11 @@ public class ChartView extends View {
 
 
         // scrollbar charts
-        if (data != null) {
+        if (scrollerEntries != null) {
             {
 
                 int vspace = scrollbar.height() - 2 * dip2 /* 1 from top and bottom */;
-                for (UIColumnData c : data) {
+                for (UIColumnData c : scrollerEntries) {
                     if (c.pathDirty) {
 
                         long min = c.min;
