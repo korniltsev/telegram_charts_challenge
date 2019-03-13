@@ -67,10 +67,7 @@ public class ChartView extends View {
     public static final String COLUMN_ID_X = "x";
     public static final DecelerateInterpolator INTERPOLATOR = new DecelerateInterpolator();
 
-    private final Paint debug_paint1;//todo static?
-    private final Paint debug_paint_green;
-    private final Paint debug_paint_red;
-    private final Paint scroller_overlay_paint;
+    private final Paint scroller_overlay_paint;//todo static?
     private final Paint scroller_border_paint;
 
     private final int touchSlop;
@@ -100,14 +97,6 @@ public class ChartView extends View {
         initial_scroller_dith = scroller_width = dp(86);
         resize_touch_area2 = dp(20);
 
-        debug_paint1 = new Paint();
-        debug_paint1.setColor(0xffff0000);
-        debug_paint_green = new Paint(Paint.ANTI_ALIAS_FLAG);
-        debug_paint_green.setColor(0xff3CC23F);
-        debug_paint_green.setStrokeWidth(dpf(1));
-
-        debug_paint_red = new Paint(Paint.ANTI_ALIAS_FLAG);
-        debug_paint_red.setColor(0xffED685F);
 
         scroller_overlay_paint = new Paint();
         scroller_overlay_paint.setColor(0xbff1f5f7);
@@ -116,8 +105,6 @@ public class ChartView extends View {
 
         //todo reread on configuration change , splitscreen
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-
-//        setLayerType(LAYER_TYPE_HARDWARE, null);
 
     }
 
