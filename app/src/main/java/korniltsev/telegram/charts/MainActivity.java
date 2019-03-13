@@ -28,7 +28,7 @@ public class MainActivity extends Activity {
         ChartData[] data = readData();
         Log.d(ChartView.TAG, "data len " + data.length);
 
-        ChartData datum = data[0];
+        ChartData datum = data[4];
 
         final ChartView chart = new ChartView(this);
         chart.setData(datum);

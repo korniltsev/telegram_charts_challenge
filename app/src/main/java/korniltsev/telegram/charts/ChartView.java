@@ -2,22 +2,18 @@ package korniltsev.telegram.charts;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.os.SystemClock;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.animation.DecelerateInterpolator;
-
-import java.util.Arrays;
 
 
 /*
@@ -32,8 +28,6 @@ toolbar + night mode
 animate charts scale
 legend + rules + labels
  */
-
-
 
 
 // todo
@@ -58,6 +52,7 @@ legend + rules + labels
 //     spring animations?
 //     animate velocity after dragging ??
 //https://github.com/facebook/redex
+// check for accessor methods
 
 
 //todo testing
@@ -68,6 +63,7 @@ public class ChartView extends View {
     public static final boolean DEBUG = BuildConfig.DEBUG;
     public static final boolean LOGGING = DEBUG;
     public static final String COLUMN_ID_X = "x";
+    public static final DecelerateInterpolator INTERPOLATOR = new DecelerateInterpolator();
 
     private final Paint debug_paint1;//todo static?
     private final Paint debug_paint_green;
@@ -80,12 +76,11 @@ public class ChartView extends View {
     private final int initial_scroller_dith;
 
 
-
     private final int scrollbar_height;
     private final int scroll_bar_v_padding;
     private final int h_padding;
 
-    private int scroller_width;
+    private int scroller_width;//todo replace with scroller_left/right
     private int scroller_pos = -1;
     private Rect scrollbar = new Rect();
     private int scroller_move_down_x;
@@ -129,9 +124,11 @@ public class ChartView extends View {
             //todo implement
             throw new AssertionError("data.data.length <= 1 unimplemented");
         }
-        this.data = new UIColumnData[data.data.length-1];
+        this.data = new UIColumnData[data.data.length - 1];
         ColumnData[] data1 = data.data;
         int j = 0;
+        long max = Long.MIN_VALUE;
+        long min = Long.MAX_VALUE;
         for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
             ColumnData datum = data1[i];
             if (datum.id.equals(COLUMN_ID_X)) {
@@ -141,39 +138,84 @@ public class ChartView extends View {
             paint.setColor(datum.color);
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(dpf(1));
+            min = Math.min(min, datum.minValue);
+            max = Math.max(max, datum.maxValue);
             this.data[j] = new UIColumnData(datum, paint);
             j++;
         }
+        //todo if max == min
+        if (max == min) {
+            throw new RuntimeException("unimplemented");//todo implement
+        }
+        for (UIColumnData datum : this.data) {
+            datum.min = min;
+            datum.max = max;
+        }
+
     }
 
     public void setChecked(String id, boolean isChecked) {
+        UIColumnData foundById = null;
         for (int i = 0, dataLength = data.length; i < dataLength; i++) {
             final UIColumnData datum = data[i];
             if (datum.data.id.equals(id)) {
-                datum.checked = isChecked;
-                final ValueAnimator valueAnimator = ValueAnimator.ofFloat(datum.alpha, isChecked ? 1f : 0f);
-                valueAnimator.setDuration(160);
-                valueAnimator.setInterpolator(new DecelerateInterpolator());
-                valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        float v = (float) valueAnimator.getAnimatedValue();//todo boxing
-//                        float f = 1.0f -  valueAnimator.getAnimatedFraction();
-//                        Log.d(TAG, "anim " + v + " " + f);
-                        datum.alpha = v;//todo do not draw if alpha is 255
-                        datum.paint.setAlpha((int) (255 * v));
-                        invalidate();
-                    }
-                });
-                valueAnimator.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        super.onAnimationEnd(animation);
-                    }
-                });
-                valueAnimator.start();
-                invalidate();
+                foundById = datum;
                 break;
+            }
+        }
+        if (foundById != null) {
+            foundById.checked = isChecked;
+        }
+        animateScrollbar(isChecked, foundById);
+    }
+
+    private void animateScrollbar(boolean isChecked, UIColumnData foundById) {
+        long max = Long.MIN_VALUE;
+        long min = Long.MAX_VALUE;
+        for (int i = 0, dataLength = data.length; i < dataLength; i++) {
+            UIColumnData datum = data[i];
+            if (datum.checked) {
+                min = Math.min(min, datum.data.minValue);
+                max = Math.max(max, datum.data.maxValue);
+            }
+        }
+        if (foundById != null) {
+            foundById.max = max;
+            foundById.min = min;
+            Animator prev = foundById.alphaAnim;
+            if (prev != null) {
+                foundById.alphaAnim.cancel();
+            }
+            final ValueAnimator anim = ValueAnimator.ofFloat(foundById.alpha, isChecked ? 1f : 0f);
+            anim.setDuration(160);
+            anim.setInterpolator(INTERPOLATOR);
+            anim.addUpdateListener(new MyAlphaAnimUpdater(foundById));
+            anim.addListener(new MyCleanAlphaAnim(foundById));
+            anim.start();
+            foundById.alphaAnim = anim;
+            invalidate();
+        }
+
+
+        for (int i = 0, dataLength = data.length; i < dataLength; i++) {
+            final UIColumnData datum = data[i];
+            if (datum.checked) {
+                final long fromMax = datum.max;
+                final long fromMin = datum.min;
+                final long toMax = max;
+                final long toMin = min;
+                ValueAnimator prev = datum.minMaxAnim;
+                if (prev != null) {
+                    prev.cancel();
+                }
+                final ValueAnimator anim = ValueAnimator.ofFloat(0f, 1f);//todo optimize and use only one animation not N
+                anim.setDuration(160);
+                anim.setInterpolator(INTERPOLATOR);
+                anim.addUpdateListener(new MyMinMaxAnimUpdater(datum, fromMax, toMax, fromMin, toMin));
+                anim.addListener(new MyMinMaxAnimCleanup(datum));
+                anim.start();
+                datum.minMaxAnim = anim;
+                datum.pathDirty = true;
             }
         }
     }
@@ -218,16 +260,20 @@ public class ChartView extends View {
     }
 
     @Override
-    public void layout(int l, int t, int r, int b) {
-        super.layout(l, t, r, b);
-        if (LOGGING) {
-            Log.d("tg.chart", "layout " + Arrays.asList(l, t, r, b));
-        }
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         //todo checks for resizing
         if (scroller_pos == -1) {
             scroller_pos = scrollbar.right - scroller_width;
         }
+        if (data != null) {
+            for (UIColumnData datum : data) {
+                datum.pathDirty = true;
+            }
+            //todo test and cancel animation if needed?
+        }
     }
+
+
 
 
     //<editor-fold desc="ScrollbarDragging">
@@ -254,18 +300,18 @@ public class ChartView extends View {
                 boolean b = y >= scrollbar.top && y <= scrollbar.bottom;
                 if (b) {
                     if (Math.abs(x - scroller_pos) <= resize_touch_area2) {
-                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize left" );
+                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize left");
                         last_x = x;
                         down_target = DOWN_RESIZE_LEFT;
                         resze_scroller_right = scroller_pos + scroller_width;
                         return true;
-                    } else if (Math.abs(x - (scroller_pos + scroller_width) ) < resize_touch_area2) {
-                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize right" );
+                    } else if (Math.abs(x - (scroller_pos + scroller_width)) < resize_touch_area2) {
+                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize right");
                         last_x = x;
                         down_target = DOWN_RESIZE_RIGHT;
                         return true;
                     } else if (x >= scroller_pos && x <= scroller_pos + scroller_width) {
-                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN inside scrollbar" );
+                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN inside scrollbar");
                         //todo check x inside scroller
                         last_x = x;
                         scroller_move_down_x = (int) (x - scroller_pos);
@@ -273,10 +319,10 @@ public class ChartView extends View {
                         return true;
                     } else {
                         //todo check scroll edges
-                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss" );
+                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
                     }
                 } else {
-                    if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss" );
+                    if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -294,7 +340,7 @@ public class ChartView extends View {
                                 scroller_width = scrollbar.right - scroller_pos;
                             }
                             // check the scrollbar is not too small
-                            if (scroller_width < initial_scroller_dith  ) {
+                            if (scroller_width < initial_scroller_dith) {
                                 scroller_width = initial_scroller_dith;
                             }
                             invalidate();
@@ -304,7 +350,7 @@ public class ChartView extends View {
                                 scroller_pos = scrollbar.left;
                             }
                             scroller_width = resze_scroller_right - scroller_pos;
-                            if (scroller_width < initial_scroller_dith  ) {
+                            if (scroller_width < initial_scroller_dith) {
                                 scroller_width = initial_scroller_dith;
                                 scroller_pos = resze_scroller_right - scroller_width;
                             }
@@ -352,44 +398,35 @@ public class ChartView extends View {
 
         // scrollbar charts
         if (data != null) {
-            long max = Long.MIN_VALUE;
-            long min = Long.MAX_VALUE;
-            //todo precompute min max
-            //todo if max == min
-            for (int i = 0, dataLength = data.length; i < dataLength; i++) {
-                UIColumnData datum = data[i];
-//                if (datum.checked) {
-                    min = Math.min(min, datum.data.minValue);
-                    max = Math.max(max, datum.data.maxValue);
-//                }
-            }
-            if (max == min) {
-                throw new RuntimeException("unimplemented");//todo implement
-            }
-            if (max == Long.MIN_VALUE || min == Long.MAX_VALUE) {
+            {
 
-            } else {
-                float diff = max - min;
                 int vspace = scrollbar.height() - 2 * dip2 /* 1 from top and bottom */;
                 for (UIColumnData c : data) {
-//                    if (!c.checked) {
+                    if (c.pathDirty) {
+
+                        long min = c.min;
+                        float diff = c.max - min;
+//                    if (!c.checked) {//todo
 //                        continue;
 //                    }
-                    ColumnData data = c.data;
-                    float x = scrollbar.left;
-                    float step = scrollbar.width() / (float)(data.values.length - 1);
-                    c.path.reset();
-                    float cur_value = (data.values[0] - min )/ diff;
-                    float cur_pos = scrollbar.bottom - dip2 - cur_value * vspace;
-                    c.path.moveTo(x, cur_pos);
-                    for (int i = 1; i < data.values.length - 1; ++i) {
-                        x += step;
-                        float next_value = (data.values[i] - min) / diff;
-                        float next_pos = scrollbar.bottom - dip2 - next_value* vspace;
-                        c.path.lineTo(x, next_pos);
+                        ColumnData data = c.data;
+                        float x = scrollbar.left;
+                        float step = scrollbar.width() / (float) (data.values.length - 1);
+                        c.path.reset();
+                        float cur_value = (data.values[0] - min) / diff;
+                        float cur_pos = scrollbar.bottom - dip2 - cur_value * vspace;
+                        c.path.moveTo(x, cur_pos);
+                        for (int i = 1; i < data.values.length - 1; ++i) {
+                            x += step;
+                            float next_value = (data.values[i] - min) / diff;
+                            float next_pos = scrollbar.bottom - dip2 - next_value * vspace;
+                            c.path.lineTo(x, next_pos);
+                        }
+                        c.pathDirty = false;
                     }
-//                c.path.close();
-                    canvas.drawPath(c.path, c.paint);
+                    if (c.alpha != 0) {
+                        canvas.drawPath(c.path, c.paint);
+                    }
                 }
             }
 
@@ -405,17 +442,22 @@ public class ChartView extends View {
         canvas.drawRect(scroller_pos, scrollbar.top, scroller_pos + dip4, scrollbar.bottom, scroller_border_paint);
         canvas.drawRect(scroller_pos + scroller_width - dip4, scrollbar.top, scroller_pos + scroller_width, scrollbar.bottom, scroller_border_paint);
         canvas.drawRect(scroller_pos + dip4, scrollbar.top, scroller_pos + scroller_width - dip4, scrollbar.top + dip1, scroller_border_paint);
-        canvas.drawRect(scroller_pos + dip4, scrollbar.bottom-dip1, scroller_pos + scroller_width - dip4, scrollbar.bottom, scroller_border_paint);
+        canvas.drawRect(scroller_pos + dip4, scrollbar.bottom - dip1, scroller_pos + scroller_width - dip4, scrollbar.bottom, scroller_border_paint);
     }
 
 
-
     public static class UIColumnData {
-        final ColumnData data;
-        final Paint paint;
-        final Path path = new Path();//todo maybe precompute for cases when not animaing?
+        public final ColumnData data;
+        public final Paint paint;
+        //todo test resize animatinos on old devices and try to precompute animatino path if it is laggy
+        public final Path path = new Path();
+        public ValueAnimator alphaAnim;
+        public ValueAnimator minMaxAnim;
+        public boolean pathDirty = true;
         public boolean checked = true;
         public float alpha = 1.0f;
+        public long max = Long.MIN_VALUE;
+        public long min = Long.MAX_VALUE;
 
         public UIColumnData(ColumnData data, Paint paint) {
             this.data = data;
@@ -424,4 +466,79 @@ public class ChartView extends View {
     }
 
 
+    private static class MyCleanAlphaAnim extends AnimatorListenerAdapter {
+        private final UIColumnData datum;
+
+        public MyCleanAlphaAnim(UIColumnData datum) {
+            this.datum = datum;
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            if (DEBUG && datum.alphaAnim != animation) {
+                throw new AssertionError();
+            }
+            datum.alphaAnim = null;
+        }
+    }
+
+    private static class MyMinMaxAnimCleanup extends AnimatorListenerAdapter {
+        private final UIColumnData datum;
+
+        public MyMinMaxAnimCleanup(UIColumnData datum) {
+            this.datum = datum;
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            if (DEBUG && datum.minMaxAnim != animation) {
+                throw new AssertionError("datum.minMaxAnim != animation");
+            }
+            datum.minMaxAnim = null;
+        }
+    }
+
+    private class MyAlphaAnimUpdater implements ValueAnimator.AnimatorUpdateListener {
+        private final UIColumnData datum;
+
+        public MyAlphaAnimUpdater(UIColumnData datum) {
+            this.datum = datum;
+        }
+
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            float v = (float) animation.getAnimatedValue();//todo boxing
+//                        float f = 1.0f -  valueAnimator.getAnimatedFraction();
+//                        Log.d(TAG, "anim " + v + " " + f);
+            datum.alpha = v;//todo do not draw if alpha is 255
+            datum.paint.setAlpha((int) (255 * v));
+            invalidate();
+        }
+    }
+
+    private class MyMinMaxAnimUpdater implements ValueAnimator.AnimatorUpdateListener {
+        private final UIColumnData datum;
+        private final long fromMax;
+        private final long toMax;
+        private final long fromMin;
+        private final long toMin;
+
+        public MyMinMaxAnimUpdater(UIColumnData datum, long fromMax, long toMax, long fromMin, long toMin) {
+            this.datum = datum;
+            this.fromMax = fromMax;
+            this.toMax = toMax;
+            this.fromMin = fromMin;
+            this.toMin = toMin;
+        }
+
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            float v = (float) animation.getAnimatedValue();
+            float f = (float) animation.getAnimatedFraction();
+            datum.max = (long) (fromMax + v * (toMax - fromMax));
+            datum.min = (long) (fromMin + v * (toMin - fromMin));
+            datum.pathDirty = true;
+            invalidate();
+        }
+    }
 }
