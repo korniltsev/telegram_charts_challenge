@@ -49,13 +49,8 @@ public class ChartViewGL extends TextureView {
 
     class Render extends Thread implements TextureView.SurfaceTextureListener {
 
-        private static final int BYTES_PER_FLOAT = 4;
-        private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
-        private static final int POSITION_DATA_SIZE = 2;
 
-
-        //        private final Chart[] data;
-        private final FloatBuffer buf1;
+        private final ColumnData data;
         private EGL10 mEgl;
         private EGLDisplay mEglDisplay;
         private EGLConfig mEglConfig;
@@ -67,47 +62,22 @@ public class ChartViewGL extends TextureView {
         final Object lock = new Object();//todo fuck locking
         private int w;
         private int h;
+        private GLChartProgram chart;
 
-        private float[] model = new float[16];
-        private float[] view = new float[16];
-        private float[] projection = new float[16];
-
-        private float[] MVP = new float[16];
-        private int MVPHandle;
-        private int positionHandle;
-        private int vbo;
-
-        final float[] vertices;
 
         public Render(ColumnData column) {
-            long[] values = column.values;
+            this.data = column;
 
-//            vertices = new float[values.length * 2];
-//            for (int i = 0, valuesLength = values.length; i < valuesLength; i++) {
-//                long value = values[i];
-//                vertices[i * 2] = i;
-//                vertices[i * 2 + 1] = value;
-//            }
-            vertices = new float[]{
-                    0.0f, 0.0f,
-                    0.5f,  0.5f,
-                    1.0f, 0.25f,
-            };
-
-
-            buf1 = ByteBuffer.allocateDirect(vertices.length * BYTES_PER_FLOAT)
-                    .order(ByteOrder.nativeOrder())
-                    .asFloatBuffer();
-            buf1.put(vertices);
-            buf1.position(0);
         }
 
         @Override
         public void run() {
             if (!waitForSurface()) {
+
                 return;
             }
             initGL(surface);
+            chart = new GLChartProgram(data, w, h);
             loop();
 
         }
@@ -133,52 +103,15 @@ public class ChartViewGL extends TextureView {
         }
 
 
-        final String vertexShader =
-                "uniform mat4 u_MVPMatrix;      \n"
-                        + "attribute vec2 a_Position;     \n"
-                        + "void main()                    \n"
-                        + "{                              \n"
-                        + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
-                        + "}                              \n";
-
-        final String fragmentShader =
-                "precision mediump float;       \n"
-                        + "void main()                    \n"
-                        + "{                              \n"
-                        + "   gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);     \n"
-                        + "}                              \n";
-
-
-        private void drawOneTriangle() {
 
 
 
-            GLES20.glEnableVertexAttribArray(positionHandle);
-            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-            GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
-
-            Matrix.setIdentityM(model, 0);
-//            Matrix.scaleM(model, 0, 1.0f, 1.0f, 1.0f);
-
-            Matrix.multiplyMM(MVP, 0, view, 0, model, 0);
-            Matrix.multiplyMM(MVP, 0, projection, 0, MVP, 0);
-
-            GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
-            GLES20.glLineWidth(20f);
-            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, 3);
-        }
 
         private void loop() {
-            int[] vbos = new int[1];
-            GLES20.glGenBuffers(1, vbos, 0);
-            vbo = vbos[0];
-            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-            GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * BYTES_PER_FLOAT, buf1, GLES20.GL_STATIC_DRAW);
-            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
-            int program = MyGL.createProgram(vertexShader, fragmentShader);
-            MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
-            positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
+
+
+
 
 
             while (true) {
@@ -188,11 +121,7 @@ public class ChartViewGL extends TextureView {
                 glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 
-
-                GLES20.glUseProgram(program);
-
-
-                drawOneTriangle();
+                chart.draw();
 
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                     throw new RuntimeException("Cannot swap buffers");
@@ -270,31 +199,31 @@ public class ChartViewGL extends TextureView {
             mGL = mEglContext.getGL();
 
 
-            final float ratio = (float) w / h;
-
-
-            final float left = -1.0f;
-            final float right = 1.0f;
-            final float bottom = -1.0f;
-            final float top = 1.0f;
-            final float near = 1.0f;
-            final float far = 10.0f;
-
-            Matrix.frustumM(projection, 0, left, right, bottom, top, near, far);
-
-            final float eyeX = 0.0f;
-            final float eyeY = 0.0f;
-            final float eyeZ = 1.5f;
-
-            final float lookX = 0.0f;
-            final float lookY = 0.0f;
-            final float lookZ = 0.0f;
-
-            final float upX = 0.0f;
-            final float upY = 1.0f;
-            final float upZ = 0.0f;
-
-            Matrix.setLookAtM(view, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+//            final float ratio = (float) w / h;
+//
+//
+//            final float left = -1.0f;
+//            final float right = 1.0f;
+//            final float bottom = -1.0f;
+//            final float top = 1.0f;
+//            final float near = 1.0f;
+//            final float far = 10.0f;
+//
+//            Matrix.frustumM(projection, 0, left, right, bottom, top, near, far);
+//
+//            final float eyeX = 0.0f;
+//            final float eyeY = 0.0f;
+//            final float eyeZ = 1.5f;
+//
+//            final float lookX = 0.0f;
+//            final float lookY = 0.0f;
+//            final float lookZ = 0.0f;
+//
+//            final float upX = 0.0f;
+//            final float upY = 1.0f;
+//            final float upZ = 0.0f;
+//
+//            Matrix.setLookAtM(view, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
         }
 
         EGLContext createContext(EGL10 egl, EGLDisplay eglDisplay,

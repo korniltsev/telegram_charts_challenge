@@ -37,6 +37,9 @@ public class MyGL {
 
         GLES20.glLinkProgram(program);
         checkGlError2();
+
+        GLES20.glDeleteShader(vertexShader);
+        GLES20.glDeleteShader(fragmentShader);
         return program;
     }
 
