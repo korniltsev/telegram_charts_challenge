@@ -2,15 +2,11 @@ package korniltsev.telegram.charts;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
-import android.opengl.GLES20;
 import android.opengl.GLUtils;
-import android.opengl.Matrix;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.TextureView;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
+import android.view.animation.AnimationUtils;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -18,8 +14,6 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 import javax.microedition.khronos.opengles.GL;
-
-import korniltsev.telegram.charts.gl.MyGL;
 
 import static android.opengl.EGL14.EGL_CONTEXT_CLIENT_VERSION;
 import static android.opengl.EGL14.EGL_OPENGL_ES2_BIT;
@@ -34,9 +28,10 @@ import static android.opengl.GLES10.glClearColor;
 // scrollbar
 public class ChartViewGL extends TextureView {
     public static final String LOG_TAG = "tg.ch.gl";
-
-    public ChartViewGL(Context context, ColumnData c) {
+    private final Dimen dimen;
+    public ChartViewGL(Context context, ColumnData[] c, Dimen dimen) {
         super(context);
+        this.dimen = dimen;
         Render r = new Render(c);
         r.start();
         setSurfaceTextureListener(r);
@@ -50,7 +45,7 @@ public class ChartViewGL extends TextureView {
     class Render extends Thread implements TextureView.SurfaceTextureListener {
 
 
-        private final ColumnData data;
+        private final ColumnData[] data;
         private EGL10 mEgl;
         private EGLDisplay mEglDisplay;
         private EGLConfig mEglConfig;
@@ -62,10 +57,10 @@ public class ChartViewGL extends TextureView {
         final Object lock = new Object();//todo fuck locking
         private int w;
         private int h;
-        private GLChartProgram chart;
+        private GLChartProgram[] chart;
 
 
-        public Render(ColumnData column) {
+        public Render(ColumnData[] column) {
             this.data = column;
 
         }
@@ -77,7 +72,16 @@ public class ChartViewGL extends TextureView {
                 return;
             }
             initGL(surface);
-            chart = new GLChartProgram(data, w, h);
+            chart = new GLChartProgram[data.length - 1];
+            float max = 0f;
+            for (int i = 1, dataLength = data.length; i < dataLength; i++) {
+                ColumnData datum = data[i];
+                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen);
+                max = Math.max(max, datum.maxValue);
+            }
+            for (GLChartProgram it : chart) {
+                it.maxValue = max;
+            }
             loop();
 
         }
@@ -119,9 +123,10 @@ public class ChartViewGL extends TextureView {
 
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                 glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-
-                chart.draw();
+                float t = SystemClock.uptimeMillis() / 1000f;
+                for (GLChartProgram c : chart) {
+                    c.draw(t);
+                }
 
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                     throw new RuntimeException("Cannot swap buffers");

@@ -4,12 +4,9 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import org.json.JSONArray;
@@ -23,22 +20,25 @@ import java.io.InputStream;
 public class MainActivity extends Activity {
 
 
+    private Dimen dimen;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        dimen = new Dimen(this);
         ChartData[] data = readData();
         Log.d(ChartView.TAG, "data len " + data.length);
 
         ChartData datum = data[4];
 
-        final ChartViewGL chart = new ChartViewGL(this, datum.data[1]);
+        final ChartViewGL chart = new ChartViewGL(this, datum.data, dimen);
         chart.setData(datum);
 
         LinearLayout frame = new LinearLayout(this);
         frame.setBackgroundColor(Color.WHITE);//todo set in theme
         frame.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(300));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dimen.dpi(300));
         chart.setLayoutParams(lp);
         frame.addView(chart);
         for (final ColumnData c : datum.data) {
@@ -93,13 +93,5 @@ public class MainActivity extends Activity {
         return baos.toByteArray();
     }
 
-    private float dpf(int dip) {
-//        todo inline & optimize for multiplication, not method call
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dip, getResources().getDisplayMetrics());
-    }
 
-    private int dp(int dip) {
-        //todo inline & optimize for multiplication, not method call
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dip, getResources().getDisplayMetrics());
-    }
 }
