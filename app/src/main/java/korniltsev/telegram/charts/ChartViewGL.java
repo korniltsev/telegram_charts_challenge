@@ -46,8 +46,8 @@ public class ChartViewGL extends TextureView {
     class Render extends Thread implements TextureView.SurfaceTextureListener {
 
         private static final int BYTES_PER_FLOAT = 4;
-        private static final int STRIDE_BYTES = 3 * BYTES_PER_FLOAT;
-        private static final int POSITION_DATA_SIZE = 3;
+        private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
+        private static final int POSITION_DATA_SIZE = 2;
 
 
         //        private final Chart[] data;
@@ -111,15 +111,15 @@ public class ChartViewGL extends TextureView {
 
 
         final String vertexShader =
-                "uniform mat4 u_MVPMatrix;      \n"
-                        + "attribute vec4 a_Position;     \n"
+                          "uniform mat4 u_MVPMatrix;      \n"
+                        + "attribute vec2 a_Position;     \n"
                         + "void main()                    \n"
                         + "{                              \n"
-                        + "   gl_Position = u_MVPMatrix * a_Position;   \n"
+                        + "   gl_Position = u_MVPMatrix * vec4(a_Position.x, a_Position.y, 0.0, 1.0);   \n"
                         + "}                              \n";
 
         final String fragmentShader =
-                "precision mediump float;       \n"
+                          "precision mediump float;       \n"
                         + "void main()                    \n"
                         + "{                              \n"
                         + "   gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);     \n"
@@ -130,15 +130,14 @@ public class ChartViewGL extends TextureView {
 
 
         final float[] vertices = {
-                -0.5f, -0.25f, 0.0f,
-                0.5f, -0.25f, 0.0f,
-                0.0f, 0.559016994f, 0.0f,
+                -0.5f, -0.25f,
+                0.5f, -0.25f,
+                0.0f, 0.559016994f,
         };
 
         private void drawOneTriangle(final FloatBuffer aTriangleBuffer)
         {
 
-            GLES20.glLineWidth(10f);
             GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false,
                     STRIDE_BYTES, aTriangleBuffer);//todo upload only once
             GLES20.glEnableVertexAttribArray(positionHandle);

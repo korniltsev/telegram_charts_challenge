@@ -36,6 +36,7 @@ public class MainActivity extends Activity {
         chart.setData(datum);
 
         LinearLayout frame = new LinearLayout(this);
+        frame.setBackgroundColor(Color.WHITE);//todo set in theme
         frame.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(300));
         chart.setLayoutParams(lp);
