@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
 
         ChartData datum = data[4];
 
-        final ChartViewGL chart = new ChartViewGL(this);
+        final ChartViewGL chart = new ChartViewGL(this, datum.data[1]);
         chart.setData(datum);
 
         LinearLayout frame = new LinearLayout(this);

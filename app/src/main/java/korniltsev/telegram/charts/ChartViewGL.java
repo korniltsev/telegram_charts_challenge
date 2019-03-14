@@ -35,9 +35,9 @@ import static android.opengl.GLES10.glClearColor;
 public class ChartViewGL extends TextureView {
     public static final String LOG_TAG = "tg.ch.gl";
 
-    public ChartViewGL(Context context) {
+    public ChartViewGL(Context context, ColumnData c) {
         super(context);
-        Render r = new Render();
+        Render r = new Render(c);
         r.start();
         setSurfaceTextureListener(r);
     }
@@ -77,7 +77,23 @@ public class ChartViewGL extends TextureView {
         private int positionHandle;
         private int vbo;
 
-        public Render() {
+        final float[] vertices;
+
+        public Render(ColumnData column) {
+            long[] values = column.values;
+
+//            vertices = new float[values.length * 2];
+//            for (int i = 0, valuesLength = values.length; i < valuesLength; i++) {
+//                long value = values[i];
+//                vertices[i * 2] = i;
+//                vertices[i * 2 + 1] = value;
+//            }
+            vertices = new float[]{
+                    0.0f, 0.0f,
+                    0.5f,  0.5f,
+                    1.0f, 0.25f,
+            };
+
 
             buf1 = ByteBuffer.allocateDirect(vertices.length * BYTES_PER_FLOAT)
                     .order(ByteOrder.nativeOrder())
@@ -88,6 +104,15 @@ public class ChartViewGL extends TextureView {
 
         @Override
         public void run() {
+            if (!waitForSurface()) {
+                return;
+            }
+            initGL(surface);
+            loop();
+
+        }
+
+        private boolean waitForSurface() {
             SurfaceTexture surface = null;//todo destroying handling
             synchronized (lock) {
                 while (true) {
@@ -99,53 +124,41 @@ public class ChartViewGL extends TextureView {
                             lock.wait();
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
-                            return;
+                            return false;
                         }
                     }
                 }
             }
-            initGL(surface);
-            loop();
-
+            return true;
         }
 
 
-
-
-
-
-
         final String vertexShader =
-                          "uniform mat4 u_MVPMatrix;      \n"
+                "uniform mat4 u_MVPMatrix;      \n"
                         + "attribute vec2 a_Position;     \n"
                         + "void main()                    \n"
                         + "{                              \n"
-                        + "   gl_Position = u_MVPMatrix * vec4(a_Position.x, a_Position.y, 0.0, 1.0);   \n"
+                        + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
                         + "}                              \n";
 
         final String fragmentShader =
-                          "precision mediump float;       \n"
+                "precision mediump float;       \n"
                         + "void main()                    \n"
                         + "{                              \n"
                         + "   gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);     \n"
                         + "}                              \n";
 
 
+        private void drawOneTriangle() {
 
 
 
-        final float[] vertices = {
-                -0.5f, -0.25f,
-                0.5f, -0.25f,
-                0.0f, 0.559016994f,
-        };
-
-        private void drawOneTriangle()
-        {
             GLES20.glEnableVertexAttribArray(positionHandle);
             GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-            GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false , STRIDE_BYTES, 0);
+            GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
 
+            Matrix.setIdentityM(model, 0);
+//            Matrix.scaleM(model, 0, 1.0f, 1.0f, 1.0f);
 
             Matrix.multiplyMM(MVP, 0, view, 0, model, 0);
             Matrix.multiplyMM(MVP, 0, projection, 0, MVP, 0);
@@ -168,19 +181,15 @@ public class ChartViewGL extends TextureView {
             positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
 
 
-
             while (true) {
 
 
-
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-                glClear (GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+                glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 
-                Matrix.setIdentityM(model, 0);
 
                 GLES20.glUseProgram(program);
-
 
 
                 drawOneTriangle();
@@ -190,7 +199,6 @@ public class ChartViewGL extends TextureView {
                 }
             }
         }
-
 
 
         @Override
