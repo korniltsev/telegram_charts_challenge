@@ -36,7 +36,6 @@ public class MainActivity extends Activity {
         LinearLayout frame = new LinearLayout(this);
         frame.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.gravity = Gravity.CENTER;
         chart.setLayoutParams(lp);
         frame.addView(chart);
         for (final ColumnData c : datum.data) {

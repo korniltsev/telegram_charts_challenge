@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -19,10 +20,12 @@ import android.view.animation.DecelerateInterpolator;
 /*
 plan
 scroller + resizer
-draw charts
+draw scrollbar charts
 scrollbar scale + alpha animation
 ______
+find a way to draw fast
 draw charts
+replace with scroller_left/right
 charts scale + alpha anim
 toolbar + night mode
 legend + rules + labels
@@ -35,6 +38,8 @@ pointer anim
 //     snap scrollbar near zeros
 //     implement empty chart
 //     implement y=0 chart
+// rename to camelCase
+
 
 // todo design
 //    overlay color seems wrong
@@ -60,6 +65,14 @@ pointer anim
 //     test on old device
 //     monkey test
 //     fuzz test
+
+
+//aint.setDither(true);                    // set the dither to true
+//        paint.setStyle(Paint.Style.STROKE);       // set to STOKE
+//        paint.setStrokeJoin(Paint.Join.ROUND);    // set the join to round you want
+//        paint.setStrokeCap(Paint.Cap.ROUND);      // set the paint cap to round too
+//        paint.setPathEffect(new CornerPathEffect(10) );   // set the path effect when they join.
+//        paint.setAntiAlias(true);
 public class ChartView extends View {
     public static final String TAG = "tg.ch";
     public static final boolean DEBUG = BuildConfig.DEBUG;
@@ -85,6 +98,11 @@ public class ChartView extends View {
     private int scroller_move_down_x;
 
     private UIColumnData[] scrollerEntries;
+    private UIColumnData[] chartEntries;
+    //        long start = SystemClock.elapsedRealtimeNanos();
+    private Paint debugPaing = new Paint();
+    private int chart_top;
+    private int chart_bottom;
 
     public ChartView(Context context) {
         super(context);
@@ -106,14 +124,17 @@ public class ChartView extends View {
         //todo reread on configuration change , splitscreen
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
 
+        debugPaing.setColor(0xffdddddd);
     }
 
     public void setData(ChartData data) {
+        //todo assert x is present
         if (data.data.length <= 1) {
             //todo implement
             throw new AssertionError("scrollerEntries.scrollerEntries.length <= 1 unimplemented");
         }
         this.scrollerEntries = new UIColumnData[data.data.length - 1];
+        this.chartEntries = new UIColumnData[data.data.length - 1];
         ColumnData[] data1 = data.data;
         int j = 0;
         long max = Long.MIN_VALUE;
@@ -123,13 +144,20 @@ public class ChartView extends View {
             if (datum.id.equals(COLUMN_ID_X)) {
                 continue;
             }
+            min = Math.min(min, datum.minValue);
+            max = Math.max(max, datum.maxValue);
+
             Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
             paint.setColor(datum.color);
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(dpf(1));
-            min = Math.min(min, datum.minValue);
-            max = Math.max(max, datum.maxValue);
             this.scrollerEntries[j] = new UIColumnData(datum, paint);
+
+            Paint paint2 = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint2.setColor(datum.color);
+            paint2.setStyle(Paint.Style.STROKE);
+            paint2.setStrokeWidth(dpf(1));
+            this.chartEntries[j] = new UIColumnData(datum, paint2);
             j++;
         }
         //todo if max == min
@@ -232,17 +260,22 @@ public class ChartView extends View {
         if (wmode != MeasureSpec.EXACTLY && wmode != MeasureSpec.AT_MOST) {
             throw new AssertionError("wmode != MeasureSpec.EXACTLY || wmode != MeasureSpec.AT_MOST");
         }
-        int chart_space = dp(300);
+        int chart_height = dp(300);//todo maybe make square?
+
+        chart_top = scroll_bar_v_padding;
+        chart_bottom = chart_top + chart_height;
+
         int w;
         int h;
         w = wsize;
-        int scrollbar_top = chart_space + this.scroll_bar_v_padding;
+        int scrollbar_top = chart_bottom + this.scroll_bar_v_padding;
         scrollbar.left = h_padding;//todo replace with this fields
         scrollbar.right = w - h_padding;
         scrollbar.top = scrollbar_top;
         scrollbar.bottom = scrollbar_top + scrollbar_height;
 
-        h = scrollbar_height + 2 * this.scroll_bar_v_padding + chart_space;
+
+        h = scrollbar_height + 2 * this.scroll_bar_v_padding + chart_height + scroll_bar_v_padding;
 
 
         setMeasuredDimension(w, h);
@@ -261,8 +294,6 @@ public class ChartView extends View {
             //todo test and cancel animation if needed?
         }
     }
-
-
 
 
     //<editor-fold desc="ScrollbarDragging">
@@ -371,11 +402,75 @@ public class ChartView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        long start = SystemClock.elapsedRealtimeNanos();
+//        canvas.drawRect(scrollbar.left, chart_top, scrollbar.right, chart_bottom, debugPaing);
+//        drawChart(canvas);
+//        drawScrollbar(canvas);
         drawScrollbar(canvas);
+
+
 //        long end = SystemClock.elapsedRealtimeNanos();
 //        long t = end - start;
 //        Log.d(TAG, "draw time " + t / 1000000f);
+    }
+
+    private void drawChart(Canvas canvas) {
+        if (chartEntries != null) {
+            float scale = scroller_width / (float) scrollbar.width();
+            float offset = scroller_pos / (float) scroller_width;
+            int vspace = chart_bottom - chart_top;
+
+
+            long max = Long.MIN_VALUE;
+            long min = Long.MAX_VALUE;
+            for (int i = 0, data1Length = chartEntries.length; i < data1Length; i++) {
+                UIColumnData datum = chartEntries[i];
+                min = Math.min(min, datum.data.minValue);
+                max = Math.max(max, datum.data.maxValue);
+            }
+
+
+            for (UIColumnData c : chartEntries) {
+//                c.path.transform();
+
+                if (c.pathDirty) {
+                    float diff = max - min;
+                    ColumnData data = c.data;
+                    float x = scrollbar.left;
+                    float step = scrollbar.width() / (float) (data.values.length - 1);
+                    c.path.reset();
+                    float cur_value = (data.values[0] - min) / diff;
+                    float cur_pos = chart_bottom - cur_value * vspace;
+                    c.path.moveTo(x, cur_pos);
+                    for (int i = 1; i < data.values.length - 1; ++i) {
+                        x += step;
+                        float next_value = (data.values[i] - min) / diff;
+                        float next_pos = chart_bottom - next_value * vspace;
+                        if (c.pathDirty) {
+                            c.path.lineTo(x, next_pos);
+                        }
+                    }
+//                    c.path2.set(c.path);
+//                    c.pathDirty = false;
+                }
+
+                if (c.alpha != 0) {
+
+
+//                    c.matrix.reset();
+//                    c.matrix.setScale(1/scale, 1f);
+//                    c.path.rewind();
+//                    c.path2.addPath(c.path, c.matrix);
+//                    c.matrix.invert()
+
+//                    c.path.transform(c.matrix);
+
+
+                    canvas.drawPath(c.path, c.paint);
+//                    c.matrix.setScale(scale, 1f);
+//                    c.path.transform(c.matrix);
+                }
+            }
+        }
     }
 
     private void drawScrollbar(Canvas canvas) {
@@ -436,10 +531,12 @@ public class ChartView extends View {
 
 
     public static class UIColumnData {
+        public final Matrix matrix = new Matrix();
         public final ColumnData data;
         public final Paint paint;
         //todo test resize animatinos on old devices and try to precompute animatino path if it is laggy
         public final Path path = new Path();
+        public final Path path2 = new Path();
         public ValueAnimator alphaAnim;
         public ValueAnimator minMaxAnim;
         public boolean pathDirty = true;
@@ -451,6 +548,10 @@ public class ChartView extends View {
         public UIColumnData(ColumnData data, Paint paint) {
             this.data = data;
             this.paint = paint;
+//            path.transform(
+//                    matrix);
+//            matrix.set(android.graphics.Matrix.IDENTITY_MATRIX);
+
         }
     }
 
@@ -499,7 +600,7 @@ public class ChartView extends View {
             float v = (float) animation.getAnimatedValue();//todo boxing
 //                        float f = 1.0f -  valueAnimator.getAnimatedFraction();
 //                        Log.d(TAG, "anim " + v + " " + f);
-            datum.alpha = v;//todo do not draw if alpha is 255
+            datum.alpha = v;
             datum.paint.setAlpha((int) (255 * v));
             invalidate();
         }
@@ -522,7 +623,7 @@ public class ChartView extends View {
 
         @Override
         public void onAnimationUpdate(ValueAnimator animation) {
-            float v = (float) animation.getAnimatedValue();
+            float v = (float) animation.getAnimatedValue();//todo boxing
             float f = (float) animation.getAnimatedFraction();
             datum.max = (long) (fromMax + v * (toMax - fromMax));
             datum.min = (long) (fromMin + v * (toMin - fromMin));
