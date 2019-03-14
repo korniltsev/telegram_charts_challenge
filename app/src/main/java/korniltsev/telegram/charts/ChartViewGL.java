@@ -28,8 +28,10 @@ import static android.opengl.GLES10.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES10.glClear;
 import static android.opengl.GLES10.glClearColor;
 
-// use vbo
+// draw path using VBO
 // draw chart, learn to scale & translate
+// animate
+// scrollbar
 public class ChartViewGL extends TextureView {
     public static final String LOG_TAG = "tg.ch.gl";
 
@@ -149,26 +151,21 @@ public class ChartViewGL extends TextureView {
             Matrix.multiplyMM(MVP, 0, projection, 0, MVP, 0);
 
             GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3);
+            GLES20.glLineWidth(20f);
+            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, 3);
         }
 
         private void loop() {
             int[] vbos = new int[1];
             GLES20.glGenBuffers(1, vbos, 0);
-            MyGL.checkGlError2();
             vbo = vbos[0];
             GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-            MyGL.checkGlError2();
             GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * BYTES_PER_FLOAT, buf1, GLES20.GL_STATIC_DRAW);
-            MyGL.checkGlError2();
-            buf1.position(0);
             GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-            MyGL.checkGlError2();
 
             int program = MyGL.createProgram(vertexShader, fragmentShader);
             MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
             positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
-            MyGL.checkGlError2();
 
 
 
@@ -181,9 +178,9 @@ public class ChartViewGL extends TextureView {
 
 
                 Matrix.setIdentityM(model, 0);
+
                 GLES20.glUseProgram(program);
 
-                MyGL.checkGlError2();
 
 
                 drawOneTriangle();
