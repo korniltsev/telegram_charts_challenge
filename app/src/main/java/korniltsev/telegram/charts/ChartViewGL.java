@@ -28,6 +28,8 @@ import static android.opengl.GLES10.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES10.glClear;
 import static android.opengl.GLES10.glClearColor;
 
+// use vbo
+// draw chart, learn to scale & translate
 public class ChartViewGL extends TextureView {
     public static final String LOG_TAG = "tg.ch.gl";
 
@@ -71,6 +73,7 @@ public class ChartViewGL extends TextureView {
         private float[] MVP = new float[16];
         private int MVPHandle;
         private int positionHandle;
+        private int vbo;
 
         public Render() {
 
@@ -135,12 +138,12 @@ public class ChartViewGL extends TextureView {
                 0.0f, 0.559016994f,
         };
 
-        private void drawOneTriangle(final FloatBuffer aTriangleBuffer)
+        private void drawOneTriangle()
         {
-
-            GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false,
-                    STRIDE_BYTES, aTriangleBuffer);//todo upload only once
             GLES20.glEnableVertexAttribArray(positionHandle);
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
+            GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false , STRIDE_BYTES, 0);
+
 
             Matrix.multiplyMM(MVP, 0, view, 0, model, 0);
             Matrix.multiplyMM(MVP, 0, projection, 0, MVP, 0);
@@ -150,29 +153,41 @@ public class ChartViewGL extends TextureView {
         }
 
         private void loop() {
+            int[] vbos = new int[1];
+            GLES20.glGenBuffers(1, vbos, 0);
+            MyGL.checkGlError2();
+            vbo = vbos[0];
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
+            MyGL.checkGlError2();
+            GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * BYTES_PER_FLOAT, buf1, GLES20.GL_STATIC_DRAW);
+            MyGL.checkGlError2();
+            buf1.position(0);
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+            MyGL.checkGlError2();
 
             int program = MyGL.createProgram(vertexShader, fragmentShader);
             MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
             positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
+            MyGL.checkGlError2();
 
 
 
             while (true) {
 
 
-                GLES20.glUseProgram(program);
 
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                 glClear (GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 
                 Matrix.setIdentityM(model, 0);
-
-                drawOneTriangle(buf1);
-
                 GLES20.glUseProgram(program);
 
-//                SystemClock.sleep(1000);
+                MyGL.checkGlError2();
+
+
+                drawOneTriangle();
+
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                     throw new RuntimeException("Cannot swap buffers");
                 }
