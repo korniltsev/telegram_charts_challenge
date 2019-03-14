@@ -1,8 +1,10 @@
 package korniltsev.telegram.charts;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -35,7 +37,7 @@ public class MainActivity extends Activity {
 
         LinearLayout frame = new LinearLayout(this);
         frame.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(300));
         chart.setLayoutParams(lp);
         frame.addView(chart);
         for (final ColumnData c : datum.data) {
@@ -88,5 +90,15 @@ public class MainActivity extends Activity {
             }
         }
         return baos.toByteArray();
+    }
+
+    private float dpf(int dip) {
+//        todo inline & optimize for multiplication, not method call
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dip, getResources().getDisplayMetrics());
+    }
+
+    private int dp(int dip) {
+        //todo inline & optimize for multiplication, not method call
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dip, getResources().getDisplayMetrics());
     }
 }
