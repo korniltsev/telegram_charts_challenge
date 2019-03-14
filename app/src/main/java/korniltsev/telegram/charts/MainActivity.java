@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
 
         ChartData datum = data[4];
 
-        final ChartView chart = new ChartView(this);
+        final ChartViewGL chart = new ChartViewGL(this);
         chart.setData(datum);
 
         LinearLayout frame = new LinearLayout(this);
@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
             cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    chart.setChecked(c.id, isChecked);
+//                    chart.setChecked(c.id, isChecked);
                 }
             });
             frame.addView(cb);
