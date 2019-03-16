@@ -263,6 +263,9 @@ public class ChartViewGL extends TextureView {
                     EGL10.EGL_ALPHA_SIZE, 8,
                     EGL10.EGL_DEPTH_SIZE, 0,
                     EGL10.EGL_STENCIL_SIZE, 0,
+
+//                    If you want to do FSAA, you need to create an EGL context with multisampling enabled. Write an EGLConfigChooser that returns a multisampling config (specify 1 for EGL_SAMPLE_BUFFERS),
+                    EGL10.EGL_SAMPLE_BUFFERS, 1,
                     EGL10.EGL_NONE
             };
         }

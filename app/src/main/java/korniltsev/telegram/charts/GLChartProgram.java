@@ -1,6 +1,7 @@
 package korniltsev.telegram.charts;
 
 import android.graphics.Color;
+import android.opengl.GLES10;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.SystemClock;
@@ -9,6 +10,8 @@ import android.util.Log;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+
+import javax.microedition.khronos.opengles.GL10;
 
 import korniltsev.telegram.charts.gl.MyGL;
 
@@ -87,17 +90,21 @@ public final class GLChartProgram {
 
     }
 
-    float prevt = -1.0f;
+//    float prevt = -1.0f;
     public final void draw(float t) {
 
 //        float t = SystemClock.elapsedRealtime() / 1000f;
-        float d = t - prevt;
-        Log.d("tttt", "" + d);
-        prevt = t;
-        t = 1.5f - Math.abs(t % 1.0f - 0.5f);
+//        float d = t - prevt;
+//        Log.d("tttt", "" + d);
+//        prevt = t;
+//        t = 1.5f - Math.abs(t % 1.0f - 0.5f);
 
 
         GLES20.glUseProgram(program);
+//        GLES20.glEnable(GLES10.GL_LINE_SMOOTH);
+//        GLES20.glHint(GLES10.GL_LINE_SMOOTH_HINT, GLES20.GL_NICEST);
+        MyGL.checkGlError2();
+
 
         float[] colors = new float[]{
                 Color.red(column.color) / 255f,
@@ -115,15 +122,15 @@ public final class GLChartProgram {
         float hpadding = dimen.dpf(16);
         float minx = vertices[0];
         float maxx = vertices[vertices.length - 2];
-        float scalex = 2.0f / (maxx - minx + hpadding * 2);
+        float scalex = 2.0f / (maxx - minx);
         float scaley = 2.0f / (maxValue);
 
         Matrix.setIdentityM(MVP, 0);
 
         Matrix.translateM(MVP, 0, -1.0f, -1.0f, 0);
         Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
-        Matrix.translateM(MVP, 0, hpadding, 0, 0);
-        Matrix.scaleM(MVP, 0, 1.0f, t, 1.0f);
+//        Matrix.translateM(MVP, 0, hpadding, 0, 0);
+//        Matrix.scaleM(MVP, 0, 1.0f, t, 1.0f);
 
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
         GLES20.glLineWidth(dimen.dpf(1f));
