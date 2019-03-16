@@ -6,7 +6,6 @@ import android.opengl.GLUtils;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.TextureView;
-import android.view.animation.AnimationUtils;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -29,12 +28,35 @@ import static android.opengl.GLES10.glClearColor;
 public class ChartViewGL extends TextureView {
     public static final String LOG_TAG = "tg.ch.gl";
     private final Dimen dimen;
+
+    public final int dimen_v_padding8;
+    public final int dimen_chart_height;
+    public final int dimen_scrollbar_height;
+    private final int h;
+
     public ChartViewGL(Context context, ColumnData[] c, Dimen dimen) {
         super(context);
         this.dimen = dimen;
+        dimen_v_padding8 = dimen.dpi(8);
+        dimen_chart_height = dimen.dpi(300);
+        dimen_scrollbar_height = dimen.dpi(38);
         Render r = new Render(c);
         r.start();
         setSurfaceTextureListener(r);
+
+        h = dimen_v_padding8
+                + dimen_chart_height
+                + dimen_v_padding8
+                + dimen_v_padding8
+                + dimen_scrollbar_height
+                + dimen_v_padding8;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int w = MeasureSpec.getSize(widthMeasureSpec);
+        setMeasuredDimension(w, h);
+
     }
 
     public void setData(ChartData datum) {
@@ -63,6 +85,7 @@ public class ChartViewGL extends TextureView {
         public Render(ColumnData[] column) {
             this.data = column;
 
+
         }
 
         @Override
@@ -76,7 +99,7 @@ public class ChartViewGL extends TextureView {
             float max = 0f;
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 ColumnData datum = data[i];
-                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen);
+                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this);
                 max = Math.max(max, datum.maxValue);
             }
             for (GLChartProgram it : chart) {
@@ -107,15 +130,7 @@ public class ChartViewGL extends TextureView {
         }
 
 
-
-
-
-
         private void loop() {
-
-
-
-
 
 
             while (true) {

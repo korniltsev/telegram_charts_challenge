@@ -1,17 +1,12 @@
 package korniltsev.telegram.charts;
 
 import android.graphics.Color;
-import android.opengl.GLES10;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
-import android.os.SystemClock;
-import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-
-import javax.microedition.khronos.opengles.GL10;
 
 import korniltsev.telegram.charts.gl.MyGL;
 
@@ -55,11 +50,14 @@ public final class GLChartProgram {
 
     float maxValue;
 
-    public GLChartProgram(ColumnData column, int w, int h, Dimen dimen) {
+    final ChartViewGL root;
+
+    public GLChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root) {
         this.w = w;
         this.h = h;
         this.column = column;
         this.dimen = dimen;
+        this.root = root;
 
         long[] values = column.values;
         vertices = new float[values.length * 2];
