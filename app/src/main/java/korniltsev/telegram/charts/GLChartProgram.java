@@ -96,7 +96,8 @@ public final class GLChartProgram {
         MyGL.checkGlError2();
 
 
-        float[] colors = new float[]{
+
+        float[] colors = new float[]{ //todo try to do only once
                 Color.red(column.color) / 255f,
                 Color.green(column.color) / 255f,
                 Color.blue(column.color) / 255f,
@@ -135,7 +136,6 @@ public final class GLChartProgram {
             int h = root.dimen_chart_height;
             Matrix.scaleM(MVP, 0, 1.0f / ((maxx - minx) / w), 1.0f / (maxValue / h), 1.0f);
         }
-//        Matrix.scaleM(MVP, 0, 1.0f, t, 1.0f);
 
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
         GLES20.glLineWidth(dimen.dpf(1f));

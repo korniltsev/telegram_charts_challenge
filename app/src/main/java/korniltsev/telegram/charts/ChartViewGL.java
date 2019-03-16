@@ -21,10 +21,19 @@ import static android.opengl.GLES10.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES10.glClear;
 import static android.opengl.GLES10.glClearColor;
 
-// draw path using VBO
+/*
+    scrollbar charts with minvalue non zero
+    scrollbar overlay
+    scrollbar scroller
+    scrollbar pointer response
+    checkbox alpha animation for scroller & chart
+    checkbox min max animation for scroller & chart
+
+
 // draw chart, learn to scale & translate
 // animate
 // scrollbar
+*/
 public class ChartViewGL extends TextureView {
     public static final String LOG_TAG = "tg.ch.gl";
     private final Dimen dimen;
