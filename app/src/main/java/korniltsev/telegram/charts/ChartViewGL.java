@@ -79,6 +79,7 @@ public class ChartViewGL extends TextureView {
         final Object lock = new Object();//todo fuck locking
         private int w;
         private int h;
+        private GLChartProgram[] scrollbar;
         private GLChartProgram[] chart;
 
 
@@ -95,16 +96,25 @@ public class ChartViewGL extends TextureView {
                 return;
             }
             initGL(surface);
-            chart = new GLChartProgram[data.length - 1];
+            scrollbar = new GLChartProgram[data.length - 1];
             float max = 0f;
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 ColumnData datum = data[i];
-                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this);
+                scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true);
                 max = Math.max(max, datum.maxValue);
+            }
+            for (GLChartProgram it : scrollbar) {
+                it.maxValue = max;
+            }
+
+            chart = new GLChartProgram[data.length - 1];
+            for (int i = 1, dataLength = data.length; i < dataLength; i++) {
+                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false);
             }
             for (GLChartProgram it : chart) {
                 it.maxValue = max;
             }
+
             loop();
 
         }
@@ -139,8 +149,11 @@ public class ChartViewGL extends TextureView {
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                 glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
                 float t = SystemClock.uptimeMillis() / 1000f;
-                for (GLChartProgram c : chart) {
+                for (GLChartProgram c : scrollbar) {
                     c.draw(t);
+                }
+                for (GLChartProgram chartProgram : chart) {
+                    chartProgram.draw(t);
                 }
 
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
