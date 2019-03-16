@@ -50,8 +50,8 @@ public final class GLChartProgram {
 
     private final Dimen dimen;
 
-    public float maxValue;
-    public float minValue;
+    public long maxValue;
+    public long minValue;
 
     final ChartViewGL root;
 
@@ -105,6 +105,19 @@ public final class GLChartProgram {
                 alphaAnim = null;
             }
         }
+        if (minAnim != null) {
+            minValue = minAnim.tick(t);
+            if (minAnim.ended) {
+                minAnim = null;
+            }
+        }
+
+        if (maxAnim != null) {
+            maxValue = maxAnim.tick(t);
+            if (maxAnim.ended) {
+                maxAnim = null;
+            }
+        }
 
 
         float[] colors = new float[]{ //todo try to do only once
@@ -149,7 +162,7 @@ public final class GLChartProgram {
             Matrix.translateM(MVP, 0, hpadding, ypx, 0);
             float w = this.w - 2 * hpadding;
             int h = root.dimen_chart_height;
-            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), h  /  (maxValue ), 1.0f);
+            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), h  /  (float)(maxValue ), 1.0f);
             GLES20.glLineWidth(dimen.dpf(2f));
         }
 
@@ -161,6 +174,8 @@ public final class GLChartProgram {
 
     boolean checked = true;
     MyAnimation.Float alphaAnim;
+    MyAnimation.Long minAnim;
+    MyAnimation.Long maxAnim;
     float alpha = 1f;
 
     public void setChecked(boolean isChecked) {
@@ -168,5 +183,16 @@ public final class GLChartProgram {
             alphaAnim = new MyAnimation.Float(160, alpha, isChecked ? 1.0f : 0.0f);
             this.checked = isChecked;
         }
+    }
+
+    public void animateMinMax(long min, long max) {
+        if (alpha == 0f) {
+            minValue = min;
+            maxValue = max;
+        } else {
+            minAnim = new MyAnimation.Long(160, minValue, min);
+            maxAnim = new MyAnimation.Long(160, maxValue, max);
+        }
+
     }
 }

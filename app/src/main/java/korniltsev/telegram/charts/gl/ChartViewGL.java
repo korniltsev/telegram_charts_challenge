@@ -174,10 +174,19 @@ public class ChartViewGL extends TextureView {
                 @Override
                 public void run() {
                     if (scrollbar != null) {
+                        long max = -1;
+                        long min = Long.MAX_VALUE;
                         for (GLChartProgram c : scrollbar) {
                             if (c.column.id.equals(id)) {
                                 c.setChecked(isChecked);
                             }
+                            if (c.checked) {
+                                max = Math.max(c.column.maxValue, max);
+                                min = Math.min(c.column.minValue, min);
+                            }
+                        }
+                        for (GLChartProgram c : scrollbar) {
+                            c.animateMinMax(min, max);
                         }
                     }
                     if (chart != null) {
