@@ -9,6 +9,9 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.TextureView;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLContext;
@@ -51,6 +54,7 @@ public class ChartViewGL extends TextureView {
     public final int dimen_chart_height;
     public final int dimen_scrollbar_height;
     private final int h;
+    private final Render r;
 
     public ChartViewGL(Context context, ColumnData[] c, Dimen dimen) {
         super(context);
@@ -58,7 +62,7 @@ public class ChartViewGL extends TextureView {
         dimen_v_padding8 = dimen.dpi(8);
         dimen_chart_height = dimen.dpi(300);
         dimen_scrollbar_height = dimen.dpi(38);
-        Render r = new Render(c);
+        r = new Render(c);
         r.start();
         setSurfaceTextureListener(r);
 
@@ -77,8 +81,10 @@ public class ChartViewGL extends TextureView {
 
     }
 
-    public void setData(ChartData datum) {
 
+    public void setChecked(String id, boolean isChecked) {
+        //todo maybe need to save to ChartViewGl if we will need RenderRestart
+        this.r.setChecked(id, isChecked);
     }
 
 
@@ -91,7 +97,6 @@ public class ChartViewGL extends TextureView {
         private EGLConfig mEglConfig;
         private EGLContext mEglContext;
         private EGLSurface mEglSurface;
-        private GL mGL;
 
         SurfaceTexture surface;
         final Object lock = new Object();//todo fuck locking
@@ -163,14 +168,47 @@ public class ChartViewGL extends TextureView {
             return true;
         }
 
+        public void setChecked(final String id, final boolean isChecked) {
+
+            actionQueue.add(new Runnable() {
+                @Override
+                public void run() {
+                    if (scrollbar != null) {
+                        for (GLChartProgram c : scrollbar) {
+                            if (c.column.id.equals(id)) {
+                                c.setChecked(isChecked);
+                            }
+                        }
+                    }
+                    if (chart != null) {
+                        for (GLChartProgram c : chart) {
+                            if (c.column.id.equals(id)) {
+                                c.setChecked(isChecked);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        private final BlockingQueue<Runnable> actionQueue = new ArrayBlockingQueue<Runnable>(100);
+
 
         private void loop() {
 
             while (true) {
+                while (true) {
+                    Runnable peek = actionQueue.poll();
+                    if (peek == null) {
+                        break;
+                    } else {
+                        peek.run();
+                    }
+                }
 
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                 glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-                float t = SystemClock.uptimeMillis() / 1000f;
+                long t = SystemClock.uptimeMillis();
                 for (GLChartProgram c : scrollbar) {
                     c.draw(t);
                 }
@@ -252,7 +290,6 @@ public class ChartViewGL extends TextureView {
                         + GLUtils.getEGLErrorString(mEgl.eglGetError()));
             }
 
-            mGL = mEglContext.getGL();
 
 
 //            GLES20.glEnable(GLES10.GL_MULTISAMPLE);
@@ -310,5 +347,7 @@ public class ChartViewGL extends TextureView {
                     EGL10.EGL_NONE
             };
         }
+
+
     }
 }

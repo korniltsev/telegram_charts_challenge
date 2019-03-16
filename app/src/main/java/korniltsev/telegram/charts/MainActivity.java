@@ -32,10 +32,9 @@ public class MainActivity extends Activity {
         ChartData[] data = readData();
         Log.d(ChartView.TAG, "data len " + data.length);
 
-        ChartData datum = data[4];
+        ChartData datum = data[0];
 
         final ChartViewGL chart = new ChartViewGL(this, datum.data, dimen);
-        chart.setData(datum);
 
         LinearLayout frame = new LinearLayout(this);
         frame.setBackgroundColor(Color.WHITE);//todo set in theme
@@ -53,7 +52,7 @@ public class MainActivity extends Activity {
             cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                    chart.setChecked(c.id, isChecked);
+                    chart.setChecked(c.id, isChecked);
                 }
             });
             frame.addView(cb);

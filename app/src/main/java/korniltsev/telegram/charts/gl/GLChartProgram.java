@@ -3,6 +3,7 @@ package korniltsev.telegram.charts.gl;
 import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.os.SystemClock;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -10,8 +11,6 @@ import java.nio.FloatBuffer;
 
 import korniltsev.telegram.charts.ColumnData;
 import korniltsev.telegram.charts.Dimen;
-import korniltsev.telegram.charts.gl.ChartViewGL;
-import korniltsev.telegram.charts.gl.MyGL;
 
 public final class GLChartProgram {
 
@@ -41,7 +40,7 @@ public final class GLChartProgram {
     private final int vbo;
     private final float[] vertices;
     private final FloatBuffer buf1;
-    private final ColumnData column;
+    public final ColumnData column;
     private final int colorHandle;
 
     private float[] MVP = new float[16];
@@ -59,6 +58,7 @@ public final class GLChartProgram {
     final boolean scrollbar;
 
     public GLChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar) {
+
         this.w = w;
         this.h = h;
         this.column = column;
@@ -95,17 +95,23 @@ public final class GLChartProgram {
 
     }
 
-    public final void draw(float t) {
+    public final void draw(long t) {
         GLES20.glUseProgram(program);
         MyGL.checkGlError2();
 
+        if (alphaAnim != null) {
+            alpha = alphaAnim.tick(t);
+            if (alphaAnim.ended) {
+                alphaAnim = null;
+            }
+        }
 
 
         float[] colors = new float[]{ //todo try to do only once
                 Color.red(column.color) / 255f,
                 Color.green(column.color) / 255f,
                 Color.blue(column.color) / 255f,
-                1.0f,
+                alpha,
         };
         GLES20.glUniform4fv(colorHandle, 1, colors, 0);
 
@@ -151,5 +157,16 @@ public final class GLChartProgram {
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
 
         GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+    }
+
+    boolean checked = true;
+    MyAnimation.Float alphaAnim;
+    float alpha = 1f;
+
+    public void setChecked(boolean isChecked) {
+        if (this.checked != isChecked) {
+            alphaAnim = new MyAnimation.Float(160, alpha, isChecked ? 1.0f : 0.0f);
+            this.checked = isChecked;
+        }
     }
 }
