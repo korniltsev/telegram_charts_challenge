@@ -121,8 +121,12 @@ public final class GLScrollbarOverlayProgram {
 
 
         GLES20.glUniform4fv(colorHandle, 1, color_overlay, 0);
-        drawRect(hpadding, root.dimen_v_padding8, left*scrollerW, root.dimen_scrollbar_height);
-        drawRect(hpadding + scrollerW * right, root.dimen_v_padding8, scrollerW * (1.0f-right), root.dimen_scrollbar_height);
+        if (left != 0.0f) {
+            drawRect(hpadding, root.dimen_v_padding8, left*scrollerW, root.dimen_scrollbar_height);
+        }
+        if (right != 1.0f) {
+            drawRect(hpadding + scrollerW * right, root.dimen_v_padding8, scrollerW * (1.0f-right), root.dimen_scrollbar_height);
+        }
 
 
 

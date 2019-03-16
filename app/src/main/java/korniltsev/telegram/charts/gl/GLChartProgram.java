@@ -190,8 +190,10 @@ public final class GLChartProgram {
             minValue = min;
             maxValue = max;
         } else {
-            minAnim = new MyAnimation.Long(160, minValue, min);
-            maxAnim = new MyAnimation.Long(160, maxValue, max);
+            minValue = min;
+            maxValue = max;
+//            minAnim = new MyAnimation.Long(160, minValue, min);
+//            maxAnim = new MyAnimation.Long(160, maxValue, max);
         }
 
     }
