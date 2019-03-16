@@ -35,11 +35,54 @@ import static android.opengl.GLES10.glClearColor;
     + checkbox alpha animation for scroller & chart
     + checkbox min max animation for scroller & chart
 
+
+    https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
+
     scrollbar pointer response for scroller
     scrollbar pointer response for charts (scale + scroll)
 
-    scrollbar clip (or draw white rect over, lol)
-    https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
+    rules + labels + animation
+
+    actionbar + night mode animation
+
+    checkbox animations
+
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+----------------------------------------------------------------------
+// todo
+//     snap scrollbar near zeros
+//     implement empty chart
+//     implement y=0 chart
+
+
+// todo design
+//    overlay color seems wrong
+//    lollipop bg gradient
+//    check colors & paddings with collor picker
+
+// todo nice to have
+//     support rtl since telegram supports
+//     support split screen?
+//     adjust theme for smooth transition
+//     checkbox animations
+//     static layout warmup / background init
+//     nice app icon
+//     spring animations?
+//     animate velocity after dragging ??
+//https://github.com/facebook/redex
+// check for accessor methods
+
+
+//todo testing
+//     requestLayaout during drag
+//     requestLayaout during animation?
+//     test on old device                      <<<<<<
+//     monkey test   + screenshots
+//     fuzz test     + screenshots
+//     nagative values
+
+
 
 */
 public class ChartViewGL extends TextureView {

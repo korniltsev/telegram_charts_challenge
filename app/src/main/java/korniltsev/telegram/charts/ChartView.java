@@ -34,45 +34,7 @@ pointer anim
  */
 
 
-// todo
-//     snap scrollbar near zeros
-//     implement empty chart
-//     implement y=0 chart
-// rename to camelCase
 
-
-// todo design
-//    overlay color seems wrong
-//    lollipop bg gradient
-
-// todo nice to have
-//      consider ValueAnimator fork with stripped functionalities, trace allocations and executions before doing though
-//     support rtl since telegram supports
-//     support split screen?
-//     adjust theme for smooth transition
-//     checkbox animations
-//     static layout warmup / background init
-//     nice app icon
-//     spring animations?
-//     animate velocity after dragging ??
-//https://github.com/facebook/redex
-// check for accessor methods
-
-
-//todo testing
-//     requestLayaout during drag
-//     requestLayaout during animation?
-//     test on old device
-//     monkey test
-//     fuzz test
-
-
-//aint.setDither(true);                    // set the dither to true
-//        paint.setStyle(Paint.Style.STROKE);       // set to STOKE
-//        paint.setStrokeJoin(Paint.Join.ROUND);    // set the join to round you want
-//        paint.setStrokeCap(Paint.Cap.ROUND);      // set the paint cap to round too
-//        paint.setPathEffect(new CornerPathEffect(10) );   // set the path effect when they join.
-//        paint.setAntiAlias(true);
 public class ChartView extends View {
     public static final String TAG = "tg.ch";
     public static final boolean DEBUG = BuildConfig.DEBUG;
