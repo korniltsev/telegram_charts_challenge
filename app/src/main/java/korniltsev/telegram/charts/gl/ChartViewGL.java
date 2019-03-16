@@ -31,7 +31,7 @@ import static android.opengl.GLES10.glClearColor;
 /*
     + scrollbar overlay
     + scrollbar scroller
-    scrollbar charts with minvalue non zero + 2dip offset
+    + scrollbar charts with minvalue non zero + 2dip offset
 
     checkbox alpha animation for scroller & chart
     checkbox min max animation for scroller & chart
@@ -126,7 +126,7 @@ public class ChartViewGL extends TextureView {
             }
             for (GLChartProgram it : scrollbar) {
                 it.maxValue = max;
-                it.minValue = max;
+                it.minValue = min;
             }
 
             chart = new GLChartProgram[data.length - 1];
