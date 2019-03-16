@@ -146,13 +146,17 @@ public final class GLChartProgram {
         Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
         if (scrollbar) {
             //todo learn matrixes ¯\_(ツ)_/¯
-            Matrix.translateM(MVP, 0, hpadding, root.dimen_v_padding8, 0);
+            final float dip2 = dimen.dpf(2);
+            Matrix.translateM(MVP, 0, hpadding, root.dimen_v_padding8 + dip2, 0);
             float w = this.w - 2 * hpadding;
-            float h = root.dimen_scrollbar_height - 2 * dimen.dpf(2);
+            float h = root.dimen_scrollbar_height - 2 * dip2;
             float ydiff = maxValue - minValue;
-            float xx = h * minValue / maxValue;
-            Matrix.translateM(MVP, 0, 0, -xx + dimen.dpf(2), 0f);
-            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), h / ydiff, 1.0f);
+//            float xx = ydiff / minValue ;
+            Matrix.translateM(MVP, 0, 0, 0, 0f);
+            float yscale = h / ydiff;
+            float dy = -yscale * minValue;
+            Matrix.translateM(MVP, 0, 0, dy, 0);
+            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), yscale, 1.0f);
             GLES20.glLineWidth(dimen.dpf(1f));
         } else {
             int ypx = root.dimen_v_padding8
@@ -178,22 +182,22 @@ public final class GLChartProgram {
     MyAnimation.Long maxAnim;
     float alpha = 1f;
 
-    public void setChecked(boolean isChecked) {
+    public void animateChecked(boolean isChecked) {
         if (this.checked != isChecked) {
             alphaAnim = new MyAnimation.Float(160, alpha, isChecked ? 1.0f : 0.0f);
             this.checked = isChecked;
         }
     }
 
-    public void animateMinMax(long min, long max) {
-        if (alpha == 0f) {
+    public void animateMinMax(long min, long max, boolean animate) {
+        if (alpha == 0f || !animate) {
             minValue = min;
             maxValue = max;
         } else {
-            minValue = min;
-            maxValue = max;
-//            minAnim = new MyAnimation.Long(160, minValue, min);
-//            maxAnim = new MyAnimation.Long(160, maxValue, max);
+//            minValue = min;
+//            maxValue = max;
+            minAnim = new MyAnimation.Long(160, minValue, min);
+            maxAnim = new MyAnimation.Long(160, maxValue, max);
         }
 
     }
