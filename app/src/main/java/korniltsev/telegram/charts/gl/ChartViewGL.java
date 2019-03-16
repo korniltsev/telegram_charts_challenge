@@ -32,8 +32,8 @@ import static android.opengl.GLES10.glClearColor;
     + scrollbar scroller
     + scrollbar charts with minvalue non zero + 2dip offset
 
-    checkbox alpha animation for scroller & chart
-    checkbox min max animation for scroller & chart
+    + checkbox alpha animation for scroller & chart
+    + checkbox min max animation for scroller & chart
 
     scrollbar pointer response for scroller
     scrollbar pointer response for charts (scale + scroll)
