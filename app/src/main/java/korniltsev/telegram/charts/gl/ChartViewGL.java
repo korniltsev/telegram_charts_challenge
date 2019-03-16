@@ -169,32 +169,39 @@ public class ChartViewGL extends TextureView {
             actionQueue.add(new Runnable() {
                 @Override
                 public void run() {
-                    if (scrollbar != null) {
-                        GLChartProgram found = null;
-                        long max = -1;
-                        long min = Long.MAX_VALUE;
-                        for (GLChartProgram c : scrollbar) {
-                            if (c.column.id.equals(id)) {
-                                found = c;
-                                c.animateChecked(isChecked);
-                            }
-                            if (c.checked) {
-                                max = Math.max(c.column.maxValue, max);
-                                min = Math.min(c.column.minValue, min);
-                            }
+                    if (scrollbar == null || chart == null) {
+                        return;
+                    }
+                    // scrollbar
+                    GLChartProgram found = null;
+                    long max = -1;
+                    long min = Long.MAX_VALUE;
+                    int checkedCount = 0;
+                    for (GLChartProgram c : scrollbar) {
+                        if (c.column.id.equals(id)) {
+                            found = c;
+                            c.animateAlpha(isChecked);
                         }
-                        for (GLChartProgram c : scrollbar) {
-                            if (found == c && !isChecked) {
-                            } else {
-                                c.animateMinMax(min, max, true);
-                            }
+                        if (c.checked) {
+                            checkedCount++;
+                            max = Math.max(c.column.maxValue, max);
+                            min = Math.min(c.column.minValue, min);
                         }
                     }
-                    if (chart != null) {
-                        for (GLChartProgram c : chart) {
-                            if (c.column.id.equals(id)) {
-                                c.animateChecked(isChecked);
-                            }
+                    for (GLChartProgram c : scrollbar) {
+                        if (found == c && !isChecked) {
+                        } else {
+                            c.animateMinMax(min, max, true);
+                        }
+                    }
+
+                    // chart
+                    for (GLChartProgram c : chart) {
+                        if (c.column.id.equals(id)) {
+                            c.animateAlpha(isChecked);
+                        }
+                        if (checkedCount != 0) {
+                            c.animateMinMax(0, max, true);
                         }
                     }
                 }

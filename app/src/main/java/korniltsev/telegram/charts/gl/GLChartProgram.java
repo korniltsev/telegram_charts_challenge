@@ -182,7 +182,7 @@ public final class GLChartProgram {
     MyAnimation.Long maxAnim;
     float alpha = 1f;
 
-    public void animateChecked(boolean isChecked) {
+    public void animateAlpha(boolean isChecked) {
         if (this.checked != isChecked) {
             alphaAnim = new MyAnimation.Float(160, alpha, isChecked ? 1.0f : 0.0f);
             this.checked = isChecked;
