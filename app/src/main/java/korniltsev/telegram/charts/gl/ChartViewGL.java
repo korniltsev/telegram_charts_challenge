@@ -1,4 +1,4 @@
-package korniltsev.telegram.charts;
+package korniltsev.telegram.charts.gl;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
@@ -13,6 +13,10 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 import javax.microedition.khronos.opengles.GL;
+
+import korniltsev.telegram.charts.ChartData;
+import korniltsev.telegram.charts.ColumnData;
+import korniltsev.telegram.charts.Dimen;
 
 import static android.opengl.EGL14.EGL_CONTEXT_CLIENT_VERSION;
 import static android.opengl.EGL14.EGL_OPENGL_ES2_BIT;

@@ -1,4 +1,4 @@
-package korniltsev.telegram.charts;
+package korniltsev.telegram.charts.gl;
 
 import android.graphics.Color;
 import android.opengl.GLES20;
@@ -8,6 +8,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import korniltsev.telegram.charts.ColumnData;
+import korniltsev.telegram.charts.Dimen;
+import korniltsev.telegram.charts.gl.ChartViewGL;
 import korniltsev.telegram.charts.gl.MyGL;
 
 public final class GLChartProgram {
@@ -48,7 +51,7 @@ public final class GLChartProgram {
 
     private final Dimen dimen;
 
-    float maxValue;
+    public float maxValue;
 
     final ChartViewGL root;
 

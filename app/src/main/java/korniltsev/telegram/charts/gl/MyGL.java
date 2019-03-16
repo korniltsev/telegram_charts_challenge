@@ -5,7 +5,7 @@ import android.util.Log;
 
 import static android.opengl.GLES10.GL_NO_ERROR;
 import static android.opengl.GLES10.glGetError;
-import static korniltsev.telegram.charts.ChartViewGL.LOG_TAG;
+import static korniltsev.telegram.charts.gl.ChartViewGL.LOG_TAG;
 
 public class MyGL {
     public static int createProgram(String vertexShaderSource, String fragmentShadersource) {
