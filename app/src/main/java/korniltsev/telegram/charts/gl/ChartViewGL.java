@@ -2,6 +2,7 @@ package korniltsev.telegram.charts.gl;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.opengl.GLES10;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.os.SystemClock;
@@ -29,12 +30,14 @@ import static android.opengl.GLES10.glClearColor;
 
 /*
     scrollbar charts with minvalue non zero
-    scrollbar overlay
+    + scrollbar overlay
     scrollbar scroller
     scrollbar pointer response
+    scrollbar clip (or draw white rect over, lol)
     checkbox alpha animation for scroller & chart
     checkbox min max animation for scroller & chart
 
+    https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
 
 // draw chart, learn to scale & translate
 // animate
@@ -159,9 +162,7 @@ public class ChartViewGL extends TextureView {
 
         private void loop() {
 
-
             while (true) {
-
 
                 glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                 glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -249,9 +250,22 @@ public class ChartViewGL extends TextureView {
 
             mGL = mEglContext.getGL();
 
-            GLES20.glEnable(GLES20.GL_BLEND);
+
+//            GLES20.glEnable(GLES10.GL_MULTISAMPLE);
+//            GLES20.glEnable(GLES10.GL_DITHER);
+//            GLES20.glHint(GLES10.GL_LINE_SMOOTH_HINT, GLES10.GL_NICEST);
+//            GLES20.glEnable(GLES10.GL_POINT_SMOOTH);
+//            GLES20.glHint(GLES10.GL_POINT_SMOOTH_HINT, GLES10.GL_NICEST);
+            MyGL.checkGlError2();
+
             GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+            GLES20.glEnable(GLES20.GL_BLEND);
             GLES20.glBlendEquation(GLES20.GL_FUNC_ADD);
+
+//            GLES20.glEnable(GLES10.GL_LINE_SMOOTH);
+//            GLES20.glHint(GLES10.GL_LINE_SMOOTH_HINT, GLES10.GL_NICEST);
+//            GLES20.glHint(GLES10.GL_POINT_SMOOTH_HINT, GLES10.GL_NICEST);
+//            MyGL.checkGlError2();
         }
 
         EGLContext createContext(EGL10 egl, EGLDisplay eglDisplay,

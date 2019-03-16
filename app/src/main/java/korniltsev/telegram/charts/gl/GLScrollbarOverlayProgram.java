@@ -15,6 +15,7 @@ public final class GLScrollbarOverlayProgram {
     private static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
     private static final int POSITION_DATA_SIZE = 2;
+    public static final int OVERLAY_COLOR = 0xbff1f5f7;
 
     final String vertexShader =
             "uniform mat4 u_MVPMatrix;      \n"
@@ -97,13 +98,11 @@ public final class GLScrollbarOverlayProgram {
         MyGL.checkGlError2();
 
 
-        int color = 0xbff1f5f7;
-//        int color = 0xff000000;
         float[] colors = new float[]{ //todo try to do only once
-                Color.red(color) / 255f,
-                Color.green(color) / 255f,
-                Color.blue(color) / 255f,
-                Color.alpha(color) / 255f,
+                Color.red(OVERLAY_COLOR) / 255f,
+                Color.green(OVERLAY_COLOR) / 255f,
+                Color.blue(OVERLAY_COLOR) / 255f,
+                Color.alpha(OVERLAY_COLOR) / 255f,
         };
         GLES20.glUniform4fv(colorHandle, 1, colors, 0);
 
