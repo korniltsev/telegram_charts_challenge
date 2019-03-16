@@ -185,7 +185,6 @@ public class ChartViewGL extends TextureView {
                         }
                         for (GLChartProgram c : scrollbar) {
                             if (found == c && !isChecked) {
-//                                c.animateMinMax(min, max, false);
                             } else {
                                 c.animateMinMax(min, max, true);
                             }
