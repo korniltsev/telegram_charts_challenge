@@ -15,6 +15,7 @@ import javax.microedition.khronos.egl.EGLSurface;
 import javax.microedition.khronos.opengles.GL;
 
 import korniltsev.telegram.charts.ChartData;
+import korniltsev.telegram.charts.ChartView;
 import korniltsev.telegram.charts.ColumnData;
 import korniltsev.telegram.charts.Dimen;
 
@@ -94,6 +95,7 @@ public class ChartViewGL extends TextureView {
         private int h;
         private GLChartProgram[] scrollbar;
         private GLChartProgram[] chart;
+        private GLScrollbarOverlayProgram overlay;
 
 
         public Render(ColumnData[] column) {
@@ -128,6 +130,7 @@ public class ChartViewGL extends TextureView {
                 it.maxValue = max;
             }
 
+            overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this);
             loop();
 
         }
@@ -168,6 +171,7 @@ public class ChartViewGL extends TextureView {
                 for (GLChartProgram chartProgram : chart) {
                     chartProgram.draw(t);
                 }
+                overlay.draw(t);
 
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                     throw new RuntimeException("Cannot swap buffers");
