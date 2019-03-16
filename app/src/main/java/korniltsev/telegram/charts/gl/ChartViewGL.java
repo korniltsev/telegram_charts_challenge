@@ -29,9 +29,9 @@ import static android.opengl.GLES10.glClear;
 import static android.opengl.GLES10.glClearColor;
 
 /*
-    scrollbar charts with minvalue non zero
     + scrollbar overlay
     scrollbar scroller
+    scrollbar charts with minvalue non zero
     scrollbar pointer response
     scrollbar clip (or draw white rect over, lol)
     checkbox alpha animation for scroller & chart

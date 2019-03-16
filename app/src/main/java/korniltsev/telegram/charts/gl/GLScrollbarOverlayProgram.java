@@ -16,6 +16,8 @@ public final class GLScrollbarOverlayProgram {
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
     private static final int POSITION_DATA_SIZE = 2;
     public static final int OVERLAY_COLOR = 0xbff1f5f7;
+//    public static final int BORDER_COLOR = 0x334b87b4;
+    public static final int BORDER_COLOR = 0xff000000;
 
     final String vertexShader =
             "uniform mat4 u_MVPMatrix;      \n"
@@ -68,9 +70,6 @@ public final class GLScrollbarOverlayProgram {
         this.dimen = dimen;
         this.root = root;
 
-
-
-
         buf1 = ByteBuffer.allocateDirect(vertices.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
@@ -93,47 +92,66 @@ public final class GLScrollbarOverlayProgram {
 
     }
 
+    float[] color_overlay = new float[]{ //todo try to do only once
+            Color.red(OVERLAY_COLOR) / 255f,
+            Color.green(OVERLAY_COLOR) / 255f,
+            Color.blue(OVERLAY_COLOR) / 255f,
+            Color.alpha(OVERLAY_COLOR) / 255f,
+    };
+
+    float [] color_border = new float[]{ //todo try to do only once
+            Color.red(BORDER_COLOR) / 255f,
+            Color.green(BORDER_COLOR) / 255f,
+            Color.blue(BORDER_COLOR) / 255f,
+            Color.alpha(BORDER_COLOR) / 255f,
+    };
+
     public final void draw(float t) {
         GLES20.glUseProgram(program);
         MyGL.checkGlError2();
-
-
-        float[] colors = new float[]{ //todo try to do only once
-                Color.red(OVERLAY_COLOR) / 255f,
-                Color.green(OVERLAY_COLOR) / 255f,
-                Color.blue(OVERLAY_COLOR) / 255f,
-                Color.alpha(OVERLAY_COLOR) / 255f,
-        };
-        GLES20.glUniform4fv(colorHandle, 1, colors, 0);
-
 
         GLES20.glEnableVertexAttribArray(positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
         GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
 
-        drawOverlay(0f, left);
-        drawOverlay(right, 1f);
+
+        final float hpadding = dimen.dpf(16);
+        final float scrollerW = this.canvasW - 2 * hpadding;
+        final float vline1w = dimen.dpf(2f);
+        final float vline2h = dimen.dpf(1f);
+
+
+        GLES20.glUniform4fv(colorHandle, 1, color_overlay, 0);
+        drawRect(hpadding, root.dimen_v_padding8, left*scrollerW, root.dimen_scrollbar_height);
+        drawRect(hpadding + scrollerW * right, root.dimen_v_padding8, scrollerW * (1.0f-right), root.dimen_scrollbar_height);
+
+
+
+
+
+        GLES20.glUniform4fv(colorHandle, 1, color_border, 0);
+        drawRect(hpadding + scrollerW * left, root.dimen_v_padding8, vline1w, root.dimen_scrollbar_height);
+        drawRect(hpadding + scrollerW * right - vline1w, root.dimen_v_padding8, vline1w, root.dimen_scrollbar_height);
+        float l = hpadding + scrollerW * left + vline1w;
+        float r = hpadding + scrollerW * right - vline1w;
+        drawRect(l, root.dimen_v_padding8, r-l, vline2h);
+        drawRect(l, root.dimen_v_padding8 + root.dimen_scrollbar_height - vline2h, r-l, vline2h);
     }
 
-    private void drawOverlay(float from, float to) {
-        float hpadding = dimen.dpf(16);
-        float scalex = 2.0f / canvasW;
-        float scaley = 2.0f / canvasH;
 
+
+    public void drawRect(float x, float y, float w, float h) {
+        final float scalex = 2.0f / canvasW;
+        final float scaley = 2.0f / canvasH;
         Matrix.setIdentityM(MVP, 0);
         Matrix.translateM(MVP, 0, -1.0f, -1.0f, 0);
         Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
 
-
-        float w = this.canvasW - 2 * hpadding;
-
-        Matrix.translateM(MVP, 0, hpadding + from * w, root.dimen_v_padding8, 0);
-        w = w * (to-from);
-        int h = root.dimen_scrollbar_height;
-        Matrix.scaleM(MVP, 0, 1.0f / ((1.0f) / w), 1.0f / (1.0f / h), 1.0f);
+        Matrix.translateM(MVP, 0, x, y, 0);
+        Matrix.scaleM(MVP, 0, w, h, 1.0f);
 
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
-        GLES20.glLineWidth(dimen.dpf(1f));
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.length / 2);
+
     }
 }
