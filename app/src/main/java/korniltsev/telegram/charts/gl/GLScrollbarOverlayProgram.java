@@ -16,8 +16,7 @@ public final class GLScrollbarOverlayProgram {
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
     private static final int POSITION_DATA_SIZE = 2;
     public static final int OVERLAY_COLOR = 0xbff1f5f7;
-//    public static final int BORDER_COLOR = 0x334b87b4;
-    public static final int BORDER_COLOR = 0xff000000;
+    public static final int BORDER_COLOR = 0x334b87b4;
 
     final String vertexShader =
             "uniform mat4 u_MVPMatrix;      \n"
