@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import korniltsev.telegram.charts.ColumnData;
 import korniltsev.telegram.charts.Dimen;
 
 public final class GLScrollbarOverlayProgram {
@@ -41,27 +40,30 @@ public final class GLScrollbarOverlayProgram {
 
     private float[] MVP = new float[16];
 
-    public final int w;
-    public final int h;
+    public final int canvasW;
+    public final int canvasH;
 
     private final Dimen dimen;
 
 
     final ChartViewGL root;
 
-    float left = 0.8f;
-    float right = 1.0f;
+    float left = 0.7f;
+    float right = 0.9f;
 
     float vertices[] = {
             0, 0,
             0, 1,
             1, 1,
+
+            1, 1,
             1, 0,
+            0, 0,
     };
 
-    public GLScrollbarOverlayProgram( int w, int h, Dimen dimen, ChartViewGL root) {
-        this.w = w;
-        this.h = h;
+    public GLScrollbarOverlayProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root) {
+        this.canvasW = canvasW;
+        this.canvasH = canvasH;
         this.dimen = dimen;
         this.root = root;
 
@@ -95,12 +97,13 @@ public final class GLScrollbarOverlayProgram {
         MyGL.checkGlError2();
 
 
-
+        int color = 0xbff1f5f7;
+//        int color = 0xff000000;
         float[] colors = new float[]{ //todo try to do only once
-                Color.red(0) / 255f,
-                Color.green(0) / 255f,
-                Color.blue(0) / 255f,
-                1.0f,
+                Color.red(color) / 255f,
+                Color.green(color) / 255f,
+                Color.blue(color) / 255f,
+                Color.alpha(color) / 255f,
         };
         GLES20.glUniform4fv(colorHandle, 1, colors, 0);
 
@@ -109,27 +112,29 @@ public final class GLScrollbarOverlayProgram {
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
         GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
 
-        float hpadding = dimen.dpf(16);
-        float scalex = 2.0f / w;
-        float scaley = 2.0f / h;
+        drawOverlay(0f, left);
+        drawOverlay(right, 1f);
+    }
 
+    private void drawOverlay(float from, float to) {
+        float hpadding = dimen.dpf(16);
+        float scalex = 2.0f / canvasW;
+        float scaley = 2.0f / canvasH;
 
         Matrix.setIdentityM(MVP, 0);
-
         Matrix.translateM(MVP, 0, -1.0f, -1.0f, 0);
         Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
 
-        Matrix.translateM(MVP, 0, hpadding, root.dimen_v_padding8, 0);
 
-        float w = this.w - 2 * hpadding;
+        float w = this.canvasW - 2 * hpadding;
+
+        Matrix.translateM(MVP, 0, hpadding + from * w, root.dimen_v_padding8, 0);
+        w = w * (to-from);
         int h = root.dimen_scrollbar_height;
-        Matrix.scaleM(MVP, 0, 1.0f / ((1.0f) / w), 1.0f / (1.0f/ h), 1.0f);
-
-
-
+        Matrix.scaleM(MVP, 0, 1.0f / ((1.0f) / w), 1.0f / (1.0f / h), 1.0f);
 
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
         GLES20.glLineWidth(dimen.dpf(1f));
-        GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.length / 2);
     }
 }

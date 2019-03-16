@@ -2,6 +2,7 @@ package korniltsev.telegram.charts.gl;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.os.SystemClock;
 import android.util.Log;
@@ -248,32 +249,9 @@ public class ChartViewGL extends TextureView {
 
             mGL = mEglContext.getGL();
 
-
-//            final float ratio = (float) w / h;
-//
-//
-//            final float left = -1.0f;
-//            final float right = 1.0f;
-//            final float bottom = -1.0f;
-//            final float top = 1.0f;
-//            final float near = 1.0f;
-//            final float far = 10.0f;
-//
-//            Matrix.frustumM(projection, 0, left, right, bottom, top, near, far);
-//
-//            final float eyeX = 0.0f;
-//            final float eyeY = 0.0f;
-//            final float eyeZ = 1.5f;
-//
-//            final float lookX = 0.0f;
-//            final float lookY = 0.0f;
-//            final float lookZ = 0.0f;
-//
-//            final float upX = 0.0f;
-//            final float upY = 1.0f;
-//            final float upZ = 0.0f;
-//
-//            Matrix.setLookAtM(view, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+            GLES20.glEnable(GLES20.GL_BLEND);
+            GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+            GLES20.glBlendEquation(GLES20.GL_FUNC_ADD);
         }
 
         EGLContext createContext(EGL10 egl, EGLDisplay eglDisplay,
