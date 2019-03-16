@@ -30,18 +30,18 @@ import static android.opengl.GLES10.glClearColor;
 
 /*
     + scrollbar overlay
-    scrollbar scroller
-    scrollbar charts with minvalue non zero
-    scrollbar pointer response
-    scrollbar clip (or draw white rect over, lol)
+    + scrollbar scroller
+    scrollbar charts with minvalue non zero + 2dip offset
+
     checkbox alpha animation for scroller & chart
     checkbox min max animation for scroller & chart
 
+    scrollbar pointer response for scroller
+    scrollbar pointer response for charts (scale + scroll)
+
+    scrollbar clip (or draw white rect over, lol)
     https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
 
-// draw chart, learn to scale & translate
-// animate
-// scrollbar
 */
 public class ChartViewGL extends TextureView {
     public static final String LOG_TAG = "tg.ch.gl";
@@ -116,14 +116,17 @@ public class ChartViewGL extends TextureView {
             }
             initGL(surface);
             scrollbar = new GLChartProgram[data.length - 1];
-            float max = 0f;
+            long max = -1;
+            long min = Long.MAX_VALUE;
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 ColumnData datum = data[i];
                 scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true);
                 max = Math.max(max, datum.maxValue);
+                min = Math.min(min, datum.minValue);
             }
             for (GLChartProgram it : scrollbar) {
                 it.maxValue = max;
+                it.minValue = max;
             }
 
             chart = new GLChartProgram[data.length - 1];
@@ -132,6 +135,7 @@ public class ChartViewGL extends TextureView {
             }
             for (GLChartProgram it : chart) {
                 it.maxValue = max;
+                it.minValue = 0;
             }
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this);

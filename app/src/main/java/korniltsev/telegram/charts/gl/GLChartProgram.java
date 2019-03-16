@@ -52,6 +52,7 @@ public final class GLChartProgram {
     private final Dimen dimen;
 
     public float maxValue;
+    public float minValue;
 
     final ChartViewGL root;
 
@@ -128,7 +129,7 @@ public final class GLChartProgram {
             Matrix.translateM(MVP, 0, hpadding, root.dimen_v_padding8, 0);
             float w = this.w - 2 * hpadding;
             int h = root.dimen_scrollbar_height;
-            Matrix.scaleM(MVP, 0, 1.0f / ((maxx - minx) / w), 1.0f / (maxValue / h), 1.0f);
+            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), h / (maxValue ), 1.0f);
             GLES20.glLineWidth(dimen.dpf(1f));
         } else {
             int ypx = root.dimen_v_padding8
@@ -138,7 +139,7 @@ public final class GLChartProgram {
             Matrix.translateM(MVP, 0, hpadding, ypx, 0);
             float w = this.w - 2 * hpadding;
             int h = root.dimen_chart_height;
-            Matrix.scaleM(MVP, 0, 1.0f / ((maxx - minx) / w), 1.0f / (maxValue / h), 1.0f);
+            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), h  /  (maxValue ), 1.0f);
             GLES20.glLineWidth(dimen.dpf(2f));
         }
 
