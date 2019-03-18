@@ -16,8 +16,8 @@ public final class GLChartProgram {
 
     private static final int BYTES_PER_FLOAT = 4;
 
-    private static final int VERTEX_STRIDE_BYTES = 3 * BYTES_PER_FLOAT;
-    private static final int VERTEX_SIZE = 3;
+//    private static final int VERTEX_STRIDE_BYTES = 3 * BYTES_PER_FLOAT;
+//    private static final int VERTEX_SIZE = 3;
 
     private static final int LINE_WIDTH_VECTOR_SIZE = 2;
     private static final int LINE_WIDTH_VECTOR_STRIDE = 2 * BYTES_PER_FLOAT;
@@ -46,15 +46,15 @@ public final class GLChartProgram {
     private final int u_scaleyHandle;
     private final int program;
     private final int vboVertices;
-    private final int vboNormales;
+//    private final int vboNormales;
     private final ArrayList<Vertex> vertices;
     private final FloatBuffer verticesBuffer;
     public final ColumnData column;
     private final int colorHandle;
     //    private final int vertexCount;
     private final int maxXValue;
-    private final float[] normales;
-    private final FloatBuffer linesBuffer;
+//    private final float[] normales;
+//    private final FloatBuffer linesBuffer;
 
 
     private float[] MVP = new float[16];
@@ -74,7 +74,8 @@ public final class GLChartProgram {
     final long id = idCounter++;
 
     public static class Vertex {
-        public static final int SIZE_FLOATS = 3;
+        public static final int SIZE_FLOATS = 5;
+        public static final int STRIDE = SIZE_FLOATS * BYTES_PER_FLOAT;
         float x;
         float y;
         float z;
@@ -95,7 +96,7 @@ public final class GLChartProgram {
         int vertexCount = values.length * 2;
         vertices = new ArrayList<>();
         maxXValue = column.values.length;
-        normales = new float[2 * vertexCount];
+//        normales = new float[2 * vertexCount];
 //        float prevxx = Float.NaN;
 //        float prevyy = Float.NaN;
         for (int i = 0, valuesLength = values.length; i < valuesLength; i++) {//do not allocate twice
@@ -118,10 +119,10 @@ public final class GLChartProgram {
 
             if (i == valuesLength - 1) {
                 int j = i-1;
-                normales[i * 4 ]    = normales[j * 4 ]    ;
-                normales[i * 4 + 1] = normales[j * 4 + 1] ;
-                normales[i * 4 + 2] = normales[j * 4 + 2] ;
-                normales[i * 4 + 3] =normales[j * 4 + 3] ;
+//                normales[i * 4 ]    = normales[j * 4 ]    ;
+//                normales[i * 4 + 1] = normales[j * 4 + 1] ;
+//                normales[i * 4 + 2] = normales[j * 4 + 2] ;
+//                normales[i * 4 + 3] =normales[j * 4 + 3] ;
                 //todo
             } else {
                 float nextValue = (float)values[i+1] / column.maxValue;
@@ -130,10 +131,10 @@ public final class GLChartProgram {
                 dy /= l;
                 float dx = 1f / l;
 
-                normales[i * 4 ] = -dy;
-                normales[i * 4 + 1] = dx;
-                normales[i * 4 + 2] = dy;
-                normales[i * 4 + 3] = -dx;
+                v1.normale_x = -dy;
+                v1.normale_y = dx;
+                v2.normale_x = dy;
+                v2.normale_y = -dx;
             }
         }
         verticesBuffer = ByteBuffer.allocateDirect(vertices.size()* Vertex.SIZE_FLOATS * BYTES_PER_FLOAT)
@@ -143,15 +144,17 @@ public final class GLChartProgram {
             verticesBuffer.put(vertex.x);
             verticesBuffer.put(vertex.y);
             verticesBuffer.put(vertex.z);
+            verticesBuffer.put(vertex.normale_x);
+            verticesBuffer.put(vertex.normale_y);
         }
 //        verticesBuffer.put(vertices);
         verticesBuffer.position(0);
 
-        linesBuffer = ByteBuffer.allocateDirect(normales.length * BYTES_PER_FLOAT)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
-        linesBuffer.put(normales);
-        linesBuffer.position(0);
+//        linesBuffer = ByteBuffer.allocateDirect(normales.length * BYTES_PER_FLOAT)
+//                .order(ByteOrder.nativeOrder())
+//                .asFloatBuffer();
+//        linesBuffer.put(normales);
+//        linesBuffer.position(0);
 
 
         program = MyGL.createProgram(vertexShader, fragmentShader);
@@ -162,14 +165,14 @@ public final class GLChartProgram {
         u_scaleyHandle = GLES20.glGetUniformLocation(program, "u_scaley");
 
 
-        int[] vbos = new int[2];
-        GLES20.glGenBuffers(2, vbos, 0);
+        int[] vbos = new int[1];
+        GLES20.glGenBuffers(1, vbos, 0);
         vboVertices = vbos[0];
-        vboNormales = vbos[1];
+//        vboNormales = vbos[1];
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboVertices);
-        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.size()* Vertex.SIZE_FLOATS* BYTES_PER_FLOAT, verticesBuffer, GLES20.GL_STATIC_DRAW);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboNormales);
-        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, normales.length * BYTES_PER_FLOAT, linesBuffer, GLES20.GL_STATIC_DRAW);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.size()* Vertex.STRIDE, verticesBuffer, GLES20.GL_STATIC_DRAW);
+//        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboNormales);
+//        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, normales.length * BYTES_PER_FLOAT, linesBuffer, GLES20.GL_STATIC_DRAW);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
         MyGL.checkGlError2();
 
@@ -211,13 +214,13 @@ public final class GLChartProgram {
 
         GLES20.glEnableVertexAttribArray(positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboVertices);
-        GLES20.glVertexAttribPointer(positionHandle, VERTEX_SIZE, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, 0);
+        GLES20.glVertexAttribPointer(positionHandle, 3, GLES20.GL_FLOAT, false, Vertex.STRIDE, 0);
 
         GLES20.glEnableVertexAttribArray(normalesHandle);
         MyGL.checkGlError2();
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboNormales);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboVertices);//todo remove
         MyGL.checkGlError2();
-        GLES20.glVertexAttribPointer(normalesHandle, LINE_WIDTH_VECTOR_SIZE, GLES20.GL_FLOAT, false, LINE_WIDTH_VECTOR_STRIDE, 0);
+        GLES20.glVertexAttribPointer(normalesHandle, 2, GLES20.GL_FLOAT, false, Vertex.STRIDE, 3 * BYTES_PER_FLOAT);
         MyGL.checkGlError2();
 
         float hpadding = dimen.dpf(16);
