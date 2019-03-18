@@ -228,13 +228,11 @@ public final class GLChartProgram {
             Matrix.translateM(MVP, 0, hpadding, root.dimen_v_padding8 + dip2, 0);
             float w = this.w - 2 * hpadding;
             float h = root.dimen_scrollbar_height - 2 * dip2;
-//            float ydiff = maxValue - minValue;
-//            float xx = ydiff / minValue ;
-            Matrix.translateM(MVP, 0, 0, 0, 0f);
-            float yscale = (float) maxValue / (float)column.maxValue;
-//            float dy = -yscale * minValue;
-//            Matrix.translateM(MVP, 0, 0, dy, 0);
-            Matrix.scaleM(MVP, 0, w / ((maxx - minx)), h/yscale, 1.0f);
+            float ydiff = 1 - (float)minValue/maxValue; // normalized to 1.0
+            float yscale = h / (ydiff * (float) maxValue / (float)column.maxValue );
+            float dy = -yscale * minValue / maxValue;
+            Matrix.translateM(MVP, 0, 0, dy, 0);
+            Matrix.scaleM(MVP, 0, w / ((maxx - minx)), yscale, 1.0f);
 //            GLES20.glLineWidth(dimen.dpf(1f));
         } else {
             int ypx = root.dimen_v_padding8
