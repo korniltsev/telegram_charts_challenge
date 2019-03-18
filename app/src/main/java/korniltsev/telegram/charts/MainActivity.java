@@ -32,7 +32,16 @@ public class MainActivity extends Activity {
         ChartData[] data = readData();
         Log.d(ChartView.TAG, "data len " + data.length);
 
-        ChartData datum = data[0];
+        long[] vs1 = {50, 100, 50};
+        long[] vs2 = {0, 50, 0};
+        ChartData tesdata = new ChartData(new ColumnData[]{
+                new ColumnData("x", "x", vs1, 100, 50, "line", Color.RED),
+                new ColumnData("#y1", "#y1", vs1, 100, 50, "line", Color.RED),
+                new ColumnData("#y2", "#y2", vs2, 50, 0, "line", Color.RED),
+        });
+//        ChartData datum = data[4];
+        ChartData datum = tesdata;
+
 
         final ChartViewGL chart = new ChartViewGL(this, datum.data, dimen);
 
