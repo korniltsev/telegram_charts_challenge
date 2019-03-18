@@ -36,6 +36,9 @@ import static android.opengl.GLES10.glClearColor;
     + checkbox min max animation for scroller & chart
 
 
+    current implementation does not work
+    calculate dynamic line width and pass as uniform
+    last two triangles
     https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
 
     scrollbar pointer response for scroller
@@ -44,6 +47,10 @@ import static android.opengl.GLES10.glClearColor;
     rules + labels + animation
 
     actionbar + night mode animation
+
+
+    // dither
+    https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
 
     checkbox animations
 
@@ -54,6 +61,7 @@ import static android.opengl.GLES10.glClearColor;
 //     snap scrollbar near zeros
 //     implement empty chart
 //     implement y=0 chart
+//     lockfree queue
 
 
 // todo design

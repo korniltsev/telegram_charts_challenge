@@ -24,17 +24,21 @@ public class ChartData {
             for (int i = 0; i < columns.length(); i++) {
                 JSONArray column = columns.getJSONArray(i);
                 String id = column.getString(0);
-                int jl = column.length();
+//                int jl = column.length();
+//                int jl = 30;
+                int jl = 6;
                 long[] vs = new long[jl - 1];
                 long maxValue = Long.MIN_VALUE;
                 long minValue = Long.MAX_VALUE;
                 for (int j = 1; j < jl; ++j) {
                     long v = column.getLong(j);
+//                    v = j % 2 == 1 ? 1000 : 1;
                     if (ChartView.DEBUG && v < 0) {
                         throw new AssertionError("v < 0");
                     }
                     minValue = Math.min(minValue, v);
                     maxValue = Math.max(maxValue, v);
+//                    vs[j - 1] = v;
                     vs[j - 1] = v;
                 }
 
