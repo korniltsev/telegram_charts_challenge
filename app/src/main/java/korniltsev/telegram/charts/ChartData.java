@@ -26,7 +26,7 @@ public class ChartData {
                 String id = column.getString(0);
 //                int jl = column.length();
 //                int jl = 30;
-                int jl = 6;
+                int jl = 5;
                 long[] vs = new long[jl - 1];
                 long maxValue = Long.MIN_VALUE;
                 long minValue = Long.MAX_VALUE;

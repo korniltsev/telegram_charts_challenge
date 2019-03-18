@@ -28,7 +28,7 @@ public final class GLChartProgram {
                     + "attribute vec2 a_line_angle;     \n"
                     + "void main()                    \n"
                     + "{                              \n"
-                    + "   gl_Position = u_MVPMatrix * vec4(a_Position.x, a_Position.y + 5000.0 * a_line_angle.y , 0.0, 1.0);   \n"
+                    + "   gl_Position = u_MVPMatrix * vec4(a_Position.x, a_Position.y + 5000.0 * a_Position.z , 0.0, 1.0);   \n"
                     + "}                              \n";
 
     final String fragmentShader =
@@ -85,52 +85,52 @@ public final class GLChartProgram {
         vertices = new float[vertexCount * 3];
         maxXValue = column.values.length;
         lineVectors = new float[2 * vertexCount];
-        float prevxx = Float.NaN;
-        float prevyy = Float.NaN;
+//        float prevxx = Float.NaN;
+//        float prevyy = Float.NaN;
         for (int i = 0, valuesLength = values.length; i < valuesLength; i++) {//do not allocate twice
             long value = values[i];
             vertices[i * 6] = i;
             vertices[i * 6 + 1] = value;
-//            vertices[i * 6 + 2] = 1;
+            vertices[i * 6 + 2] = 1;
 
             vertices[i * 6 + 3] = i;
             vertices[i * 6 + 4] = value;
-//            vertices[i * 6 + 5] = -1;
+            vertices[i * 6 + 5] = -1;
 
 
 
-            if (i == valuesLength - 1) {
-                //todo
-            } else {
-                long nextValue = values[i+1];
-                double yy = nextValue - value;
-                double l =  Math.sqrt(1f + yy * yy);
-                yy /= l;
-                double xx = 1f / l;
-
-                if (Float.isNaN(prevxx)) {
-                    // todo 0
-                } else {
-                    float yyy1 = (float) (yy - prevyy);
-                    float yyy2 = (float) (prevyy - yy);
-                    Log.d("gl.ch", id + " vec1 " + i + " " + prevxx + " " +  prevyy);
-                    Log.d("gl.ch", id + " vec2 " + i + " " + xx + " " +  yy);
-                    Log.d("gl.ch", id + " calc " + i + " " + yyy1 + " " + yyy2);
-//                    if (yyy1 > 0) {
-                        lineVectors[i * 4 ] = (float) (xx - prevxx);
-                        lineVectors[i * 4 + 1] = yyy1;
-                        lineVectors[i * 4 + 2] = (float) (prevxx - xx);
-                        lineVectors[i * 4 + 3] = yyy2;
-//                    } else {
-//                        lineVectors[i * 4 + 0] = (float) (prevxx - xx);
-//                        lineVectors[i * 4 + 1] = yyy2;
-//                        lineVectors[i * 4 +2] = (float) (xx - prevxx);
-//                        lineVectors[i * 4 + 3] = yyy1;
-//                    }
-                }
-                prevxx = (float) xx;
-                prevyy = (float) yy;
-            }
+//            if (i == valuesLength - 1) {
+//                //todo
+//            } else {
+//                long nextValue = values[i+1];
+//                double yy = nextValue - value;
+//                double l =  Math.sqrt(1f + yy * yy);
+//                yy /= l;
+//                double xx = 1f / l;
+//
+//                if (Float.isNaN(prevxx)) {
+//                    // todo 0
+//                } else {
+//                    float yyy1 = (float) (yy - prevyy);
+//                    float yyy2 = (float) (prevyy - yy);
+//                    Log.d("gl.ch", id + " vec1 " + i + " " + prevxx + " " +  prevyy);
+//                    Log.d("gl.ch", id + " vec2 " + i + " " + xx + " " +  yy);
+//                    Log.d("gl.ch", id + " calc " + i + " " + yyy1 + " " + yyy2);
+////                    if (yyy1 > 0) {
+//                        lineVectors[i * 4 ] = (float) (xx - prevxx);
+//                        lineVectors[i * 4 + 1] = yyy1;
+//                        lineVectors[i * 4 + 2] = (float) (prevxx - xx);
+//                        lineVectors[i * 4 + 3] = yyy2;
+////                    } else {
+////                        lineVectors[i * 4 + 0] = (float) (prevxx - xx);
+////                        lineVectors[i * 4 + 1] = yyy2;
+////                        lineVectors[i * 4 +2] = (float) (xx - prevxx);
+////                        lineVectors[i * 4 + 3] = yyy1;
+////                    }
+//                }
+//                prevxx = (float) xx;
+//                prevyy = (float) yy;
+//            }
         }
         verticesBuffer = ByteBuffer.allocateDirect(vertices.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
@@ -203,12 +203,12 @@ public final class GLChartProgram {
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboVertices);
         GLES20.glVertexAttribPointer(positionHandle, VERTEX_SIZE, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, 0);
 
-        GLES20.glEnableVertexAttribArray(lineWidthCombinedVectorHandle);
-        MyGL.checkGlError2();
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboLines);
-        MyGL.checkGlError2();
-        GLES20.glVertexAttribPointer(lineWidthCombinedVectorHandle, LINE_WIDTH_VECTOR_SIZE, GLES20.GL_FLOAT, false, LINE_WIDTH_VECTOR_STRIDE, 0);
-        MyGL.checkGlError2();
+//        GLES20.glEnableVertexAttribArray(lineWidthCombinedVectorHandle);
+//        MyGL.checkGlError2();
+//        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboLines);
+//        MyGL.checkGlError2();
+//        GLES20.glVertexAttribPointer(lineWidthCombinedVectorHandle, LINE_WIDTH_VECTOR_SIZE, GLES20.GL_FLOAT, false, LINE_WIDTH_VECTOR_STRIDE, 0);
+//        MyGL.checkGlError2();
 
         float hpadding = dimen.dpf(16);
         float minx = 0;
