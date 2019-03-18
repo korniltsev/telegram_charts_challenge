@@ -47,7 +47,7 @@ public final class GLChartProgram {
     private final int program;
     private final int vboVertices;
     private final int vboNormales;
-    private final ArrayList<Float> vertices;
+    private final ArrayList<Vertex> vertices;
     private final FloatBuffer verticesBuffer;
     public final ColumnData column;
     private final int colorHandle;
@@ -73,6 +73,15 @@ public final class GLChartProgram {
     static long idCounter;
     final long id = idCounter++;
 
+    public static class Vertex {
+        public static final int SIZE_FLOATS = 3;
+        float x;
+        float y;
+        float z;
+
+        float normale_x;
+        float normale_y;
+    }
     public GLChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar) {
 
         this.w = w;
@@ -92,14 +101,18 @@ public final class GLChartProgram {
         for (int i = 0, valuesLength = values.length; i < valuesLength; i++) {//do not allocate twice
             float value = (float)values[i] / column.maxValue;
 //            float unitValue = (float)value / column.maxValue;
-            vertices.add((float) i);
-            vertices.add(value);
-            vertices.add(1.0f);
+            Vertex v1 = new Vertex();//todo rewrite without allocatinos
+            Vertex v2 = new Vertex();//todo rewrite without allocatinos
+            v1.x = i;
+            v1.y = value;
+            v1.z = 1;
 
-            vertices.add((float) i);
-            vertices.add(value);
-            vertices.add(1.0f);
+            v2.x = i;
+            v2.y = value;
+            v2.z = -1;
 
+            vertices.add(v1);
+            vertices.add(v2);
 
 
 
@@ -123,11 +136,13 @@ public final class GLChartProgram {
                 normales[i * 4 + 3] = -dx;
             }
         }
-        verticesBuffer = ByteBuffer.allocateDirect(vertices.size()* BYTES_PER_FLOAT)
+        verticesBuffer = ByteBuffer.allocateDirect(vertices.size()* Vertex.SIZE_FLOATS * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        for (Float vertex : vertices) {
-            verticesBuffer.put(vertex);
+        for (Vertex vertex : vertices) {
+            verticesBuffer.put(vertex.x);
+            verticesBuffer.put(vertex.y);
+            verticesBuffer.put(vertex.z);
         }
 //        verticesBuffer.put(vertices);
         verticesBuffer.position(0);
@@ -152,7 +167,7 @@ public final class GLChartProgram {
         vboVertices = vbos[0];
         vboNormales = vbos[1];
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboVertices);
-        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.size()* BYTES_PER_FLOAT, verticesBuffer, GLES20.GL_STATIC_DRAW);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.size()* Vertex.SIZE_FLOATS* BYTES_PER_FLOAT, verticesBuffer, GLES20.GL_STATIC_DRAW);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboNormales);
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, normales.length * BYTES_PER_FLOAT, linesBuffer, GLES20.GL_STATIC_DRAW);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
@@ -249,7 +264,7 @@ public final class GLChartProgram {
 //        Matrix.scaleM(MVP, 0, 5.0f, 1.0f, 1.0f);
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, vertices.size()/ 3);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, vertices.size());
     }
 
     boolean checked = true;
