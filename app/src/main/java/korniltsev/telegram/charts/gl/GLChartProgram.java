@@ -28,7 +28,7 @@ public final class GLChartProgram {
                     + "attribute vec2 a_line_angle;     \n"
                     + "void main()                    \n"
                     + "{                              \n"
-                    + "   gl_Position = u_MVPMatrix * vec4(a_Position.x, a_Position.y + 5000.0 * a_Position.z , 0.0, 1.0);   \n"
+                    + "   gl_Position = u_MVPMatrix * vec4(a_Position.x, a_Position.y + 0.01 * a_Position.z , 0.0, 1.0);   \n"
                     + "}                              \n";
 
     final String fragmentShader =
@@ -89,12 +89,13 @@ public final class GLChartProgram {
 //        float prevyy = Float.NaN;
         for (int i = 0, valuesLength = values.length; i < valuesLength; i++) {//do not allocate twice
             long value = values[i];
+            float unitValue = (float)value / column.maxValue;
             vertices[i * 6] = i;
-            vertices[i * 6 + 1] = value;
+            vertices[i * 6 + 1] = unitValue;
             vertices[i * 6 + 2] = 1;
 
             vertices[i * 6 + 3] = i;
-            vertices[i * 6 + 4] = value;
+            vertices[i * 6 + 4] = unitValue;
             vertices[i * 6 + 5] = -1;
 
 
@@ -227,13 +228,13 @@ public final class GLChartProgram {
             Matrix.translateM(MVP, 0, hpadding, root.dimen_v_padding8 + dip2, 0);
             float w = this.w - 2 * hpadding;
             float h = root.dimen_scrollbar_height - 2 * dip2;
-            float ydiff = maxValue - minValue;
+//            float ydiff = maxValue - minValue;
 //            float xx = ydiff / minValue ;
             Matrix.translateM(MVP, 0, 0, 0, 0f);
-            float yscale = h / ydiff;
-            float dy = -yscale * minValue;
-            Matrix.translateM(MVP, 0, 0, dy, 0);
-            Matrix.scaleM(MVP, 0, w / ((maxx - minx)), yscale, 1.0f);
+            float yscale = (float) maxValue / (float)column.maxValue;
+//            float dy = -yscale * minValue;
+//            Matrix.translateM(MVP, 0, 0, dy, 0);
+            Matrix.scaleM(MVP, 0, w / ((maxx - minx)), h/yscale, 1.0f);
 //            GLES20.glLineWidth(dimen.dpf(1f));
         } else {
             int ypx = root.dimen_v_padding8
@@ -243,7 +244,8 @@ public final class GLChartProgram {
             Matrix.translateM(MVP, 0, hpadding, ypx, 0);
             float w = this.w - 2 * hpadding;
             int h = root.dimen_chart_height;
-            Matrix.scaleM(MVP, 0, w / ((maxx - minx)), h / (float) (maxValue), 1.0f);
+            float yscale = (float) maxValue / (float)column.maxValue;
+            Matrix.scaleM(MVP, 0, w / ((maxx - minx)), h/yscale  , 1.0f);
 //            GLES20.glLineWidth(dimen.dpf(2f));
         }
 
