@@ -3,11 +3,11 @@ package korniltsev.telegram.charts.gl;
 import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
-import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 
 import korniltsev.telegram.charts.ColumnData;
 import korniltsev.telegram.charts.Dimen;
@@ -24,11 +24,12 @@ public final class GLChartProgram {
 
     final String vertexShader =
             "uniform mat4 u_MVPMatrix;      \n"
+            + "uniform float u_scaley;      \n"
                     + "attribute vec3 a_Position;     \n"
-                    + "attribute vec2 a_line_angle;     \n"
+                    + "attribute vec2 a_normales;     \n"
                     + "void main()                    \n"
                     + "{                              \n"
-                    + "   gl_Position = u_MVPMatrix * vec4(a_Position.x, a_Position.y + 0.01 * a_Position.z , 0.0, 1.0);   \n"
+                    + "   gl_Position = u_MVPMatrix * vec4(a_Position.x + a_normales.x * 0.1, a_Position.y + u_scaley * a_normales.y * 0.1 , 0.0, 1.0);   \n"
                     + "}                              \n";
 
     final String fragmentShader =
@@ -41,17 +42,18 @@ public final class GLChartProgram {
                     + "}                              \n";
     private final int MVPHandle;
     private final int positionHandle;
-    private final int lineWidthCombinedVectorHandle;
+    private final int normalesHandle;
+    private final int u_scaleyHandle;
     private final int program;
     private final int vboVertices;
-    private final int vboLines;
-    private final float[] vertices;
+    private final int vboNormales;
+    private final ArrayList<Float> vertices;
     private final FloatBuffer verticesBuffer;
     public final ColumnData column;
     private final int colorHandle;
     //    private final int vertexCount;
     private final int maxXValue;
-    private final float[] lineVectors;
+    private final float[] normales;
     private final FloatBuffer linesBuffer;
 
 
@@ -82,85 +84,77 @@ public final class GLChartProgram {
 
         long[] values = column.values;
         int vertexCount = values.length * 2;
-        vertices = new float[vertexCount * 3];
+        vertices = new ArrayList<>();
         maxXValue = column.values.length;
-        lineVectors = new float[2 * vertexCount];
+        normales = new float[2 * vertexCount];
 //        float prevxx = Float.NaN;
 //        float prevyy = Float.NaN;
         for (int i = 0, valuesLength = values.length; i < valuesLength; i++) {//do not allocate twice
-            long value = values[i];
-            float unitValue = (float)value / column.maxValue;
-            vertices[i * 6] = i;
-            vertices[i * 6 + 1] = unitValue;
-            vertices[i * 6 + 2] = 1;
+            float value = (float)values[i] / column.maxValue;
+//            float unitValue = (float)value / column.maxValue;
+            vertices.add((float) i);
+            vertices.add(value);
+            vertices.add(1.0f);
 
-            vertices[i * 6 + 3] = i;
-            vertices[i * 6 + 4] = unitValue;
-            vertices[i * 6 + 5] = -1;
+            vertices.add((float) i);
+            vertices.add(value);
+            vertices.add(1.0f);
 
 
 
-//            if (i == valuesLength - 1) {
-//                //todo
-//            } else {
-//                long nextValue = values[i+1];
-//                double yy = nextValue - value;
-//                double l =  Math.sqrt(1f + yy * yy);
-//                yy /= l;
-//                double xx = 1f / l;
-//
-//                if (Float.isNaN(prevxx)) {
-//                    // todo 0
-//                } else {
-//                    float yyy1 = (float) (yy - prevyy);
-//                    float yyy2 = (float) (prevyy - yy);
-//                    Log.d("gl.ch", id + " vec1 " + i + " " + prevxx + " " +  prevyy);
-//                    Log.d("gl.ch", id + " vec2 " + i + " " + xx + " " +  yy);
-//                    Log.d("gl.ch", id + " calc " + i + " " + yyy1 + " " + yyy2);
-////                    if (yyy1 > 0) {
-//                        lineVectors[i * 4 ] = (float) (xx - prevxx);
-//                        lineVectors[i * 4 + 1] = yyy1;
-//                        lineVectors[i * 4 + 2] = (float) (prevxx - xx);
-//                        lineVectors[i * 4 + 3] = yyy2;
-////                    } else {
-////                        lineVectors[i * 4 + 0] = (float) (prevxx - xx);
-////                        lineVectors[i * 4 + 1] = yyy2;
-////                        lineVectors[i * 4 +2] = (float) (xx - prevxx);
-////                        lineVectors[i * 4 + 3] = yyy1;
-////                    }
-//                }
-//                prevxx = (float) xx;
-//                prevyy = (float) yy;
-//            }
+
+            if (i == valuesLength - 1) {
+                int j = i-1;
+                normales[i * 4 ]    = normales[j * 4 ]    ;
+                normales[i * 4 + 1] = normales[j * 4 + 1] ;
+                normales[i * 4 + 2] = normales[j * 4 + 2] ;
+                normales[i * 4 + 3] =normales[j * 4 + 3] ;
+                //todo
+            } else {
+                float nextValue = (float)values[i+1] / column.maxValue;
+                float dy = nextValue - value;
+                float l = (float) Math.sqrt(1f + dy * dy);
+                dy /= l;
+                float dx = 1f / l;
+
+                normales[i * 4 ] = -dy;
+                normales[i * 4 + 1] = dx;
+                normales[i * 4 + 2] = dy;
+                normales[i * 4 + 3] = -dx;
+            }
         }
-        verticesBuffer = ByteBuffer.allocateDirect(vertices.length * BYTES_PER_FLOAT)
+        verticesBuffer = ByteBuffer.allocateDirect(vertices.size()* BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        verticesBuffer.put(vertices);
+        for (Float vertex : vertices) {
+            verticesBuffer.put(vertex);
+        }
+//        verticesBuffer.put(vertices);
         verticesBuffer.position(0);
 
-        linesBuffer = ByteBuffer.allocateDirect(lineVectors.length * BYTES_PER_FLOAT)
+        linesBuffer = ByteBuffer.allocateDirect(normales.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        linesBuffer.put(lineVectors);
+        linesBuffer.put(normales);
         linesBuffer.position(0);
 
 
         program = MyGL.createProgram(vertexShader, fragmentShader);
         MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
         positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
-        lineWidthCombinedVectorHandle = GLES20.glGetAttribLocation(program, "a_line_angle");
+        normalesHandle = GLES20.glGetAttribLocation(program, "a_normales");
         colorHandle = GLES20.glGetUniformLocation(program, "u_color");
+        u_scaleyHandle = GLES20.glGetUniformLocation(program, "u_scaley");
 
 
         int[] vbos = new int[2];
         GLES20.glGenBuffers(2, vbos, 0);
         vboVertices = vbos[0];
-        vboLines = vbos[1];
+        vboNormales = vbos[1];
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboVertices);
-        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * BYTES_PER_FLOAT, verticesBuffer, GLES20.GL_STATIC_DRAW);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboLines);
-        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, lineVectors.length * BYTES_PER_FLOAT, linesBuffer, GLES20.GL_STATIC_DRAW);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.size()* BYTES_PER_FLOAT, verticesBuffer, GLES20.GL_STATIC_DRAW);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboNormales);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, normales.length * BYTES_PER_FLOAT, linesBuffer, GLES20.GL_STATIC_DRAW);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
         MyGL.checkGlError2();
 
@@ -190,7 +184,7 @@ public final class GLChartProgram {
             }
         }
 
-
+        //////// todo allocations!!!!!!!!!!!!!
         float[] colors = new float[]{ //todo try to do only once
                 Color.red(column.color) / 255f,
                 Color.green(column.color) / 255f,
@@ -204,12 +198,12 @@ public final class GLChartProgram {
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboVertices);
         GLES20.glVertexAttribPointer(positionHandle, VERTEX_SIZE, GLES20.GL_FLOAT, false, VERTEX_STRIDE_BYTES, 0);
 
-//        GLES20.glEnableVertexAttribArray(lineWidthCombinedVectorHandle);
-//        MyGL.checkGlError2();
-//        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboLines);
-//        MyGL.checkGlError2();
-//        GLES20.glVertexAttribPointer(lineWidthCombinedVectorHandle, LINE_WIDTH_VECTOR_SIZE, GLES20.GL_FLOAT, false, LINE_WIDTH_VECTOR_STRIDE, 0);
-//        MyGL.checkGlError2();
+        GLES20.glEnableVertexAttribArray(normalesHandle);
+        MyGL.checkGlError2();
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboNormales);
+        MyGL.checkGlError2();
+        GLES20.glVertexAttribPointer(normalesHandle, LINE_WIDTH_VECTOR_SIZE, GLES20.GL_FLOAT, false, LINE_WIDTH_VECTOR_STRIDE, 0);
+        MyGL.checkGlError2();
 
         float hpadding = dimen.dpf(16);
         float minx = 0;
@@ -233,6 +227,9 @@ public final class GLChartProgram {
             float dy = -yscale * minValue / maxValue;
             Matrix.translateM(MVP, 0, 0, dy, 0);
             Matrix.scaleM(MVP, 0, w / ((maxx - minx)), yscale, 1.0f);
+            // todo animatino problem on dataset 0
+            GLES20.glUniform1f(u_scaleyHandle, 1.0f);
+            MyGL.checkGlError2();
 //            GLES20.glLineWidth(dimen.dpf(1f));
         } else {
             int ypx = root.dimen_v_padding8
@@ -245,12 +242,14 @@ public final class GLChartProgram {
             float yscale = (float) maxValue / (float)column.maxValue;
             Matrix.scaleM(MVP, 0, w / ((maxx - minx)), h/yscale  , 1.0f);
 //            GLES20.glLineWidth(dimen.dpf(2f));
+            GLES20.glUniform1f(u_scaleyHandle, 0.1f);
+            MyGL.checkGlError2();
         }
 
 //        Matrix.scaleM(MVP, 0, 5.0f, 1.0f, 1.0f);
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, vertices.length / 3);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, vertices.size()/ 3);
     }
 
     boolean checked = true;
