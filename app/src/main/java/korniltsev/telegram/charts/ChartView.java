@@ -54,7 +54,7 @@ public class ChartView extends View {
     private final int scroll_bar_v_padding;
     private final int h_padding;
 
-    private int scroller__right;
+    private int scroller__right = -1;
     private int scroller_left = -1;
     private Rect scrollbar = new Rect();
     private int scroller_move_down_x;

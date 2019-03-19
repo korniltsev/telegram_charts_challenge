@@ -3,6 +3,7 @@ package korniltsev.telegram.charts.gl;
 import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -156,5 +157,11 @@ public final class GLScrollbarOverlayProgram {
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.length / 2);
 
+    }
+
+    public void setLeftRight(float left, float right) {
+        this.left = left;
+        this.right = right;
+        Log.d("OVERLAY", " " + left + " " + right);
     }
 }
