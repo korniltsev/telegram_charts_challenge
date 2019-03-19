@@ -43,7 +43,7 @@ public final class GLRulesProgram {
                     + "}                              \n";
     private final int MVPHandle;
     private final int positionHandle;
-    private final int program;
+    private final int programHorizontalLine;
     private final int vbo;
     private final FloatBuffer buf1;
     private final int colorHandle;
@@ -86,10 +86,10 @@ public final class GLRulesProgram {
         buf1.position(0);
 
 
-        program = MyGL.createProgram(vertexShader, fragmentShader);
-        MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
-        positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
-        colorHandle = GLES20.glGetUniformLocation(program, "u_color");
+        programHorizontalLine = MyGL.createProgram(vertexShader, fragmentShader);
+        MVPHandle = GLES20.glGetUniformLocation(programHorizontalLine, "u_MVPMatrix");
+        positionHandle = GLES20.glGetAttribLocation(programHorizontalLine, "a_Position");
+        colorHandle = GLES20.glGetUniformLocation(programHorizontalLine, "u_color");
 
 
         int[] vbos = new int[1];
@@ -166,14 +166,6 @@ public final class GLRulesProgram {
 //    };
 
     public final void draw(float t) {
-        GLES20.glUseProgram(program);
-        MyGL.checkGlError2();
-
-        GLES20.glEnableVertexAttribArray(positionHandle);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-        GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
-
-
         final float hpadding = dimen.dpf(16);
 //        final float scrollerW = this.canvasW - 2 * hpadding;
 //        final float vline1w = dimen.dpf(2f);
@@ -184,7 +176,7 @@ public final class GLRulesProgram {
 //        drawRect(0,0,100, 100);
         float dy = dimen.dpf(80);
         for (int i = 0; i < 6; ++i) {
-//            float hpadding = dimen.dpf(16);
+            //todo draw lines first, then text, so we can minimize program switch
             drawLine(hpadding, dy, canvasW - 2 * hpadding);
             drawText(textZero, hpadding, dy);
             dy += dimen.dpf(51);
@@ -228,15 +220,16 @@ public final class GLRulesProgram {
     }
 
 
-    public void drawRect(float x, float y, float w, float h) {
-        //        Matrix.scaleM(MVP, 0, w, h, 1.0f);
-
-//        GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
-//        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.length / 2);
-
-    }
 
     public void drawLine(float x, float y, float w) {
+        GLES20.glUseProgram(programHorizontalLine);
+        MyGL.checkGlError2();
+
+        GLES20.glEnableVertexAttribArray(positionHandle);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
+        GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
+
+
         final float scalex = 2.0f / canvasW;
         final float scaley = 2.0f / canvasH;
         Matrix.setIdentityM(MVP, 0);
@@ -246,7 +239,7 @@ public final class GLRulesProgram {
         Matrix.translateM(MVP, 0, x, y, 0);
         Matrix.scaleM(MVP, 0, w, 1.0f, 1.0f);
 
-        GLES20.glLineWidth(dimen.dpf(2.0f/3.0f));
+        GLES20.glLineWidth(dimen.dpf(2.0f / 3.0f));
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, vertices.length / 2);
 
