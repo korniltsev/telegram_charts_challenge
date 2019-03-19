@@ -42,6 +42,8 @@ public final class GLChartProgram {
     private final FloatBuffer buf1;
     public final ColumnData column;
     private final int colorHandle;
+    public float zoom = 1f;//1 -- all, 0.2 - partial
+    public float left = 0;
 
     private float[] MVP = new float[16];
 
@@ -166,7 +168,10 @@ public final class GLChartProgram {
             Matrix.translateM(MVP, 0, hpadding, ypx, 0);
             float w = this.w - 2 * hpadding;
             int h = root.dimen_chart_height;
-            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), h  /  (float)(maxValue ), 1.0f);
+            float xdiff = maxx - minx;
+            Matrix.scaleM(MVP, 0, w / xdiff /zoom, h  /  (float)(maxValue ), 1.0f);
+            Matrix.translateM(MVP, 0, -left * xdiff , 0f, 0f);
+//            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), h  /  (float)(maxValue ), 1.0f);
             GLES20.glLineWidth(dimen.dpf(2f));
         }
 

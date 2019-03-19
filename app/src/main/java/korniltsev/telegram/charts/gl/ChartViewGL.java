@@ -42,7 +42,10 @@ import static android.opengl.GLES10.glClearColor;
 
 
     + scrollbar pointer response for scroller
-    scrollbar pointer response for charts (scale + scroll)
+    + scrollbar pointer response for charts (scale + scroll)
+    scrollbar pointer response for max animation
+
+    animation buf on dataset 0
 
 
 
@@ -67,6 +70,7 @@ import static android.opengl.GLES10.glClearColor;
 //    overlay color seems wrong
 //    lollipop bg gradient
 //    check colors & paddings with collor picker
+//    add 1dp padding to the scrollbar charts
 
 // todo nice to have
 //     support rtl since telegram supports
@@ -574,10 +578,15 @@ public class ChartViewGL extends TextureView {
     public void setOverlayPos() {
         final float left = (float)(scroller_left - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float right = (float) (scroller__right - scrollbar.left) / (scrollbar.right - scrollbar.left);
+        final float scale = (right - left);
         r.actionQueue.add(new Runnable() {//todo do not allocate
             @Override
             public void run() {
                 r.overlay.setLeftRight(left, right);
+                for (GLChartProgram glChartProgram : r.chart) {
+                    glChartProgram.zoom = scale;
+                    glChartProgram.left = left;
+                }
             }
         });
     }
