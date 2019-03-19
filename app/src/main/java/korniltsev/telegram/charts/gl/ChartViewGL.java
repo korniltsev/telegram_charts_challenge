@@ -41,7 +41,7 @@ import static android.opengl.GLES10.glClearColor;
 
 
 
-    scrollbar pointer response for scroller
+    + scrollbar pointer response for scroller
     scrollbar pointer response for charts (scale + scroll)
 
 
@@ -573,8 +573,8 @@ public class ChartViewGL extends TextureView {
 
     public void setOverlayPos() {
         final float left = (float)(scroller_left - scrollbar.left) / (scrollbar.right - scrollbar.left);
-        final float right = (float)(scroller__right - scrollbar.left) / (scrollbar.right - scrollbar.left);
-        r.actionQueue.add(new Runnable() {
+        final float right = (float) (scroller__right - scrollbar.left) / (scrollbar.right - scrollbar.left);
+        r.actionQueue.add(new Runnable() {//todo do not allocate
             @Override
             public void run() {
                 r.overlay.setLeftRight(left, right);
