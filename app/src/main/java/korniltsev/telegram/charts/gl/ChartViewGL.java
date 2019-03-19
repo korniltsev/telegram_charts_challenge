@@ -51,14 +51,13 @@ import static android.opengl.GLES10.glClearColor;
     + rules
     + rules vertical labels
     actionbar + night mode animation
+    alpha animation, wrong blending for charts
     ---------------------------------------- 19 march
     rules vertical animation
     chart pointer response for max animation
     horizontal lables + animations
 
     toooltip by touching
-
-
 
     >>>>>>>>>>>>>>>> https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
     calculating normal in vertex shader
