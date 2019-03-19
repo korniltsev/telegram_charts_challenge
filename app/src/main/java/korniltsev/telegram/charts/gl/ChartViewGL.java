@@ -44,7 +44,7 @@ import static android.opengl.GLES10.glClearColor;
     + scrollbar pointer response for scroller
     + scrollbar pointer response for charts (scale + scroll)
 
-    animation bug on dataset 0
+    + animation bug on dataset 0
 
 
 
