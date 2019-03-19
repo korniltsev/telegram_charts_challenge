@@ -54,10 +54,11 @@ public class ChartView extends View {
     private final int scroll_bar_v_padding;
     private final int h_padding;
 
-    private int scroller_width;//todo replace with scroller_left/right
-    private int scroller_pos = -1;
+    private int scroller__right;
+    private int scroller_left = -1;
     private Rect scrollbar = new Rect();
     private int scroller_move_down_x;
+    private int scroller_move_down_width;
 
     private UIColumnData[] scrollerEntries;
     private UIColumnData[] chartEntries;
@@ -74,7 +75,7 @@ public class ChartView extends View {
         scroll_bar_v_padding = dp(8);
         h_padding = dp(16);
 
-        initial_scroller_dith = scroller_width = dp(86);
+        initial_scroller_dith =  dp(86);
         resize_touch_area2 = dp(20);
 
 
@@ -246,8 +247,9 @@ public class ChartView extends View {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         //todo checks for resizing
-        if (scroller_pos == -1) {
-            scroller_pos = scrollbar.right - scroller_width;
+        if (scroller_left == -1) {
+            scroller__right = scrollbar.right;
+            scroller_left = scrollbar.right - initial_scroller_dith;
         }
         if (scrollerEntries != null) {
             for (UIColumnData datum : scrollerEntries) {
@@ -263,7 +265,7 @@ public class ChartView extends View {
     static final int DOWN_RESIZE_LEFT = 1;
     static final int DOWN_RESIZE_RIGHT = 2;
     float last_x = -1f;
-    int resze_scroller_right = -1;
+//    int resze_scroller_right = -1;
     int down_target = -1;
     boolean dragging;
 
@@ -281,22 +283,23 @@ public class ChartView extends View {
                 //todo check scroll edges
                 boolean b = y >= scrollbar.top && y <= scrollbar.bottom;
                 if (b) {
-                    if (Math.abs(x - scroller_pos) <= resize_touch_area2) {
+                    if (Math.abs(x - scroller_left) <= resize_touch_area2) {
                         if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize left");
                         last_x = x;
                         down_target = DOWN_RESIZE_LEFT;
-                        resze_scroller_right = scroller_pos + scroller_width;
+//                        resze_scroller_right = scroller_left + scroller_width;
                         return true;
-                    } else if (Math.abs(x - (scroller_pos + scroller_width)) < resize_touch_area2) {
+                    } else if (Math.abs(x - (scroller__right)) < resize_touch_area2) {
                         if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize right");
                         last_x = x;
                         down_target = DOWN_RESIZE_RIGHT;
                         return true;
-                    } else if (x >= scroller_pos && x <= scroller_pos + scroller_width) {
+                    } else if (x >= scroller_left && x <= scroller__right) {
                         if (LOGGING) Log.d("tg.chart", "touchevent DOWN inside scrollbar");
                         //todo check x inside scroller
                         last_x = x;
-                        scroller_move_down_x = (int) (x - scroller_pos);
+                        scroller_move_down_x = (int) (x - scroller_left);
+                        scroller_move_down_width = scroller__right - scroller_left;
                         down_target = DOWN_MOVE;
                         return true;
                     } else {
@@ -314,27 +317,37 @@ public class ChartView extends View {
                         last_x = x;
                         if (down_target == DOWN_MOVE) {
 
-                            scroller_pos = (int) (x - scroller_move_down_x);
-                            scroller_pos = Math.min(Math.max(scroller_pos, scrollbar.left), scrollbar.right - scroller_width);
+                            scroller_left = (int) (x - scroller_move_down_x);
+                            scroller__right = scroller_left + scroller_move_down_width;
+                            if (scroller_left < scrollbar.left) {
+                                scroller_left = scrollbar.left;
+                                scroller__right = scrollbar.left + scroller_move_down_width;
+                            }
+                            if (scroller__right > scrollbar.right) {
+                                scroller__right = scrollbar.right;
+                                scroller_left = scrollbar.right - scroller_move_down_width;
+                            }
+//                            int scroller_width = scroller__right - scroller_left;
+//                            scroller_left = Math.min(Math.max(scroller_left, scrollbar.left), scrollbar.right - scroller_width);
                         } else if (down_target == DOWN_RESIZE_RIGHT) {
-                            scroller_width = (int) (x - scroller_pos);
-                            if (scroller_pos + scroller_width > scrollbar.right) {
-                                scroller_width = scrollbar.right - scroller_pos;
+                            scroller__right = (int) x;
+                            if (scroller__right > scrollbar.right) {
+                                scroller__right = scrollbar.right;
                             }
                             // check the scrollbar is not too small
-                            if (scroller_width < initial_scroller_dith) {
-                                scroller_width = initial_scroller_dith;
+                            if (scroller__right - scroller_left < initial_scroller_dith) {
+                                scroller__right = scroller_left + initial_scroller_dith;
                             }
                             invalidate();
                         } else if (down_target == DOWN_RESIZE_LEFT) {
-                            scroller_pos = (int) x;
-                            if (scroller_pos < scrollbar.left) {
-                                scroller_pos = scrollbar.left;
+                            scroller_left = (int) x;
+                            if (scroller_left < scrollbar.left) {
+                                scroller_left = scrollbar.left;
                             }
-                            scroller_width = resze_scroller_right - scroller_pos;
-                            if (scroller_width < initial_scroller_dith) {
-                                scroller_width = initial_scroller_dith;
-                                scroller_pos = resze_scroller_right - scroller_width;
+//                            scroller_width = resze_scroller_right - scroller_left;
+                            if (scroller__right - scroller_left < initial_scroller_dith) {
+//                                scroller_left = initial_scroller_dith;
+                                scroller_left = scroller__right - initial_scroller_dith;
                             }
                             invalidate();
                         }
@@ -377,8 +390,9 @@ public class ChartView extends View {
 
     private void drawChart(Canvas canvas) {
         if (chartEntries != null) {
+            int scroller_width = scroller__right - scroller_left;
             float scale = scroller_width / (float) scrollbar.width();
-            float offset = scroller_pos / (float) scroller_width;
+            float offset = scroller_left / (float) scroller_width;
             int vspace = chart_bottom - chart_top;
 
 
@@ -477,18 +491,20 @@ public class ChartView extends View {
             }
 
         }
+        int scroller_width = scroller__right - scroller_left;
+
         // scrollbar overlay
-        if (scroller_pos != scrollbar.left) {
-            canvas.drawRect(scrollbar.left, scrollbar.top, scroller_pos, scrollbar.bottom, scroller_overlay_paint);
+        if (scroller_left != scrollbar.left) {
+            canvas.drawRect(scrollbar.left, scrollbar.top, scroller_left, scrollbar.bottom, scroller_overlay_paint);
         }
-        if (scroller_pos != scrollbar.right - scroller_width) {
-            canvas.drawRect(scroller_pos + scroller_width, scrollbar.top, scrollbar.right, scrollbar.bottom, scroller_overlay_paint);
+        if (scroller_left != scrollbar.right - scroller_width) {
+            canvas.drawRect(scroller_left + scroller_width, scrollbar.top, scrollbar.right, scrollbar.bottom, scroller_overlay_paint);
         }
         // scrollbar border
-        canvas.drawRect(scroller_pos, scrollbar.top, scroller_pos + dip4, scrollbar.bottom, scroller_border_paint);
-        canvas.drawRect(scroller_pos + scroller_width - dip4, scrollbar.top, scroller_pos + scroller_width, scrollbar.bottom, scroller_border_paint);
-        canvas.drawRect(scroller_pos + dip4, scrollbar.top, scroller_pos + scroller_width - dip4, scrollbar.top + dip1, scroller_border_paint);
-        canvas.drawRect(scroller_pos + dip4, scrollbar.bottom - dip1, scroller_pos + scroller_width - dip4, scrollbar.bottom, scroller_border_paint);
+        canvas.drawRect(scroller_left, scrollbar.top, scroller_left + dip4, scrollbar.bottom, scroller_border_paint);
+        canvas.drawRect(scroller_left + scroller_width - dip4, scrollbar.top, scroller_left + scroller_width, scrollbar.bottom, scroller_border_paint);
+        canvas.drawRect(scroller_left + dip4, scrollbar.top, scroller_left + scroller_width - dip4, scrollbar.top + dip1, scroller_border_paint);
+        canvas.drawRect(scroller_left + dip4, scrollbar.bottom - dip1, scroller_left + scroller_width - dip4, scrollbar.bottom, scroller_border_paint);
     }
 
 

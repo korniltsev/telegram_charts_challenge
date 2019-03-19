@@ -1,11 +1,13 @@
 package korniltsev.telegram.charts.gl;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.TextureView;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -47,7 +49,7 @@ import static android.opengl.GLES10.glClearColor;
 
     actionbar + night mode animation
 
-    https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
+    >>>>>>>>>>>>>>>> https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
 
     checkbox animations
 
@@ -414,4 +416,109 @@ public class ChartViewGL extends TextureView {
 
 
     }
+
+    public static final boolean LOGGING = true; //todo
+    private int scroller_width;//todo replace with scroller_left/right
+    private int scroller_pos = -1;
+    private Rect scrollbar = new Rect();
+    private int scroller_move_down_x;
+    static final int DOWN_MOVE = 0;
+    static final int DOWN_RESIZE_LEFT = 1;
+    static final int DOWN_RESIZE_RIGHT = 2;
+    float last_x = -1f;
+    int resze_scroller_right = -1;
+    int down_target = -1;
+    boolean dragging;
+
+//    public boolean onTouchEvent(MotionEvent event) {
+//        int action = event.getActionMasked();
+////        if (action != MotionEvent.ACTION_MOVE) {
+////            if (LOGGING) Log.d("tg.chart", "touchevent " + event);
+////        }
+//        float x = event.getX();
+//        float y = event.getY();
+//        switch (action) {
+//            case MotionEvent.ACTION_DOWN:
+//                //todo check scroll edges
+//                boolean b = y >= scrollbar.top && y <= scrollbar.bottom;
+//                if (b) {
+//                    if (Math.abs(x - scroller_pos) <= resize_touch_area2) {
+//                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize left");
+//                        last_x = x;
+//                        down_target = DOWN_RESIZE_LEFT;
+//                        resze_scroller_right = scroller_pos + scroller_width;
+//                        return true;
+//                    } else if (Math.abs(x - (scroller_pos + scroller_width)) < resize_touch_area2) {
+//                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize right");
+//                        last_x = x;
+//                        down_target = DOWN_RESIZE_RIGHT;
+//                        return true;
+//                    } else if (x >= scroller_pos && x <= scroller_pos + scroller_width) {
+//                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN inside scrollbar");
+//                        //todo check x inside scroller
+//                        last_x = x;
+//                        scroller_move_down_x = (int) (x - scroller_pos);
+//                        down_target = DOWN_MOVE;
+//                        return true;
+//                    } else {
+//                        //todo check scroll edges
+//                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
+//                    }
+//                } else {
+//                    if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
+//                }
+//                break;
+//            case MotionEvent.ACTION_MOVE:
+//                //todo check pointer index
+//                if (last_x != -1f) {
+//                    if (dragging) {
+//                        last_x = x;
+//                        if (down_target == DOWN_MOVE) {
+//
+//                            scroller_pos = (int) (x - scroller_move_down_x);
+//                            scroller_pos = Math.min(Math.max(scroller_pos, scrollbar.left), scrollbar.right - scroller_width);
+//                        } else if (down_target == DOWN_RESIZE_RIGHT) {
+//                            scroller_width = (int) (x - scroller_pos);
+//                            if (scroller_pos + scroller_width > scrollbar.right) {
+//                                scroller_width = scrollbar.right - scroller_pos;
+//                            }
+//                            // check the scrollbar is not too small
+//                            if (scroller_width < initial_scroller_dith) {
+//                                scroller_width = initial_scroller_dith;
+//                            }
+//                            invalidate();
+//                        } else if (down_target == DOWN_RESIZE_LEFT) {
+//                            scroller_pos = (int) x;
+//                            if (scroller_pos < scrollbar.left) {
+//                                scroller_pos = scrollbar.left;
+//                            }
+//                            scroller_width = resze_scroller_right - scroller_pos;
+//                            if (scroller_width < initial_scroller_dith) {
+//                                scroller_width = initial_scroller_dith;
+//                                scroller_pos = resze_scroller_right - scroller_width;
+//                            }
+//                            invalidate();
+//                        }
+//
+//                        invalidate();
+//                        return true;
+//                    } else {
+//                        float move = x - last_x;
+//                        if (Math.abs(move) > touchSlop) {
+//                            dragging = true;
+//                            last_x = x;
+//                            return true;
+//                        }
+//                    }
+//                }
+//                break;
+//            case MotionEvent.ACTION_CANCEL:
+//                last_x = -1;
+//                dragging = false;
+//                break;
+//            default:
+//                break;
+//        }
+//        return false;
+//    }
 }
