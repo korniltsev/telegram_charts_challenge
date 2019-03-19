@@ -24,7 +24,7 @@ public final class GLRulesProgram {
     private static final int POSITION_DATA_SIZE = 2;
 //    public static final int BORDER_COLOR = 0x334b87b4;
 
-    final String vertexShader =
+    static final String vertexShader =
             "uniform mat4 u_MVPMatrix;      \n"
                     + "attribute vec2 a_Position;     \n"
                     + "void main()                    \n"
@@ -32,12 +32,34 @@ public final class GLRulesProgram {
                     + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
                     + "}                              \n";
 
-    final String fragmentShader =
+    static final String fragmentShader =
             "precision mediump float;       \n"
                     + "uniform vec4 u_color;       \n"
                     + "void main()                    \n"
                     + "{                              \n"
                     + "   gl_FragColor = u_color;     \n"
+                    + "}                              \n";
+
+
+
+
+    static final String texVertexShader =
+            "uniform mat4 u_MVPMatrix;      \n"
+                    + "attribute vec2 a_Position;     \n"
+                    + "varying vec2 textureCoordinate;\n"
+                    + "void main()                    \n"
+                    + "{                              \n"
+                    + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
+                    + "   textureCoordinate = a_Position;   \n"
+                    + "}                              \n";
+
+    static final String texFragmentShader =
+            "precision mediump float;       \n"
+                    + "varying highp vec2 textureCoordinate;\n;"
+                    + "uniform sampler2D frame;\n;"
+                    + "void main()                    \n"
+                    + "{                              \n"
+                    + "   gl_FragColor = texture2D(frame, textureCoordinate);     \n"
                     + "}                              \n";
     private final int lineMVPHandle;
     private final int linePositionHandle;
@@ -51,7 +73,6 @@ public final class GLRulesProgram {
     private final int texProgram;
     private final int texMVPHandle;
     private final int texPositionHandle;
-    private final int texColorHandle;
 
     private float[] MVP = new float[16];
 
@@ -88,10 +109,9 @@ public final class GLRulesProgram {
         linePositionHandle = GLES20.glGetAttribLocation(lineProgram, "a_Position");
         lineColorHandle = GLES20.glGetUniformLocation(lineProgram, "u_color");
 
-        texProgram = MyGL.createProgram(vertexShader, fragmentShader);
+        texProgram = MyGL.createProgram(texVertexShader, texFragmentShader);
         texMVPHandle = GLES20.glGetUniformLocation(texProgram, "u_MVPMatrix");
         texPositionHandle = GLES20.glGetAttribLocation(texProgram, "a_Position");
-        texColorHandle = GLES20.glGetUniformLocation(texProgram, "u_color");
 
 
 
@@ -191,7 +211,7 @@ public final class GLRulesProgram {
         GLES20.glUseProgram(texProgram);
         MyGL.checkGlError2();
 
-        GLES20.glUniform4fv(texColorHandle, 1, DEBUG_COLOR_PARTS, 0);//todo try to bind only once
+//        GLES20.glUniform4fv(texColorHandle, 1, DEBUG_COLOR_PARTS, 0);//todo try to bind only once
 
         GLES20.glEnableVertexAttribArray(texPositionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, texVerticesVBO);
@@ -210,8 +230,8 @@ public final class GLRulesProgram {
         GLES20.glLineWidth(dimen.dpf(2.0f / 3.0f));
         GLES20.glUniformMatrix4fv(texMVPHandle, 1, false, MVP, 0);
 
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textZero.tex);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, texVertices.length/ 2);
-//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textZero.tex);
 
     }
 
