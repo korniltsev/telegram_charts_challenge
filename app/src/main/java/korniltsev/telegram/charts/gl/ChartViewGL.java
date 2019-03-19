@@ -48,12 +48,13 @@ import static android.opengl.GLES10.glClearColor;
 
 
 
-    rules
-    rules vertical labels
+    + rules
+    + rules vertical labels
     actionbar + night mode animation
     ---------------------------------------- 19 march
     rules vertical animation
     chart pointer response for max animation
+    horizontal lables + animations
 
     toooltip by touching
 
