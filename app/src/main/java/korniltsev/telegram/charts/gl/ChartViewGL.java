@@ -43,13 +43,14 @@ import static android.opengl.GLES10.glClearColor;
 
     + scrollbar pointer response for scroller
     + scrollbar pointer response for charts (scale + scroll)
-    scrollbar pointer response for max animation
 
     animation bug on dataset 0
 
 
 
     rules + labels + animation
+
+    scrollbar pointer response for max animation
 
     actionbar + night mode animation
 
@@ -65,6 +66,7 @@ import static android.opengl.GLES10.glClearColor;
 //     implement empty chart
 //     implement y=0 chart
 //     scrolling/caling allocations & perf
+//     initial zoom for small charts is terrible
 
 
 // todo design
@@ -80,9 +82,7 @@ import static android.opengl.GLES10.glClearColor;
 //     checkbox animations
 //     static layout warmup / background init
 //     nice app icon
-//     spring animations?
-//     animate velocity after dragging ??
-//https://github.com/facebook/redex
+//      https://github.com/facebook/redex
 // check for accessor methods
 
 
