@@ -21,6 +21,7 @@ public class MyGL {
         }
 
 
+
         int fragmentShader = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
         GLES20.glShaderSource(fragmentShader, fragmentShadersource);
         GLES20.glCompileShader(fragmentShader);

@@ -39,8 +39,8 @@ public class MainActivity extends Activity {
                 new ColumnData("#y1", "#y1", vs1, 100, 0, "line", Color.RED),
 //                new ColumnData("#y2", "#y2", vs2, 50, 0, "line", Color.RED),
         });
-//        ChartData datum = data[4];
-        ChartData datum = tesdata;
+        ChartData datum = data[4];
+//        ChartData datum = tesdata;
 
 
         final ChartViewGL chart = new ChartViewGL(this, datum.data, dimen);
