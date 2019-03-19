@@ -318,6 +318,7 @@ public class ChartViewGL extends TextureView {
                 }
                 overlay.draw(t);
 
+                rules.draw(t);
                 for (GLChartProgram chartProgram : chart) {
                     chartProgram.draw(t);
                 }
