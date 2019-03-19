@@ -45,7 +45,7 @@ import static android.opengl.GLES10.glClearColor;
     + scrollbar pointer response for charts (scale + scroll)
     scrollbar pointer response for max animation
 
-    animation buf on dataset 0
+    animation bug on dataset 0
 
 
 
@@ -64,6 +64,7 @@ import static android.opengl.GLES10.glClearColor;
 //     snap scrollbar near zeros
 //     implement empty chart
 //     implement y=0 chart
+//     scrolling/caling allocations & perf
 
 
 // todo design
@@ -575,10 +576,13 @@ public class ChartViewGL extends TextureView {
         return false;
     }
 
+//    private static final BlockingQueue<MyMotionEvent> motionEvents = new ArrayBlockingQueue<MyMotionEvent>(100);
+
     public void setOverlayPos() {
         final float left = (float)(scroller_left - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float right = (float) (scroller__right - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float scale = (right - left);
+//        motionEvents.poll()
         r.actionQueue.add(new Runnable() {//todo do not allocate
             @Override
             public void run() {
@@ -590,4 +594,20 @@ public class ChartViewGL extends TextureView {
             }
         });
     }
+
+//    class MyMotionEvent implements Runnable {
+//        float left;
+//        float scale;
+//        float right;
+//
+//        @Override
+//        public void run() {
+//            r.overlay.setLeftRight(left, right);
+//            for (GLChartProgram glChartProgram : r.chart) {
+//                glChartProgram.zoom = scale;
+//                glChartProgram.left = left;
+//            }
+//            motionEvents.offer(this);
+//        }
+//    }
 }
