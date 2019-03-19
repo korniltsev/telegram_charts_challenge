@@ -67,6 +67,7 @@ import static android.opengl.GLES10.glClearColor;
 //     implement y=0 chart
 //     scrolling/caling allocations & perf
 //     initial zoom for small charts is terrible
+//    mb scale linewidth when drawing 365 points
 
 
 // todo design

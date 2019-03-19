@@ -54,6 +54,8 @@ public final class GLChartProgram {
 
     public long maxValue;
     public long minValue;
+    public float minValueAnim = 1f;
+    public float maxValueAnim = 1f;
 
     final ChartViewGL root;
 
@@ -108,14 +110,14 @@ public final class GLChartProgram {
             }
         }
         if (minAnim != null) {
-            minValue = minAnim.tick(t);
+            minValueAnim = minAnim.tick(t);
             if (minAnim.ended) {
                 minAnim = null;
             }
         }
 
         if (maxAnim != null) {
-            maxValue = maxAnim.tick(t);
+            maxValueAnim = maxAnim.tick(t);
             if (maxAnim.ended) {
                 maxAnim = null;
             }
@@ -152,11 +154,11 @@ public final class GLChartProgram {
             Matrix.translateM(MVP, 0, hpadding, root.dimen_v_padding8 + dip2, 0);
             float w = this.w - 2 * hpadding;
             float h = root.dimen_scrollbar_height - 2 * dip2;
-            float ydiff = maxValue - minValue;
+            float ydiff = maxValueAnim * maxValue - minValueAnim * minValue;
 //            float xx = ydiff / minValue ;
             Matrix.translateM(MVP, 0, 0, 0, 0f);
             float yscale = h / ydiff;
-            float dy = -yscale * minValue;
+            float dy = -yscale * minValue * minValueAnim;
             Matrix.translateM(MVP, 0, 0, dy, 0);
             Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), yscale, 1.0f);
             GLES20.glLineWidth(dimen.dpf(1f));
@@ -169,7 +171,7 @@ public final class GLChartProgram {
             float w = this.w - 2 * hpadding;
             int h = root.dimen_chart_height;
             float xdiff = maxx - minx;
-            Matrix.scaleM(MVP, 0, w / xdiff /zoom, h  /  (float)(maxValue ), 1.0f);
+            Matrix.scaleM(MVP, 0, w / xdiff /zoom, h  /  (float)(maxValue * maxValueAnim ), 1.0f);
             Matrix.translateM(MVP, 0, -left * xdiff , 0f, 0f);
 //            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), h  /  (float)(maxValue ), 1.0f);
             GLES20.glLineWidth(dimen.dpf(2f));
@@ -183,8 +185,8 @@ public final class GLChartProgram {
 
     boolean checked = true;
     MyAnimation.Float alphaAnim;
-    MyAnimation.Long minAnim;
-    MyAnimation.Long maxAnim;
+    MyAnimation.Float minAnim;
+    MyAnimation.Float maxAnim;
     float alpha = 1f;
 
     public void animateAlpha(boolean isChecked) {
@@ -195,14 +197,21 @@ public final class GLChartProgram {
     }
 
     public void animateMinMax(long min, long max, boolean animate) {
+        long prevMin = this.minValue;
+        long prevMax = this.maxValue;
+        this.minValue = min;
+        this.maxValue = max;
         if (alpha == 0f || !animate) {
-            minValue = min;
-            maxValue = max;
+            minValueAnim = 1.0f;
+            maxValueAnim = 1.0f;
         } else {
+            //todo mb double?
+            minValueAnim = (float)prevMin / min;
+            maxValueAnim = (float)prevMax / max;
 //            minValue = min;
 //            maxValue = max;
-            minAnim = new MyAnimation.Long(160, minValue, min);
-            maxAnim = new MyAnimation.Long(160, maxValue, max);
+            minAnim = new MyAnimation.Float(160, minValueAnim, 1.0f);
+            maxAnim = new MyAnimation.Float(160, maxValueAnim, 1.0f);
         }
 
     }
