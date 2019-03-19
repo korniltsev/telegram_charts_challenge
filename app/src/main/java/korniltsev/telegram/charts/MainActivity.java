@@ -54,6 +54,7 @@ public class MainActivity extends Activity {
     private MyColorDrawable bgRoot;
     private ArrayList<MyColorDrawable> ds = new ArrayList<>();
 
+    //todo first animation is SLOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     static class ColorSet {
         public final int toolbar;
         public final int darkBackground;
