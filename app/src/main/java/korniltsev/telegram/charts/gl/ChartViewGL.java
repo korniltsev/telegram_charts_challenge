@@ -20,7 +20,7 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
-import korniltsev.telegram.charts.ColumnData;
+import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.Dimen;
 
 import static android.opengl.EGL14.EGL_CONTEXT_CLIENT_VERSION;

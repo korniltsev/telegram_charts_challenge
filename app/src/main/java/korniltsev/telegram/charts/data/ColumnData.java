@@ -1,4 +1,4 @@
-package korniltsev.telegram.charts;
+package korniltsev.telegram.charts.data;
 
 public class ColumnData {
     public final String id;

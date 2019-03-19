@@ -16,10 +16,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import korniltsev.telegram.charts.data.ChartData;
+import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.gl.ChartViewGL;
 
 
 public class MainActivity extends Activity {
+
+
+    public static final String TAG = "tg.ch";
+    public static final boolean DEBUG = BuildConfig.DEBUG;
+    public static final boolean LOGGING = DEBUG;
 
 
     private Dimen dimen;
@@ -30,13 +37,11 @@ public class MainActivity extends Activity {
 
         dimen = new Dimen(this);
         ChartData[] data = readData();
-        Log.d(ChartView.TAG, "data len " + data.length);
+        Log.d(TAG, "data len " + data.length);
 
         ChartData datum = data[0];
 
         final ChartViewGL chart = new ChartViewGL(this, datum.data, dimen);
-//        final ChartView chart = new ChartView(this);
-//        chart.setData(datum);
 
         LinearLayout frame = new LinearLayout(this);
         frame.setBackgroundColor(Color.WHITE);//todo set in theme
@@ -45,7 +50,7 @@ public class MainActivity extends Activity {
         chart.setLayoutParams(lp);
         frame.addView(chart);
         for (final ColumnData c : datum.data) {
-            if (c.id.equals(ChartView.COLUMN_ID_X)) {
+            if (c.id.equals(ChartData.COLUMN_ID_X)) {
                 continue;
             }
             CheckBox cb = new CheckBox(this);

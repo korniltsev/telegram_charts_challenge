@@ -3,13 +3,12 @@ package korniltsev.telegram.charts.gl;
 import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
-import android.os.SystemClock;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import korniltsev.telegram.charts.ColumnData;
+import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.Dimen;
 
 public final class GLChartProgram {

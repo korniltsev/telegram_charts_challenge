@@ -1,4 +1,4 @@
-package korniltsev.telegram.charts;
+package korniltsev.telegram.charts.data;
 
 import android.graphics.Color;
 
@@ -6,9 +6,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import korniltsev.telegram.charts.MainActivity;
+
 public class ChartData {
 
-    final ColumnData[] data;
+    public static final String COLUMN_ID_X = "x";
+    public final ColumnData[] data;
 
     public ChartData(ColumnData[] data) {
         this.data = data;
@@ -31,7 +34,7 @@ public class ChartData {
                 long minValue = Long.MAX_VALUE;
                 for (int j = 1; j < jl; ++j) {
                     long v = column.getLong(j);
-                    if (ChartView.DEBUG && v < 0) {
+                    if (MainActivity.DEBUG && v < 0) {
                         throw new AssertionError("v < 0");
                     }
                     minValue = Math.min(minValue, v);
@@ -39,7 +42,7 @@ public class ChartData {
                     vs[j - 1] = v;
                 }
 
-                if (ChartView.DEBUG && minValue > maxValue) {
+                if (MainActivity.DEBUG && minValue > maxValue) {
                     throw new AssertionError("minValue > maxValue");
                 }
                 String type = o.getJSONObject("types").getString(id);
