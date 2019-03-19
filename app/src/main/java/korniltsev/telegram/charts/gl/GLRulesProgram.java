@@ -172,7 +172,7 @@ public final class GLRulesProgram {
 //        final float vline2h = dimen.dpf(1f);
 
 
-        GLES20.glUniform4fv(colorHandle, 1, color_overlay, 0);
+
 //        drawRect(0,0,100, 100);
         float dy = dimen.dpf(80);
         for (int i = 0; i < 6; ++i) {
@@ -224,6 +224,7 @@ public final class GLRulesProgram {
     public void drawLine(float x, float y, float w) {
         GLES20.glUseProgram(programHorizontalLine);
         MyGL.checkGlError2();
+        GLES20.glUniform4fv(colorHandle, 1, color_overlay, 0);
 
         GLES20.glEnableVertexAttribArray(positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
