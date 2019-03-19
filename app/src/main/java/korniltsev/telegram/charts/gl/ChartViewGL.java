@@ -84,6 +84,7 @@ stop drawing when nothing changes and draw only animation / changes
 //    lollipop bg gradient
 //    check colors & paddings with collor picker
 //    add 1dp padding to the scrollbar charts
+//    compare label fonts with design
 
 // todo nice to have
 //     support rtl since telegram supports
