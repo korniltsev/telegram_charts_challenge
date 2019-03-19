@@ -51,8 +51,8 @@ import static android.opengl.GLES10.glClearColor;
     + rules
     + rules vertical labels
     actionbar + night mode animation
-    alpha animation, wrong blending for charts
     ---------------------------------------- 19 march
+    alpha animation, wrong blending for charts
     rules vertical animation
     chart pointer response for max animation
     horizontal lables + animations
@@ -70,6 +70,7 @@ import static android.opengl.GLES10.glClearColor;
 ----------------------------------------------------------------------
 // todo
 stop drawing when nothing changes and draw only animation / changes
+//todo first animation is SLOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //     snap scrollbar near zeros
 //     implement empty chart
 //     implement y=0 chart
