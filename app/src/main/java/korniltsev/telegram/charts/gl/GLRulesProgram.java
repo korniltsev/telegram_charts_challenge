@@ -22,7 +22,6 @@ public final class GLRulesProgram {
     private static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
     private static final int POSITION_DATA_SIZE = 2;
-    public static final int LINE_COLOR = 0xffE7E8E9;
 //    public static final int BORDER_COLOR = 0x334b87b4;
 
     final String vertexShader =
@@ -48,6 +47,12 @@ public final class GLRulesProgram {
     private final TextPaint paint;
     private final TextTex textZero;
 
+    private final int texVerticesVBO;
+    private final int texProgram;
+    private final int texMVPHandle;
+    private final int texPositionHandle;
+    private final int texColorHandle;
+
     private float[] MVP = new float[16];
 
     public final int canvasW;
@@ -67,8 +72,8 @@ public final class GLRulesProgram {
     static final float texVertices[] = {
             0, 0,
             0, 1,
-            1, 1,
             1, 0,
+            1, 1,
     };
 
     public GLRulesProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root) {
@@ -77,24 +82,39 @@ public final class GLRulesProgram {
         this.dimen = dimen;
         this.root = root;
 
-        FloatBuffer buf1 = ByteBuffer.allocateDirect(lineVertices.length * BYTES_PER_FLOAT)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
-        buf1.put(lineVertices);
-        buf1.position(0);
-
 
         lineProgram = MyGL.createProgram(vertexShader, fragmentShader);
         lineMVPHandle = GLES20.glGetUniformLocation(lineProgram, "u_MVPMatrix");
         linePositionHandle = GLES20.glGetAttribLocation(lineProgram, "a_Position");
         lineColorHandle = GLES20.glGetUniformLocation(lineProgram, "u_color");
 
+        texProgram = MyGL.createProgram(vertexShader, fragmentShader);
+        texMVPHandle = GLES20.glGetUniformLocation(texProgram, "u_MVPMatrix");
+        texPositionHandle = GLES20.glGetAttribLocation(texProgram, "a_Position");
+        texColorHandle = GLES20.glGetUniformLocation(texProgram, "u_color");
 
-        int[] vbos = new int[1];
-        GLES20.glGenBuffers(1, vbos, 0);
+
+
+        FloatBuffer buf1 = ByteBuffer.allocateDirect(lineVertices.length * BYTES_PER_FLOAT)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        buf1.put(lineVertices);
+        buf1.position(0);
+
+        FloatBuffer buf2 = ByteBuffer.allocateDirect(texVertices.length * BYTES_PER_FLOAT)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        buf2.put(texVertices);
+        buf2.position(0);
+
+        int[] vbos = new int[2];
+        GLES20.glGenBuffers(2, vbos, 0);
         lineVerticesVBO = vbos[0];
+        texVerticesVBO = vbos[1];
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, lineVerticesVBO);
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, lineVertices.length * BYTES_PER_FLOAT, buf1, GLES20.GL_STATIC_DRAW);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, texVerticesVBO);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, texVertices.length * BYTES_PER_FLOAT, buf2, GLES20.GL_STATIC_DRAW);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
         paint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
@@ -137,11 +157,22 @@ public final class GLRulesProgram {
         }
     }
 
+    public static final int LINE_COLOR = 0xffE7E8E9;
+
     static final float[] LINE_COLOR_PARTS = new float[]{
             Color.red(LINE_COLOR) / 255f,
             Color.green(LINE_COLOR) / 255f,
             Color.blue(LINE_COLOR) / 255f,
             Color.alpha(LINE_COLOR) / 255f,
+    };
+
+    public static final int DEBUG_COLOR = 0xff000000;
+
+    static final float[] DEBUG_COLOR_PARTS = new float[]{
+            Color.red(DEBUG_COLOR) / 255f,
+            Color.green(DEBUG_COLOR) / 255f,
+            Color.blue(DEBUG_COLOR) / 255f,
+            Color.alpha(DEBUG_COLOR) / 255f,
     };
 
 
@@ -157,6 +188,16 @@ public final class GLRulesProgram {
     }
 
     private void drawText(TextTex textZero, float x, float y) {
+        GLES20.glUseProgram(texProgram);
+        MyGL.checkGlError2();
+
+        GLES20.glUniform4fv(texColorHandle, 1, DEBUG_COLOR_PARTS, 0);//todo try to bind only once
+
+        GLES20.glEnableVertexAttribArray(texPositionHandle);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, texVerticesVBO);
+        GLES20.glVertexAttribPointer(texPositionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
+
+
         final float scalex = 2.0f / canvasW;
         final float scaley = 2.0f / canvasH;
         Matrix.setIdentityM(MVP, 0);
@@ -164,8 +205,13 @@ public final class GLRulesProgram {
         Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
 
         Matrix.translateM(MVP, 0, x, y, 0);
+        Matrix.scaleM(MVP, 0, 100f,100f,1f);
 
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textZero.tex);
+        GLES20.glLineWidth(dimen.dpf(2.0f / 3.0f));
+        GLES20.glUniformMatrix4fv(texMVPHandle, 1, false, MVP, 0);
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, texVertices.length/ 2);
+//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textZero.tex);
 
     }
 
