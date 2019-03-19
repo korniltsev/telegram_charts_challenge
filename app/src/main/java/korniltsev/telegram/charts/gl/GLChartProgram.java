@@ -173,7 +173,7 @@ public final class GLChartProgram {
             Matrix.scaleM(MVP, 0, w / xdiff /zoom, h  /  (float)(maxValue * maxValueAnim ), 1.0f);
             Matrix.translateM(MVP, 0, -left * xdiff , 0f, 0f);
 //            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), h  /  (float)(maxValue ), 1.0f);
-            GLES20.glLineWidth(dimen.dpf(22f));
+            GLES20.glLineWidth(dimen.dpf(2f));
         }
 
 //        Matrix.scaleM(MVP, 0, 5.0f, 1.0f, 1.0f);

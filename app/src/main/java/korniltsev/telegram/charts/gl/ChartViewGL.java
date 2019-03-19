@@ -49,8 +49,9 @@ import static android.opengl.GLES10.glClearColor;
 
 
     rules + labels + animation
+    chart pointer response for max animation
 
-    scrollbar pointer response for max animation
+    toooltip by touchin
 
     actionbar + night mode animation
 
@@ -180,6 +181,7 @@ public class ChartViewGL extends TextureView {
         private GLChartProgram[] scrollbar;
         private GLChartProgram[] chart;
         private GLScrollbarOverlayProgram overlay;
+        private GLRulesProgram rules;
 
 
         public Render(ColumnData[] column) {
@@ -195,6 +197,12 @@ public class ChartViewGL extends TextureView {
                 return;
             }
             initGL(surface);
+            initPrograms();
+            loop();
+
+        }
+
+        private void initPrograms() {
             scrollbar = new GLChartProgram[data.length - 1];
             long max = -1;
             long min = Long.MAX_VALUE;
@@ -219,9 +227,7 @@ public class ChartViewGL extends TextureView {
             }
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this);
-            //todo initial
-            loop();
-
+            rules = new GLRulesProgram(w, h, dimen, ChartViewGL.this);
         }
 
 
@@ -310,10 +316,11 @@ public class ChartViewGL extends TextureView {
                 for (GLChartProgram c : scrollbar) {
                     c.draw(t);
                 }
+                overlay.draw(t);
+
                 for (GLChartProgram chartProgram : chart) {
                     chartProgram.draw(t);
                 }
-                overlay.draw(t);
 
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                     throw new RuntimeException("Cannot swap buffers");
