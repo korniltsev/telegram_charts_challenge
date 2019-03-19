@@ -36,14 +36,18 @@ import static android.opengl.GLES10.glClearColor;
     + checkbox min max animation for scroller & chart
 
 
-    https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
+
 
     scrollbar pointer response for scroller
     scrollbar pointer response for charts (scale + scroll)
 
+
+
     rules + labels + animation
 
     actionbar + night mode animation
+
+    https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
 
     checkbox animations
 
