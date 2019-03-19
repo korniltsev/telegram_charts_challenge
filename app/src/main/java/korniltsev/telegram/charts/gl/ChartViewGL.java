@@ -63,6 +63,7 @@ import static android.opengl.GLES10.glClearColor;
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 // todo
+stop drawing when nothing changes and draw only animation / changes
 //     snap scrollbar near zeros
 //     implement empty chart
 //     implement y=0 chart

@@ -1,8 +1,15 @@
 package korniltsev.telegram.charts.gl;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.opengl.GLES20;
+import android.opengl.GLUtils;
 import android.opengl.Matrix;
+import android.text.Layout;
+import android.text.StaticLayout;
+import android.text.TextPaint;
 import android.util.Log;
 
 import java.nio.ByteBuffer;
@@ -40,6 +47,8 @@ public final class GLRulesProgram {
     private final int vbo;
     private final FloatBuffer buf1;
     private final int colorHandle;
+    private final TextPaint paint;
+    private final TextTex textZero;
 
     private float[] MVP = new float[16];
 
@@ -90,6 +99,56 @@ public final class GLRulesProgram {
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * BYTES_PER_FLOAT, buf1, GLES20.GL_STATIC_DRAW);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
+        paint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+        paint.setColor(0xff96A2AA);
+        paint.setTextSize(dimen.dpf(32f));
+
+        getTextTexture("100");
+        textZero = new TextTex("0", paint);
+    }
+
+    public void getTextTexture(String text) {
+
+        System.out.println();
+    }
+
+    public class TextTex {
+        final String text;
+        final int tex;
+
+        TextTex(String text, TextPaint p) {
+            this.text = text;
+
+            int w = (int) Math.ceil(paint.measureText(text));
+            StaticLayout staticLayout = new StaticLayout(text, 0, text.length(), paint, w, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+            int h = staticLayout.getHeight();
+            Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+            Canvas c = new Canvas(b);
+            staticLayout.draw(c);
+
+
+
+            int[] textures = new int[1];
+            GLES20.glGenTextures(1, textures, 0);
+//            MyGL.checkGlError2();
+            tex = textures[0];
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+//            MyGL.checkGlError2();
+
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+//            MyGL.checkGlError2();
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+//            MyGL.checkGlError2();
+
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
+//            MyGL.checkGlError2();
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
+//            MyGL.checkGlError2();
+
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, b, 0);
+//            MyGL.checkGlError2();
+            b.recycle();
+        }
     }
 
     float[] color_overlay = new float[]{ //todo try to do only once
@@ -125,7 +184,9 @@ public final class GLRulesProgram {
 //        drawRect(0,0,100, 100);
         float dy = dimen.dpf(80);
         for (int i = 0; i < 6; ++i) {
-            drawLine(dimen.dpf(16), dy, canvasW - 2 * dimen.dpf(16));
+//            float hpadding = dimen.dpf(16);
+            drawLine(hpadding, dy, canvasW - 2 * hpadding);
+            drawText(textZero, hpadding, dy);
             dy += dimen.dpf(51);
         }
 
@@ -148,9 +209,7 @@ public final class GLRulesProgram {
 //        drawRect(l, root.dimen_v_padding8 + root.dimen_scrollbar_height - vline2h, r-l, vline2h);
     }
 
-
-
-    public void drawRect(float x, float y, float w, float h) {
+    private void drawText(TextTex textZero, float x, float y) {
         final float scalex = 2.0f / canvasW;
         final float scaley = 2.0f / canvasH;
         Matrix.setIdentityM(MVP, 0);
@@ -158,10 +217,22 @@ public final class GLRulesProgram {
         Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
 
         Matrix.translateM(MVP, 0, x, y, 0);
-        Matrix.scaleM(MVP, 0, w, h, 1.0f);
 
-        GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.length / 2);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textZero.tex);
+//        GLES20.
+//        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
+//        GLES20.glDisable(GLES20.GL_TEXTURE_2D);
+
+//        GL
+
+    }
+
+
+    public void drawRect(float x, float y, float w, float h) {
+        //        Matrix.scaleM(MVP, 0, w, h, 1.0f);
+
+//        GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
+//        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.length / 2);
 
     }
 

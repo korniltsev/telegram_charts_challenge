@@ -10,7 +10,9 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Light.NoTitleBar"
         >
-        <activity android:name="korniltsev.telegram.charts.MainActivity">
+        <activity android:name="korniltsev.telegram.charts.MainActivity"
+            android:screenOrientation="portrait"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

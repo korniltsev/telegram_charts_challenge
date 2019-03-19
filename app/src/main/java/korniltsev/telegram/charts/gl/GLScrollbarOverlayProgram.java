@@ -129,10 +129,6 @@ public final class GLScrollbarOverlayProgram {
             drawRect(hpadding + scrollerW * right, root.dimen_v_padding8, scrollerW * (1.0f-right), root.dimen_scrollbar_height);
         }
 
-
-
-
-
         GLES20.glUniform4fv(colorHandle, 1, color_border, 0);
         drawRect(hpadding + scrollerW * left, root.dimen_v_padding8, vline1w, root.dimen_scrollbar_height);
         drawRect(hpadding + scrollerW * right - vline1w, root.dimen_v_padding8, vline1w, root.dimen_scrollbar_height);
@@ -162,6 +158,6 @@ public final class GLScrollbarOverlayProgram {
     public void setLeftRight(float left, float right) {
         this.left = left;
         this.right = right;
-        Log.d("OVERLAY", " " + left + " " + right);
+//        Log.d("OVERLAY", " " + left + " " + right);
     }
 }
