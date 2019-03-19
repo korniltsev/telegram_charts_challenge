@@ -48,12 +48,16 @@ import static android.opengl.GLES10.glClearColor;
 
 
 
-    rules + labels + animation
+    rules
+    rules vertical labels
+    actionbar + night mode animation
+    ---------------------------------------- 19 march
+    rules vertical animation
     chart pointer response for max animation
 
-    toooltip by touchin
+    toooltip by touching
 
-    actionbar + night mode animation
+
 
     >>>>>>>>>>>>>>>> https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
 
