@@ -117,7 +117,7 @@ public final class GLScrollbarOverlayProgram {
 
         final float hpadding = dimen.dpf(16);
         final float scrollerW = this.canvasW - 2 * hpadding;
-        final float vline1w = dimen.dpf(2f);
+        final float vline1w = dimen.dpf(4f);
         final float vline2h = dimen.dpf(1f);
 
 

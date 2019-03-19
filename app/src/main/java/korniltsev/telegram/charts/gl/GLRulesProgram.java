@@ -60,17 +60,17 @@ public final class GLRulesProgram {
 
     final ChartViewGL root;
 
-    float left = 0.5f;
-    float right = 1.0f;
+//    float left = 0.5f;
+//    float right = 1.0f;
 
     float vertices[] = {
             0, 0,
-            0, 1,
-            1, 1,
-
-            1, 1,
             1, 0,
-            0, 0,
+//            1, 1,
+
+//            1, 1,
+//            1, 0,
+//            0, 0,
     };
 
     public GLRulesProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root) {
@@ -246,9 +246,9 @@ public final class GLRulesProgram {
 
     }
 
-    public void setLeftRight(float left, float right) {
-        this.left = left;
-        this.right = right;
-        Log.d("OVERLAY", " " + left + " " + right);
-    }
+//    public void setLeftRight(float left, float right) {
+//        this.left = left;
+//        this.right = right;
+//        Log.d("OVERLAY", " " + left + " " + right);
+//    }
 }
