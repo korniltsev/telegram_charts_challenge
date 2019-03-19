@@ -75,7 +75,6 @@ public class MainActivity extends Activity {
     private MyColorDrawable bgToolbar;
     private TextView title;
     private ImageView imageButton;
-    private ValueAnimator toolbarAnimation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
