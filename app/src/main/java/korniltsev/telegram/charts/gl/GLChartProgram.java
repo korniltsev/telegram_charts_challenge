@@ -147,8 +147,8 @@ public final class GLChartProgram {
 
         Matrix.translateM(MVP, 0, -1.0f, -1.0f, 0);
         Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
+        //todo learn matrixes ¯\_(ツ)_/¯
         if (scrollbar) {
-            //todo learn matrixes ¯\_(ツ)_/¯
             final float dip2 = dimen.dpf(2);
             Matrix.translateM(MVP, 0, hpadding, root.dimen_v_padding8 + dip2, 0);
             float w = this.w - 2 * hpadding;
