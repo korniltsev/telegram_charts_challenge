@@ -55,8 +55,8 @@ public final class GLRulesProgram {
 
     static final String texFragmentShader =
             "precision mediump float;       \n"
-                    + "varying highp vec2 textureCoordinate;\n;"
-                    + "uniform sampler2D frame;\n;"
+                    + "varying vec2 textureCoordinate;\n"
+                    + "uniform sampler2D frame;\n"
                     + "void main()                    \n"
                     + "{                              \n"
                     + "   gl_FragColor = texture2D(frame, textureCoordinate);     \n"
@@ -109,6 +109,7 @@ public final class GLRulesProgram {
         linePositionHandle = GLES20.glGetAttribLocation(lineProgram, "a_Position");
         lineColorHandle = GLES20.glGetUniformLocation(lineProgram, "u_color");
 
+
         texProgram = MyGL.createProgram(texVertexShader, texFragmentShader);
         texMVPHandle = GLES20.glGetUniformLocation(texProgram, "u_MVPMatrix");
         texPositionHandle = GLES20.glGetAttribLocation(texProgram, "a_Position");
@@ -139,7 +140,7 @@ public final class GLRulesProgram {
 
         paint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(0xff96A2AA);
-        paint.setTextSize(dimen.dpf(32f));
+        paint.setTextSize(dimen.dpf(12f));
 
         textZero = new TextTex("0", paint);
     }
@@ -148,13 +149,15 @@ public final class GLRulesProgram {
     public class TextTex {
         final String text;
         final int tex;
+        final int w;
+        final int h;
 
         TextTex(String text, TextPaint p) {
             this.text = text;
 
-            int w = (int) Math.ceil(paint.measureText(text));
+            w = (int) Math.ceil(paint.measureText(text));
             StaticLayout staticLayout = new StaticLayout(text, 0, text.length(), paint, w, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
-            int h = staticLayout.getHeight();
+            h = staticLayout.getHeight();
             Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
             Canvas c = new Canvas(b);
             staticLayout.draw(c);
@@ -225,9 +228,9 @@ public final class GLRulesProgram {
         Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
 
         Matrix.translateM(MVP, 0, x, y, 0);
-        Matrix.scaleM(MVP, 0, 100f,100f,1f);
+        Matrix.scaleM(MVP, 0, textZero.w,textZero.h,1f);
 
-        GLES20.glLineWidth(dimen.dpf(2.0f / 3.0f));
+//        GLES20.glLineWidth(dimen.dpf(2.0f / 3.0f));
         GLES20.glUniformMatrix4fv(texMVPHandle, 1, false, MVP, 0);
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textZero.tex);
