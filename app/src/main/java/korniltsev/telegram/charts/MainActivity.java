@@ -1,16 +1,22 @@
 package korniltsev.telegram.charts;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.RippleDrawable;
+import android.graphics.drawable.StateListDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.ViewGroup;
+import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -23,6 +29,7 @@ import org.json.JSONException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.data.ColumnData;
@@ -40,7 +47,26 @@ public class MainActivity extends Activity {
     public static final boolean DEBUG = BuildConfig.DEBUG;
     public static final boolean LOGGING = DEBUG;
 
-    public static final int COLOR_ACTION_BAR_LIGHT = 0xff517DA2;//todo make a theme object
+//    public static final int COLOR_ACTION_BAR_LIGHT = 0xff517DA2;//todo make a theme object
+//    public static final int COLOR_ACTION_BAR_DARK = 0xff212D3B;//todo make a theme object
+    public static final ColorSet DAY = new ColorSet(0xff517DA2, 0xffF0F0F0,0xffffffff);
+    public static final ColorSet NIGHT = new ColorSet(0xff212D3B, 0xff161E27,0xff1D2733);
+    private MyColorDrawable bgRoot;
+    private ArrayList<MyColorDrawable> ds = new ArrayList<>();
+
+    static class ColorSet {
+        public final int toolbar;
+        public final int darkBackground;
+        public final int lightBackground;
+
+        public ColorSet(int toolbar, int darkBackground, int lightBackground) {
+            this.toolbar = toolbar;
+            this.darkBackground = darkBackground;
+            this.lightBackground = lightBackground;
+        }
+    }
+
+    ColorSet currentColorSet = DAY;
 
 
     private Dimen dimen;
@@ -48,6 +74,7 @@ public class MainActivity extends Activity {
     private MyColorDrawable bgToolbar;
     private TextView title;
     private ImageView imageButton;
+    private ValueAnimator toolbarAnimation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,9 +82,6 @@ public class MainActivity extends Activity {
 
         dimen = new Dimen(this);
         final int toolbar_size = dimen.dpi(56);
-
-
-
 
 
         LinearLayout.LayoutParams titleLP = new LinearLayout.LayoutParams(WRAP_CONTENT, MATCH_PARENT);
@@ -76,18 +100,24 @@ public class MainActivity extends Activity {
         imageButton.setImageResource(R.drawable.ic_moon);
         imageButton.setScaleType(ImageView.ScaleType.CENTER);
         imageButton.setLayoutParams(buttonLP);
+        imageButton.setClickable(true);
+        imageButton.setBackgroundDrawable(createButtonBackground(0xff446D91));
+        imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                animateTheme();
+            }
+        });
 
 
         LinearLayout.LayoutParams toolbarLP = new LinearLayout.LayoutParams(MATCH_PARENT, toolbar_size);
-        bgToolbar = new MyColorDrawable(COLOR_ACTION_BAR_LIGHT);
+        bgToolbar = new MyColorDrawable(currentColorSet.toolbar);
         toolbar = new LinearLayout(this);
         toolbar.setOrientation(LinearLayout.HORIZONTAL);
         toolbar.setBackgroundDrawable(bgToolbar);
         toolbar.setLayoutParams(toolbarLP);
         toolbar.addView(title);
         toolbar.addView(imageButton);
-
-
 
 
         ChartData[] data = readData();
@@ -98,7 +128,8 @@ public class MainActivity extends Activity {
         final ChartViewGL chart = new ChartViewGL(this, datum.data, dimen);
 
         LinearLayout frame = new LinearLayout(this);
-        frame.setBackgroundDrawable(new MyColorDrawable(Color.WHITE));//todo set in theme
+        bgRoot = new MyColorDrawable(currentColorSet.darkBackground);
+        frame.setBackgroundDrawable(bgRoot);//todo set in theme
         frame.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         chart.setLayoutParams(lp);
@@ -111,6 +142,9 @@ public class MainActivity extends Activity {
                 continue;
             }
             CheckBox cb = new CheckBox(this);
+            MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground);
+            ds.add(d);
+            cb.setBackgroundDrawable(d);
             cb.setText(c.name);
             cb.setChecked(true);
             cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -127,6 +161,20 @@ public class MainActivity extends Activity {
         ColorDrawable d;
 //        d.setColor();
 
+    }
+
+
+    private void animateTheme() {
+        if (currentColorSet == DAY) {
+            currentColorSet = NIGHT;
+        } else {
+            currentColorSet = DAY;
+        }
+        bgToolbar.animate(currentColorSet.toolbar);
+        bgRoot.animate(currentColorSet.darkBackground);
+        for (MyColorDrawable d : ds) {
+            d.animate(currentColorSet.lightBackground);
+        }
     }
 
     public ChartData[] readData() {
@@ -162,13 +210,31 @@ public class MainActivity extends Activity {
         return baos.toByteArray();
     }
 
-    public class MyColorDrawable extends Drawable {
-        int color;
+    public static class MyColorDrawable extends Drawable {
+        public int color;
+        private ValueAnimator anim;
 
         public MyColorDrawable(int color) {
             this.color = color;
         }
 
+        public void animate(int to) {
+            if (anim != null) {
+                anim.cancel();
+            }
+            anim = ValueAnimator.ofInt(color, to);
+            anim.setEvaluator(new ArgbEvaluator());
+            anim.setDuration(160);
+            anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    int v = (int) animation.getAnimatedValue();//todo unneded allocations
+                    color = v;
+                    invalidateSelf();
+                }
+            });
+            anim.start();
+        }
 
         @Override
         public void draw(Canvas canvas) {
@@ -188,6 +254,17 @@ public class MainActivity extends Activity {
         @Override
         public int getOpacity() {
             return OPAQUE;
+        }
+    }
+
+    public final Drawable createButtonBackground(int pressedColor) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            StateListDrawable stateListDrawable = new StateListDrawable();
+            stateListDrawable.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(pressedColor));
+            return stateListDrawable;
+        } else {
+            ColorDrawable maskDrawable = null;
+            return new RippleDrawable(ColorStateList.valueOf(pressedColor), null, maskDrawable);
         }
     }
 

@@ -334,6 +334,7 @@ public class ChartViewGL extends TextureView {
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                     throw new RuntimeException("Cannot swap buffers");
                 }
+//                break;
             }
         }
 
@@ -456,8 +457,10 @@ public class ChartViewGL extends TextureView {
                     EGL10.EGL_DEPTH_SIZE, 0,
                     EGL10.EGL_STENCIL_SIZE, 0,
 
-//                    If you want to do FSAA, you need to create an EGL context with multisampling enabled. Write an EGLConfigChooser that returns a multisampling config (specify 1 for EGL_SAMPLE_BUFFERS),
+                    //todo try catch and try without sampel buffers, at least it wont crash
                     EGL10.EGL_SAMPLE_BUFFERS, 1,
+//                    EGL10.EGL_SAMPLES, 2,
+
                     EGL10.EGL_NONE
             };
         }
@@ -543,7 +546,7 @@ public class ChartViewGL extends TextureView {
                                 scroller_left = scrollbar.right - scroller_move_down_width;
                             }
                             setOverlayPos();
-                            invalidate();
+//                            invalidate();
 //                            int scroller_width = scroller__right - scroller_left;
 //                            scroller_left = Math.min(Math.max(scroller_left, scrollbar.left), scrollbar.right - scroller_width);
                         } else if (down_target == DOWN_RESIZE_RIGHT) {
@@ -556,7 +559,7 @@ public class ChartViewGL extends TextureView {
                                 scroller__right = scroller_left + initial_scroller_dith;
                             }
                             setOverlayPos();
-                            invalidate();
+//                            invalidate();
                         } else if (down_target == DOWN_RESIZE_LEFT) {
                             scroller_left = (int) x;
                             if (scroller_left < scrollbar.left) {
@@ -568,10 +571,10 @@ public class ChartViewGL extends TextureView {
                                 scroller_left = scroller__right - initial_scroller_dith;
                             }
                             setOverlayPos();
-                            invalidate();
+//                            invalidate();
                         }
 
-                        invalidate();
+//                        invalidate();
                         return true;
                     } else {
                         float move = x - last_x;
