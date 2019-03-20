@@ -65,14 +65,15 @@ import static android.opengl.GLES10.glClearColor;
     scrollbar animation bug when last value is zero
 
     toolbar shadow, scrollbar night mode, text night mode + animation
-    horizontal lables + animations
 
     toooltip by touching
     ---------------------------------------- 20 march
     optimize ruler rendering
-
+    horizontal lables + animations
     checkbox + animations + divider width
     todo animate titlebar day night
+    ---------------------------------------- 21 march
+
 
     alpha animation, wrong blending for charts
     >>>>>>>>>>>>>>>> https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc

@@ -303,7 +303,7 @@ public final class GLRulersProgram {
                 drawText(r.values.get(i), hpadding, zero + dy * r.scale, r.alpha);
                 dy += dimen.dpf(50);
             }
-            drawLine(hpadding, zero + root.dimen_chart_height-10, (canvasW - 2 * hpadding)/2, 1.0f);
+//            drawLine(hpadding, zero + root.dimen_chart_height-10, (canvasW - 2 * hpadding)/2, 1.0f);
         }
     }
 
