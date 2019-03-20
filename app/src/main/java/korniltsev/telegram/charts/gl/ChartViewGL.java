@@ -75,7 +75,7 @@ import static android.opengl.GLES10.glClearColor;
 ----------------------------------------------------------------------
 // todo
 stop drawing when nothing changes and draw only animation / changes
-//todo first animation is SLOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//     todo first animation is SLOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!, trace with tracer emulator, if possible - warmup, if not - rewrite custom ripple or just replace with state list drawable
 //     snap scrollbar near zeros
 //     implement empty chart
 //     implement y=0 chart

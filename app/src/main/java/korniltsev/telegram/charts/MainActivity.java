@@ -10,6 +10,8 @@ import android.graphics.drawable.RippleDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -23,6 +25,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -43,6 +46,7 @@ public class MainActivity extends Activity {
 
     public static final String TAG = "tg.ch";
     public static final boolean DEBUG = BuildConfig.DEBUG;
+    public static final boolean TRACE = BuildConfig.DEBUG && true;
     public static final boolean LOGGING = DEBUG;
 
     private MyColorDrawable bgRoot;
@@ -62,6 +66,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+//        trace(2000);
 
         dimen = new Dimen(this);
         final int toolbar_size = dimen.dpi(56);
@@ -149,10 +154,12 @@ public class MainActivity extends Activity {
 //        ColorDrawable d;
 //        d.setColor();
 
+
     }
 
 
     private void animateTheme() {
+//        trace(500);
         if (currentColorSet == ColorSet.DAY) {
             currentColorSet = ColorSet.NIGHT;
         } else {
@@ -164,6 +171,20 @@ public class MainActivity extends Activity {
             d.animate(currentColorSet.lightBackground);
         }
         chart.animateToColors(currentColorSet);
+    }
+
+    private void trace(int delayMillis) {
+        if (TRACE) {
+            File filesDir = getFilesDir();
+            File trace = new File(filesDir, "trace");
+            Debug.startMethodTracing(trace.getAbsolutePath(), 1024  * 1024 * 10);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Debug.stopMethodTracing();
+                }
+            }, delayMillis);
+        }
     }
 
     public ChartData[] readData() {
@@ -200,13 +221,15 @@ public class MainActivity extends Activity {
     }
 
     public final Drawable createButtonBackground(int pressedColor) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+        boolean useRipple = false;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !useRipple) {
             StateListDrawable stateListDrawable = new StateListDrawable();
             stateListDrawable.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(pressedColor));
             return stateListDrawable;
         } else {
             ColorDrawable maskDrawable = null;
             return new RippleDrawable(ColorStateList.valueOf(pressedColor), null, maskDrawable);
+//            return null;
         }
     }
 
