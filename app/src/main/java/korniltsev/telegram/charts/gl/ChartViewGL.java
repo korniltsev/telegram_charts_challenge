@@ -63,6 +63,8 @@ import static android.opengl.GLES10.glClearColor;
     horizontal lables + animations
 
     toooltip by touching
+    ---------------------------------------- 20 march
+
 
     >>>>>>>>>>>>>>>> https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
     calculating normal in vertex shader
