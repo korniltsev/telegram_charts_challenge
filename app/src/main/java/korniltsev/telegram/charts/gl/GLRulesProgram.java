@@ -16,6 +16,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import korniltsev.telegram.charts.ui.Dimen;
+import korniltsev.telegram.charts.ui.MyAnimation;
 
 public final class GLRulesProgram {
 
@@ -39,8 +40,6 @@ public final class GLRulesProgram {
                     + "{                              \n"
                     + "   gl_FragColor = u_color;     \n"
                     + "}                              \n";
-
-
 
 
     static final String texVertexShader =
@@ -96,13 +95,16 @@ public final class GLRulesProgram {
             1, 0,
             1, 1,
     };
+    int color;
+    private MyAnimation.Color colorAnim;
 
-    public GLRulesProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root) {
+
+    public GLRulesProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int initialColor) {
         this.canvasW = canvasW;
         this.canvasH = canvasH;
         this.dimen = dimen;
         this.root = root;
-
+        this.color = initialColor;
 
         lineProgram = MyGL.createProgram(vertexShader, fragmentShader);
         lineMVPHandle = GLES20.glGetUniformLocation(lineProgram, "u_MVPMatrix");
@@ -113,7 +115,6 @@ public final class GLRulesProgram {
         texProgram = MyGL.createProgram(texVertexShader, texFragmentShader);
         texMVPHandle = GLES20.glGetUniformLocation(texProgram, "u_MVPMatrix");
         texPositionHandle = GLES20.glGetAttribLocation(texProgram, "a_Position");
-
 
 
         FloatBuffer buf1 = ByteBuffer.allocateDirect(lineVertices.length * BYTES_PER_FLOAT)
@@ -145,6 +146,11 @@ public final class GLRulesProgram {
         textZero = new TextTex("0", paint);
     }
 
+    public void animate(int ruler) {
+        colorAnim = new MyAnimation.Color(160, color, ruler);
+
+    }
+
 
     public class TextTex {
         final String text;
@@ -163,7 +169,6 @@ public final class GLRulesProgram {
             staticLayout.draw(c);
 
 
-
             int[] textures = new int[1];
             GLES20.glGenTextures(1, textures, 0);
             tex = textures[0];
@@ -180,26 +185,34 @@ public final class GLRulesProgram {
         }
     }
 
-    public static final int LINE_COLOR = 0xffE7E8E9;
+//    public static final int LINE_COLOR = 0xffE7E8E9;
 
-    static final float[] LINE_COLOR_PARTS = new float[]{
-            Color.red(LINE_COLOR) / 255f,
-            Color.green(LINE_COLOR) / 255f,
-            Color.blue(LINE_COLOR) / 255f,
-            Color.alpha(LINE_COLOR) / 255f,
-    };
+    static final float[] LINE_COLOR_PARTS = new float[4];
+    //{
+//            Color.red(LINE_COLOR) / 255f,
+//            Color.green(LINE_COLOR) / 255f,
+//            Color.blue(LINE_COLOR) / 255f,
+//            Color.alpha(LINE_COLOR) / 255f,
+//    };
 
-    public static final int DEBUG_COLOR = 0xff000000;
+//    public static final int DEBUG_COLOR = 0xff000000;
 
-    static final float[] DEBUG_COLOR_PARTS = new float[]{
-            Color.red(DEBUG_COLOR) / 255f,
-            Color.green(DEBUG_COLOR) / 255f,
-            Color.blue(DEBUG_COLOR) / 255f,
-            Color.alpha(DEBUG_COLOR) / 255f,
-    };
+//    static final float[] DEBUG_COLOR_PARTS = new float[]{
+//            Color.red(DEBUG_COLOR) / 255f,
+//            Color.green(DEBUG_COLOR) / 255f,
+//            Color.blue(DEBUG_COLOR) / 255f,
+//            Color.alpha(DEBUG_COLOR) / 255f,
+//    };
 
 
-    public final void draw(float t) {
+    public final void draw(long t) {
+        if (colorAnim != null) {
+            color = colorAnim.tick(t);
+            if (colorAnim.ended) {
+                colorAnim = null;
+            }
+        }
+
         final float hpadding = dimen.dpf(16);
         float dy = dimen.dpf(80);
         for (int i = 0; i < 6; ++i) {
@@ -213,6 +226,7 @@ public final class GLRulesProgram {
     private void drawText(TextTex textZero, float x, float y) {
         GLES20.glUseProgram(texProgram);
         MyGL.checkGlError2();
+
 
 //        GLES20.glUniform4fv(texColorHandle, 1, DEBUG_COLOR_PARTS, 0);//todo try to bind only once
 
@@ -228,21 +242,24 @@ public final class GLRulesProgram {
         Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
 
         Matrix.translateM(MVP, 0, x, y, 0);
-        Matrix.scaleM(MVP, 0, textZero.w,textZero.h,1f);
+        Matrix.scaleM(MVP, 0, textZero.w, textZero.h, 1f);
 
 //        GLES20.glLineWidth(dimen.dpf(2.0f / 3.0f));
         GLES20.glUniformMatrix4fv(texMVPHandle, 1, false, MVP, 0);
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textZero.tex);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, texVertices.length/ 2);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, texVertices.length / 2);
 
     }
-
 
 
     public void drawLine(float x, float y, float w) {
         GLES20.glUseProgram(lineProgram);
         MyGL.checkGlError2();
+        LINE_COLOR_PARTS[0] = Color.red(color) / 255f;
+        LINE_COLOR_PARTS[1] = Color.green(color) / 255f;
+        LINE_COLOR_PARTS[2] = Color.blue(color) / 255f;
+        LINE_COLOR_PARTS[3] = 1f;
         GLES20.glUniform4fv(lineColorHandle, 1, LINE_COLOR_PARTS, 0);//todo try to bind only once
 
         GLES20.glEnableVertexAttribArray(linePositionHandle);

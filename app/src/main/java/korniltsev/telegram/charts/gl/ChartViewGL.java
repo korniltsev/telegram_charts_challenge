@@ -53,11 +53,13 @@ import static android.opengl.GLES10.glClearColor;
 
     + rules
     + rules vertical labels
-    actionbar + night mode animation
+    + actionbar + night mode animation
     ---------------------------------------- 19 march
     alpha animation, wrong blending for charts
     rules vertical animation
     chart pointer response for max animation
+
+    toolbar shadow, scrollbar night mode, text night mode + animation
     horizontal lables + animations
 
     toooltip by touching
@@ -66,7 +68,7 @@ import static android.opengl.GLES10.glClearColor;
     calculating normal in vertex shader
     https://github.com/learnopengles/Learn-OpenGLES-Tutorials/blob/641fcc25158dc30f45a7b2faaab165ec61ebb54b/android/AndroidOpenGLESLessonsCpp/app/src/main/assets/vertex/per_pixel_vertex_shader_tex_and_light.glsl#L22
 
-    checkbox animations
+    checkbox + animations + divider width
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
@@ -123,6 +125,7 @@ public class ChartViewGL extends TextureView {
     private final int initial_scroller_dith;
     private final int resize_touch_area2;
     private final int touchSlop;
+    private final int rulerColor;
     public int bgColor;
     public MyAnimation.Color bgAnim = null;
 //    private ColorSet currentColorsSet;
@@ -135,6 +138,7 @@ public class ChartViewGL extends TextureView {
         dimen_scrollbar_height = dimen.dpi(38);
         r = new Render(c);
         this.bgColor = currentColorsSet.lightBackground;
+        this.rulerColor = currentColorsSet.ruler;
         r.start();
         setSurfaceTextureListener(r);
 
@@ -197,7 +201,7 @@ public class ChartViewGL extends TextureView {
         private GLChartProgram[] scrollbar;
         private GLChartProgram[] chart;
         private GLScrollbarOverlayProgram overlay;
-        private GLRulesProgram rules;
+        private GLRulesProgram ruler;
 
 
         public Render(ColumnData[] column) {
@@ -243,7 +247,7 @@ public class ChartViewGL extends TextureView {
             }
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this);
-            rules = new GLRulesProgram(w, h, dimen, ChartViewGL.this);
+            ruler = new GLRulesProgram(w, h, dimen, ChartViewGL.this, rulerColor);
         }
 
 
@@ -346,7 +350,7 @@ public class ChartViewGL extends TextureView {
                 }
                 overlay.draw(t);
 
-                rules.draw(t);
+                ruler.draw(t);
                 for (GLChartProgram chartProgram : chart) {
                     chartProgram.draw(t);
                 }
@@ -640,6 +644,7 @@ public class ChartViewGL extends TextureView {
             @Override
             public void run() {
                 bgAnim = new MyAnimation.Color(160, bgColor, colors.lightBackground);
+                r.ruler.animate(colors.ruler);
             }
         });
     }
