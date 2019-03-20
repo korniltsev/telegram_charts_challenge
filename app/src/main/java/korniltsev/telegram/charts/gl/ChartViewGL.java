@@ -67,7 +67,6 @@ import static android.opengl.GLES10.glClearColor;
     + chart pointer response for max animation
 
     animation double tap bug (jump)
-    empty view - draw no rulers, do not animate first ruler
     scrollbar animation bug when last value is zero
 
     toolbar shadow, scrollbar night mode, text night mode + animation
