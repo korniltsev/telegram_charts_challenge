@@ -58,7 +58,7 @@ import static android.opengl.GLES10.glClearColor;
     + actionbar + night mode animation
     ---------------------------------------- 19 march
 
-    rules vertical animation
+    + rules vertical animation
     stop drawing when nothing changes and draw only animation / changes
     chart pointer response for max animation
     animation double tap bug (jump)
@@ -324,7 +324,7 @@ public class ChartViewGL extends TextureView {
                         }
                     }
                     if (prevMax != max) {
-                        ruler.animateScale(ratio);
+                        ruler.animateScale(ratio, max);
                     }
                     prevMax = max;
 

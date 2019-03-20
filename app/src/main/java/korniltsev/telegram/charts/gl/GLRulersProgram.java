@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.List;
 
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
@@ -60,7 +61,7 @@ public final class GLRulersProgram {
                     + "uniform sampler2D frame;\n"
                     + "void main()                    \n"
                     + "{                              \n"
-                    + "   vec4 c=texture2D(frame, textureCoordinate);                               \n"
+                    + "   vec4 c=texture2D(frame, vec2(textureCoordinate.x, 1.0-textureCoordinate.y));                               \n"
                     + "   gl_FragColor = vec4(c.xyz, c.w * alpha);     \n"
                     + "}                              \n";
     private final int lineMVPHandle;
@@ -69,7 +70,7 @@ public final class GLRulersProgram {
     private final int lineVerticesVBO;
     private final int lineColorHandle;
     private final TextPaint paint;
-    private final TextTex textZero;
+//    private final TextTex textZero;
 
     private final int texVerticesVBO;
     private final int texProgram;
@@ -101,22 +102,16 @@ public final class GLRulersProgram {
     };
     int color;
     private MyAnimation.Color colorAnim;
-//    private long prevmax;
 
-    public void animateScale(float ratio) {
-//        if (prevmax == max) {
-//            return;
-//        }
-//        prevmax = max;
-        //todo do not animate if max is not changed
+    public void animateScale(float ratio, long maxValue) {
         for (int i = 0, rsSize = rs.size(); i < rsSize; i++) {
             Ruler r = rs.get(i);
             r.scaleAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.scale, ratio);
             r.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.alpha, 0f);
         }
-        Ruler e = new Ruler(1000, 1f);
+        Ruler e = new Ruler(maxValue, 1f/ratio, paint);
         e.alpha = 0f;
-//        e.scaleAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.scale, ratio);
+        e.scaleAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, e.scale, 1f);
         e.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, e.alpha, 1f);
         rs.add(e);
     }
@@ -127,19 +122,27 @@ public final class GLRulersProgram {
         float alpha = 1f;
         MyAnimation.Float scaleAnim;
         MyAnimation.Float alphaAnim;
-
-
-        public Ruler(long maxValue, float scale) {
+        public final List<TextTex> values = new ArrayList<>();
+        private final TextPaint p;
+        public Ruler(long maxValue, float scale, TextPaint p) {
             this.maxValue = maxValue;
             this.scale = scale;
+            this.p = p;
+            int dy = 0;
+            int max = 280;
+            for (int i = 0; i < 6; i++) {
+                float s = (float)dy / max;
+                long v = (long) (maxValue * s);
+                values.add(new TextTex(String.valueOf(v), p));
+                dy += 50;
+            }
         }
     }
 
     private final ArrayList<Ruler> rs = new ArrayList<>();
 
     public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int initialColor, long prevMax) {
-        Ruler r = new Ruler(prevMax, 1.0f);
-        rs.add(r);
+
 
         this.canvasW = canvasW;
         this.canvasH = canvasH;
@@ -185,7 +188,10 @@ public final class GLRulersProgram {
         paint.setColor(0xff96A2AA);
         paint.setTextSize(dimen.dpf(12f));
 
-        textZero = new TextTex("0", paint);
+//        textZero = new TextTex("0", paint);
+
+        Ruler r = new Ruler(prevMax, 1.0f, paint);
+        rs.add(r);
     }
 
     public void animate(int ruler) {
@@ -193,7 +199,7 @@ public final class GLRulersProgram {
     }
 
 
-    public class TextTex {
+    public static class TextTex {
         final String text;
         final int tex;
         final int w;
@@ -202,8 +208,8 @@ public final class GLRulersProgram {
         TextTex(String text, TextPaint p) {
             this.text = text;
 
-            w = (int) Math.ceil(paint.measureText(text));
-            StaticLayout staticLayout = new StaticLayout(text, 0, text.length(), paint, w, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+            w = (int) Math.ceil(p.measureText(text));
+            StaticLayout staticLayout = new StaticLayout(text, 0, text.length(), p, w, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
             h = staticLayout.getHeight();
             Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
             Canvas c = new Canvas(b);
@@ -284,8 +290,8 @@ public final class GLRulersProgram {
                 //todo draw lines first, then text, so we can minimize program switch
 
                 drawLine(hpadding, zero + dy * r.scale, canvasW - 2 * hpadding, r.alpha);
-                drawText(textZero, hpadding, zero + dy * r.scale, r.alpha);
-                dy += dimen.dpf(51);
+                drawText(r.values.get(i), hpadding, zero + dy * r.scale, r.alpha);
+                dy += dimen.dpf(50);
             }
             drawLine(hpadding, zero + root.dimen_chart_height-10, (canvasW - 2 * hpadding)/2, 1.0f);
         }
