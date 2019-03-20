@@ -158,7 +158,7 @@ public class ChartViewGL extends TextureView {
                 + dimen_scrollbar_height
                 + dimen_v_padding8;
 
-        initial_scroller_dith =  dimen.dpi(86);
+        initial_scroller_dith = dimen.dpi(86);
         resize_touch_area2 = dimen.dpi(20);
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
@@ -338,23 +338,48 @@ public class ChartViewGL extends TextureView {
         private void loop() {
             List<MyRect> debugRects = new ArrayList<>();
             debugRects.add(new MyRect(w, h, 0, 0, Color.RED, w, h));
-            debugRects.add(new MyRect(w, dimen_v_padding8 *2 + dimen_scrollbar_height, 0, 0, Color.GREEN, w, h));
+            debugRects.add(new MyRect(w, dimen_v_padding8 * 2 + dimen_scrollbar_height, 0, 0, Color.GREEN, w, h));
             debugRects.add(new MyRect(w, dimen.dpi(280), 0, dimen.dpi(80), Color.BLUE, w, h));
-            while (true) {
-                while (true) {
-                    Runnable peek = actionQueue.poll();
-                    if (peek == null) {
-                        break;
-                    } else {
-                        peek.run();
+            boolean invalidated = true;
+            out : while (true) {
+                invalidated = true;
+                if (invalidated) {
+                    int s = actionQueue.size();
+                    while (true) {
+                        Runnable peek = actionQueue.poll();
+                        if (peek == null) {
+                            break;
+                        } else {
+                            peek.run();
+                        }
+                    }
+                } else {
+                    while (true) {
+                        Runnable peek = null;
+                        try {
+                            peek = actionQueue.take();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break out;
+                        }
+                        if (peek == null) {
+                            break;
+                        } else {
+                            peek.run();
+                            break;
+                        }
                     }
                 }
 //                SystemClock.sleep(8);
+                invalidated = false;
+
                 long t = SystemClock.uptimeMillis();
                 if (bgAnim != null) {
                     bgColor = bgAnim.tick(t);
                     if (bgAnim.ended) {
                         bgAnim = null;
+                    } else {
+                        invalidated = true;
                     }
                 }
                 glClearColor(
@@ -369,14 +394,15 @@ public class ChartViewGL extends TextureView {
 //                    r.draw();
 //                }
 
+
                 for (GLChartProgram c : scrollbar) {
-                    c.draw(t);
+                    invalidated = invalidated || c.draw(t);
                 }
                 overlay.draw(t);
 
                 ruler.draw(t);
                 for (GLChartProgram chartProgram : chart) {
-                    chartProgram.draw(t);
+                    invalidated = invalidated || chartProgram.draw(t);
                 }
 
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
@@ -454,7 +480,6 @@ public class ChartViewGL extends TextureView {
             }
 
 
-
 //            GLES20.glEnable(GLES10.GL_MULTISAMPLE);
 //            GLES20.glEnable(GLES10.GL_DITHER);
 //            GLES20.glHint(GLES10.GL_LINE_SMOOTH_HINT, GLES10.GL_NICEST);
@@ -520,7 +545,7 @@ public class ChartViewGL extends TextureView {
     private int scroller_width;//todo replace with scroller_left/right
     private int scroller_pos = -1;
     private Rect scrollbar = new Rect();
-//    private int scroller_move_down_x;
+    //    private int scroller_move_down_x;
     static final int DOWN_MOVE = 0;
     static final int DOWN_RESIZE_LEFT = 1;
     static final int DOWN_RESIZE_RIGHT = 2;
@@ -532,7 +557,7 @@ public class ChartViewGL extends TextureView {
 
     private int scroller__right = -1;
     private int scroller_left = -1;
-//    private Rect scrollbar = new Rect();
+    //    private Rect scrollbar = new Rect();
     private int scroller_move_down_x;
     private int scroller_move_down_width;
 
@@ -647,7 +672,7 @@ public class ChartViewGL extends TextureView {
 //    private static final BlockingQueue<MyMotionEvent> motionEvents = new ArrayBlockingQueue<MyMotionEvent>(100);
 
     public void setOverlayPos() {
-        final float left = (float)(scroller_left - scrollbar.left) / (scrollbar.right - scrollbar.left);
+        final float left = (float) (scroller_left - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float right = (float) (scroller__right - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float scale = (right - left);
 //        motionEvents.poll()

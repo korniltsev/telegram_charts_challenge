@@ -99,7 +99,8 @@ public final class GLChartProgram {
 
     }
 
-    public final void draw(long t) {
+    public final boolean draw(long t) {
+        boolean invalidate = false;
         GLES20.glUseProgram(program);
         MyGL.checkGlError2();
 
@@ -107,12 +108,16 @@ public final class GLChartProgram {
             alpha = alphaAnim.tick(t);
             if (alphaAnim.ended) {
                 alphaAnim = null;
+            } else {
+                invalidate = true;
             }
         }
         if (minAnim != null) {
             minValueAnim = minAnim.tick(t);
             if (minAnim.ended) {
                 minAnim = null;
+            }else {
+                invalidate = true;
             }
         }
 
@@ -120,6 +125,8 @@ public final class GLChartProgram {
             maxValueAnim = maxAnim.tick(t);
             if (maxAnim.ended) {
                 maxAnim = null;
+            }else {
+                invalidate = true;
             }
         }
 
@@ -179,6 +186,7 @@ public final class GLChartProgram {
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
 
         GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+        return invalidate;
     }
 
     boolean checked = true;
