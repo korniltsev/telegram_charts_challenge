@@ -69,6 +69,7 @@ import static android.opengl.GLES10.glClearColor;
 
     toooltip by touching
     ---------------------------------------- 20 march
+    optimize ruler rendering
 
     checkbox + animations + divider width
 
@@ -340,51 +341,35 @@ public class ChartViewGL extends TextureView {
             debugRects.add(new MyRect(w, dimen_v_padding8 * 2 + dimen_scrollbar_height, 0, 0, Color.GREEN, w, h));
             debugRects.add(new MyRect(w, dimen.dpi(280), 0, dimen.dpi(80), Color.BLUE, w, h));
             boolean invalidated = true;
-            boolean dirtyCheck = true;
-            out : while (true) {
-//                invalidated = true;
-//                if (invalidated) {
-//                    int s = actionQueue.size();
-                    int cnt = 0;
-                    while (true) {
+            boolean dirtyCheck = false;
+            long frameCount = 0;
+            long prevReportTime = SystemClock.uptimeMillis();
+            out:
+            while (true) {
+                int cnt = 0;
+                while (true) {
 
-                        Runnable peek = actionQueue.poll();
-                        if (peek == null) {
-                            if (invalidated || cnt != 0) {
-                                break;
-                            } else {
-                                if (dirtyCheck) {
-                                    continue ;
-                                } else {
-                                    break;
-                                }
-                            }
+                    Runnable peek = actionQueue.poll();
+                    if (peek == null) {
+                        if (invalidated || cnt != 0) {
+                            break;
                         } else {
-                            cnt++;
-                            peek.run();
+                            if (dirtyCheck) {
+                                continue;
+                            } else {
+                                break;
+                            }
                         }
+                    } else {
+                        cnt++;
+                        peek.run();
                     }
-//                } else {
-//                    while (true) {
-//                        Runnable peek = null;
-//                        try {
-//                            peek = actionQueue.take();
-//                        } catch (InterruptedException e) {
-//                            Thread.currentThread().interrupt();
-//                            break out;
-//                        }
-//                        if (peek == null) {
-//                            break;
-//                        } else {
-//                            peek.run();
-//                            break;
-//                        }
-//                    }
-//                }
-//                SystemClock.sleep(8);
+                }
+
                 invalidated = false;
 
                 long t = SystemClock.uptimeMillis();
+
                 if (bgAnim != null) {
                     bgColor = bgAnim.tick(t);
                     if (bgAnim.ended) {
@@ -404,25 +389,51 @@ public class ChartViewGL extends TextureView {
 //
 //                    r.draw();
 //                }
-
+                long t2 = SystemClock.uptimeMillis();
 
                 for (GLChartProgram c : scrollbar) {
                     boolean it_invalid = c.draw(t);
                     invalidated = invalidated || it_invalid;
                 }
+                long t3 = SystemClock.uptimeMillis();
                 overlay.draw(t);
+                long t4 = SystemClock.uptimeMillis();
 
                 ruler.draw(t);
+                long t5 = SystemClock.uptimeMillis();
                 for (GLChartProgram chartProgram : chart) {
                     boolean it_invalid = chartProgram.draw(t);
                     invalidated = invalidated || it_invalid;
                 }
+                long t6 = SystemClock.uptimeMillis();
 
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                     throw new RuntimeException("Cannot swap buffers");
                 }
+                long t7 = SystemClock.uptimeMillis();
+//                frameCount++;
+                long timeSinceLastReport = t - prevReportTime;
+                if (timeSinceLastReport > 1000) {
+                    float fps = (float) frameCount * 1000 / timeSinceLastReport;
+                    Log.d(LOG_TAG, "fps " + fps);
+                    prevReportTime = t;
+                    frameCount = 0;
+                    log_trace("swap", t7, t6);
+                    log_trace("chart", t6, t5);
+                    log_trace("ruler", t5, t4);
+                    log_trace("overlay", t4, t3);
+                    log_trace("scrollbar", t3, t2);
+                    log_trace("f1", t2, t);
+                } else {
+                    frameCount++;
+                }
+//                prevReportTime;
 //                break;
             }
+        }
+
+        private void log_trace(String name, long t5, long t4) {
+            Log.d(LOG_TAG, "trace " + name + " " + (t5 - t4));
         }
 
 

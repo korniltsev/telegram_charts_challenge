@@ -108,6 +108,7 @@ public final class GLRulersProgram {
             Ruler r = rs.get(i);
             r.scaleAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.scale, ratio);
             r.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.alpha, 0f);
+            r.toBeDeleted = true;
         }
         Ruler e = new Ruler(maxValue, 1f/ratio, paint);
         e.alpha = 0f;
@@ -122,6 +123,7 @@ public final class GLRulersProgram {
         float alpha = 1f;
         MyAnimation.Float scaleAnim;
         MyAnimation.Float alphaAnim;
+        boolean toBeDeleted = false;
         public final List<TextTex> values = new ArrayList<>();
         private final TextPaint p;
         public Ruler(long maxValue, float scale, TextPaint p) {
@@ -230,6 +232,10 @@ public final class GLRulersProgram {
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, b, 0);
             b.recycle();
         }
+
+        public void release() {
+            //todo
+        }
     }
 
 //    public static final int LINE_COLOR = 0xffE7E8E9;
@@ -253,13 +259,14 @@ public final class GLRulersProgram {
 
 
     public final void draw(long t) {
+        //todo invalidate
         if (colorAnim != null) {
             color = colorAnim.tick(t);
             if (colorAnim.ended) {
                 colorAnim = null;
             }
         }
-        for (int i = 0, rsSize = rs.size(); i < rsSize; i++) {
+        for (int i = rs.size() - 1; i >= 0; i--) {
             Ruler r = rs.get(i);
 
             if (r.scaleAnim != null) {
@@ -273,6 +280,9 @@ public final class GLRulersProgram {
                 if (r.alphaAnim.ended) {
                     r.alphaAnim = null;
                 }
+            }
+            if (r.toBeDeleted && r.alphaAnim == null && r.scaleAnim == null) {
+                rs.remove(i);
             }
         }
 
