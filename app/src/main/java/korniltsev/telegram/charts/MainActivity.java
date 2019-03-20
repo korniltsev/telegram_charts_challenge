@@ -1,6 +1,7 @@
 package korniltsev.telegram.charts;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -190,6 +191,16 @@ public class MainActivity extends Activity {
         }
         chart.animateToColors(currentColorSet);
         imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton));
+        if (Build.VERSION.SDK_INT >= 21) {
+            title.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    ActivityManager.TaskDescription d = new ActivityManager.TaskDescription("Statistics", null, currentColorSet.toolbar);
+                    setTaskDescription(d);
+                }
+            }, 300);
+        }
+        //todo animate titlebar
     }
 
     private void trace(int delayMillis) {
