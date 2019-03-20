@@ -53,23 +53,35 @@ void main() {
 //                    + "   gl_Position = p * (pos2 + delta);   \n"
 //                    + "}                              \n";
 
-    final String vertexShader =
-            "uniform mat4 m;      \n"
-                    +"uniform mat4 v;      \n"
-                    +"uniform mat4 p;      \n"
-                    + "attribute vec3 pos;     \n"
-                    + "attribute vec2 normale;     \n"
-
-
-                    + "void main()                    \n"
-                    + "{                                \n"
-                    +"     float linewidth = 4.0;                         \n"
-                    +"     mat4 mv = v * m;                         \n"
-                    +"     vec4 delta = vec4(linewidth * normale.x, linewidth * normale.y, 0.0,0.0);                         \n"
-                    +"     vec4 pos2 = mv * vec4(pos.xy, 0.0, 1.0) ;                         \n"
-                    + "   gl_Position = p * (pos2 + delta);   \n"
-                    + "}                              \n";
-
+    final String vertexShader = "uniform int second_pass;\n" +
+            "uniform mat4 m;\n" +
+            "uniform mat4 v;\n" +
+            "uniform mat4 p;\n" +
+            "attribute vec3 pos;\n" +
+            "attribute vec2 nextpos;\n" +
+            "void main()\n" +
+            "{\n" +
+            "     float linewidth = 32.0;\n" +
+            "     vec2 tmp = nextpos;\n" +
+            "     int tmp2 = second_pass;\n" +
+            "     mat4 mv = v * m;//todo calculate on cpu\n" +
+            "\n" +
+            "\n" +
+            "     vec4 direction = normalize(vec4(nextpos - pos.xy, 0.0, 1.0));\n" +
+            "     vec4 normal = normalize(mv * vec4(direction.y, -direction.x, 0.0, 1.0));\n" +
+            "     vec4 pos2 = mv * vec4(pos.xy, 0.0, 1.0);\n" +
+            "     if (second_pass == 1) {\n" +
+            "        float vno = pos.z;\n" +
+            "        if (vno == 2.0 || vno == 3.0) {\n" +
+            "            pos2 = pos2 + normal * linewidth * -1.0;\n" +
+            "        } else {\n" +
+            "            pos2 = pos2 + normal * linewidth;\n" +
+            "        }\n" +
+            "\n" +
+            "     }\n" +
+            "\n" +
+            "     gl_Position = p * pos2;\n" +
+            "}\n";
 
     final String fragmentShader =
             "precision mediump float;       \n"
@@ -94,7 +106,8 @@ void main() {
     private final int maxXValue;
     private final int vHandle;
     private final int pHandle;
-    private final int normaleHandle;
+    private final int nextposHandle;
+    private final int secon_dpassHandle;
 //    private final int u_scalexHandle;
 //    private final float[] normales;
 //    private final FloatBuffer linesBuffer;
@@ -128,8 +141,8 @@ void main() {
         float y;
         float z;
 
-        float normale_x;
-        float normale_y;
+        float nextx;
+        float nexty;
     }
 
     public GLChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar) {
@@ -149,59 +162,77 @@ void main() {
 //        float prevxx = Float.NaN;
 //        float prevyy = Float.NaN;
         for (int i = 0, valuesLength = values.length; i < valuesLength; i++) {//do not allocate twice
+            if (i == valuesLength - 1) {
+                break;
+            }
             float value = (float) values[i] / column.maxValue;
-            float unitValue = (float)value / column.maxValue;
+            float unitValue = (float) value / column.maxValue;
             Vertex v1 = new Vertex();//todo rewrite without allocatinos
             Vertex v2 = new Vertex();//todo rewrite without allocatinos
+            Vertex v3 = new Vertex();
+            Vertex v4 = new Vertex();
+
+
             float x = i;
             float y = value;
-            if (vertices.size() > 0) {
-                Vertex t1 = new Vertex();
-                Vertex t2 = new Vertex();
-                t1.x = x;
-                t1.y = y;
-                t1.z = 1;
-                t1.normale_x = vertices.get(vertices.size() - 2).normale_x;
-                t1.normale_y = vertices.get(vertices.size() - 2).normale_y;
-                t2.x = x;
-                t2.y = y;
-                t2.z = -1;
-                t2.normale_x = vertices.get(vertices.size() - 1).normale_x;
-                t2.normale_y = vertices.get(vertices.size() - 1).normale_y;
-                vertices.add(t1);
-                vertices.add(t2);
-            }
-            v1.x = x ;
-            v1.y = y ;
+            float nextX = i + 1;
+            float nextY = (float) values[i + 1] / column.maxValue;
+//            if (vertices.size() > 0) {
+//
+//                t1.x = x;
+//                t1.y = y;
+//                t1.z = 3;
+//                t1.nextx = vertices.get(vertices.size() - 2).x;
+//                t1.nexty = vertices.get(vertices.size() - 2).y;
+//                t2.x = x;
+//                t2.y = y;
+//                t2.z = 4;
+//                t2.nextx = vertices.get(vertices.size() - 1).x;
+//                t2.nexty = vertices.get(vertices.size() - 1).y;
+//                vertices.add(t1);
+//                vertices.add(t2);
+//            }
+            v1.x = x;
+            v1.y = y;
             v1.z = 1;
+            v1.nextx = nextX;
+            v1.nexty = nextY;
 
             v2.x = x;
             v2.y = y;
-            v2.z = -1;
+            v2.z = 2;
+            v2.nextx = nextX;
+            v2.nexty = nextY;
+
+
+            v3.x = nextX;
+            v3.y = nextY;
+            v3.z = 3;
+            v3.nextx = x;
+            v3.nexty = y;
+
+            v4.x = nextX;
+            v4.y = nextY;
+            v4.z = 4;
+            v4.nextx = x;
+            v4.nexty = y;
 
             vertices.add(v1);
             vertices.add(v2);
+            vertices.add(v3);
+            vertices.add(v4);
 
 
-            if (i == valuesLength - 1) {
-                int j = i - 1;
-//                normales[i * 4 ]    = normales[j * 4 ]    ;
-//                normales[i * 4 + 1] = normales[j * 4 + 1] ;
-//                normales[i * 4 + 2] = normales[j * 4 + 2] ;
-//                normales[i * 4 + 3] =normales[j * 4 + 3] ;
-                //todo
-            } else {
-                double nextValue = (float) values[i + 1] / column.maxValue;
-                double dy = nextValue - value;
-                double l = (float) Math.sqrt(1f + dy * dy);
-                dy /= l;
-                double dx = 1f / l;
 
-                v1.normale_x = (float) -dy * 10;
-                v1.normale_y = (float) dx;
-                v2.normale_x = (float) dy * 10;
-                v2.normale_y = (float) -dx;
-            }
+//                double dy = nextValue - value;
+//                double l =  Math.sqrt(1f + dy * dy);
+//                dy /= l;
+//                double dx = 1f / l;
+
+
+//                v1.normale_y = (float) dx;
+//                v2.normale_x = (float) dy;
+//                v2.normale_y = (float) -dx;
         }
         verticesBuffer = ByteBuffer.allocateDirect(vertices.size() * Vertex.SIZE_FLOATS * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
@@ -210,8 +241,8 @@ void main() {
             verticesBuffer.put(vertex.x);
             verticesBuffer.put(vertex.y);
             verticesBuffer.put(vertex.z);
-            verticesBuffer.put(vertex.normale_x);
-            verticesBuffer.put(vertex.normale_y);
+            verticesBuffer.put(vertex.nextx);
+            verticesBuffer.put(vertex.nexty);
         }
 //        verticesBuffer.put(vertices);
         verticesBuffer.position(0);
@@ -228,8 +259,9 @@ void main() {
         vHandle = GLES20.glGetUniformLocation(program, "v");
         pHandle = GLES20.glGetUniformLocation(program, "p");
         positionHandle = GLES20.glGetAttribLocation(program, "pos");
-        normaleHandle = GLES20.glGetAttribLocation(program, "normale");
+        nextposHandle= GLES20.glGetAttribLocation(program, "nextpos");
         colorHandle = GLES20.glGetUniformLocation(program, "u_color");
+        secon_dpassHandle = GLES20.glGetUniformLocation(program, "second_pass");
 //        u_scaleyHandle = GLES20.glGetUniformLocation(program, "u_scaley");
 //        u_scalexHandle = GLES20.glGetUniformLocation(program, "u_scalex");
 
@@ -285,11 +317,11 @@ void main() {
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboVertices);
         GLES20.glVertexAttribPointer(positionHandle, 3, GLES20.GL_FLOAT, false, Vertex.STRIDE, 0);
 
-        GLES20.glEnableVertexAttribArray(normaleHandle);
+        GLES20.glEnableVertexAttribArray(nextposHandle);
         MyGL.checkGlError2();
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vboVertices);//todo remove
         MyGL.checkGlError2();
-        GLES20.glVertexAttribPointer(normaleHandle, 2, GLES20.GL_FLOAT, false, Vertex.STRIDE, 3 * BYTES_PER_FLOAT);
+        GLES20.glVertexAttribPointer(nextposHandle, 2, GLES20.GL_FLOAT, false, Vertex.STRIDE, 3 * BYTES_PER_FLOAT);
         MyGL.checkGlError2();
 
 
@@ -313,13 +345,27 @@ void main() {
 
 
 
-
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, vertices.size());
-
-
         GLES20.glUniformMatrix4fv(mHandle, 1, false, MODEL, 0);
         GLES20.glUniformMatrix4fv(vHandle, 1, false, VIEW, 0);
         GLES20.glUniformMatrix4fv(pHandle, 1, false, PROJ, 0);
+        GLES20.glUniform1i(secon_dpassHandle, 0);
+
+        GLES20.glLineWidth(dimen.dpf(2));
+        GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.size());
+
+        float[] colors2 = new float[]{ //todo try to do only once
+                0f,
+                1.0f,
+                0f,
+                alpha,
+        };
+        GLES20.glUniform4fv(colorHandle, 1, colors2, 0);
+
+
+        GLES20.glUniform1i(secon_dpassHandle, 1);
+        GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.size());
+
+
 //        float r = mywpx/myhpx;
 //        float v1[] = new float[]{
 //                1, 1, 0, 1,
