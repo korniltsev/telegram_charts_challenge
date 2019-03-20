@@ -66,6 +66,7 @@ import static android.opengl.GLES10.glClearColor;
 
     + chart pointer response for max animation
 
+    + do not animate first show
     animation double tap bug (jump)
     scrollbar animation bug when last value is zero
 
