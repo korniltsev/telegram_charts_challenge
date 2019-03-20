@@ -89,7 +89,7 @@ public class MainActivity extends Activity {
         imageButton.setScaleType(ImageView.ScaleType.CENTER);
         imageButton.setLayoutParams(buttonLP);
         imageButton.setClickable(true);
-        imageButton.setBackgroundDrawable(createButtonBackground(0xff446D91));
+        imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton));
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -108,6 +108,17 @@ public class MainActivity extends Activity {
         toolbar.addView(imageButton);
 
 
+        LinearLayout.LayoutParams legendLP = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+        TextView legend = new TextView(this);
+        legend.setPadding(dimen.dpi(16), dimen.dpi(8), 0, dimen.dpi(8));
+        legend.setTextSize(16f);
+        legend.setTextColor(currentColorSet.legendTitle);
+        legend.setText("Followers");
+        legend.setLayoutParams(legendLP);
+        MyColorDrawable d1 = new MyColorDrawable(currentColorSet.lightBackground, false);
+        ds.add(d1);
+        legend.setBackgroundDrawable(d1);
+
         ChartData[] data = readData();
         Log.d(TAG, "data len " + data.length);
 
@@ -124,6 +135,7 @@ public class MainActivity extends Activity {
 
 
         frame.addView(toolbar, lp);
+        frame.addView(legend);
         frame.addView(chart);
         ColumnData[] data1 = datum.data;
         for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
@@ -132,7 +144,7 @@ public class MainActivity extends Activity {
                 continue;
             }
             CheckBox cb = new CheckBox(this);
-            MyColorDrawable d = new MyColorDrawable(Color.WHITE, i == 1);
+            MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground, i == 1);
             ds.add(d);
             cb.setBackgroundDrawable(d);
             cb.setText(c.name);
@@ -171,6 +183,7 @@ public class MainActivity extends Activity {
             d.animate(currentColorSet.lightBackground);
         }
         chart.animateToColors(currentColorSet);
+        imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton));
     }
 
     private void trace(int delayMillis) {

@@ -55,7 +55,7 @@ import static android.opengl.GLES10.glClearColor;
     + rules vertical labels
     + actionbar + night mode animation
     ---------------------------------------- 19 march
-    alpha animation, wrong blending for charts
+
     rules vertical animation
     chart pointer response for max animation
 
@@ -65,12 +65,14 @@ import static android.opengl.GLES10.glClearColor;
     toooltip by touching
     ---------------------------------------- 20 march
 
+    checkbox + animations + divider width
 
+    alpha animation, wrong blending for charts
     >>>>>>>>>>>>>>>> https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
     calculating normal in vertex shader
     https://github.com/learnopengles/Learn-OpenGLES-Tutorials/blob/641fcc25158dc30f45a7b2faaab165ec61ebb54b/android/AndroidOpenGLESLessonsCpp/app/src/main/assets/vertex/per_pixel_vertex_shader_tex_and_light.glsl#L22
 
-    checkbox + animations + divider width
+
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
