@@ -203,8 +203,14 @@ public final class GLChartProgram {
     }
 
     public void animateMinMax(long min, long max, boolean animate) {
-        long prevMin = this.minValue;
+        long prevMin = this.minValue ;
         long prevMax = this.maxValue;
+        if (minValueAnim != 1f) {
+            prevMin = (long) (prevMin * minValueAnim);
+        }
+        if (maxValueAnim != 1f) {
+            prevMax = (long) (prevMax * maxValueAnim);
+        }
         this.minValue = min;
         this.maxValue = max;
         if (alpha == 0f || !animate) {
