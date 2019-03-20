@@ -59,7 +59,7 @@ import static android.opengl.GLES10.glClearColor;
     ---------------------------------------- 19 march
 
     + rules vertical animation
-    stop drawing when nothing changes and draw only animation / changes
+    + stop drawing when nothing changes and draw only animation / changes
     chart pointer response for max animation
     animation double tap bug (jump)
     scrollbar animation bug when last value is zero
@@ -85,6 +85,7 @@ import static android.opengl.GLES10.glClearColor;
 // todo
 
 //     todo first animation is SLOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!, trace with tracer emulator, if possible - warmup, if not - rewrite custom ripple or just replace with state list drawable
+// boolean dirtyCheck = true;/
 //     snap scrollbar near zeros
 //     implement empty chart
 //     implement y=0 chart
@@ -341,35 +342,47 @@ public class ChartViewGL extends TextureView {
             debugRects.add(new MyRect(w, dimen_v_padding8 * 2 + dimen_scrollbar_height, 0, 0, Color.GREEN, w, h));
             debugRects.add(new MyRect(w, dimen.dpi(280), 0, dimen.dpi(80), Color.BLUE, w, h));
             boolean invalidated = true;
+            boolean dirtyCheck = true;
             out : while (true) {
-                invalidated = true;
-                if (invalidated) {
-                    int s = actionQueue.size();
+//                invalidated = true;
+//                if (invalidated) {
+//                    int s = actionQueue.size();
+                    int cnt = 0;
                     while (true) {
+
                         Runnable peek = actionQueue.poll();
                         if (peek == null) {
-                            break;
+                            if (invalidated || cnt != 0) {
+                                break;
+                            } else {
+                                if (dirtyCheck) {
+                                    continue ;
+                                } else {
+                                    break;
+                                }
+                            }
                         } else {
+                            cnt++;
                             peek.run();
                         }
                     }
-                } else {
-                    while (true) {
-                        Runnable peek = null;
-                        try {
-                            peek = actionQueue.take();
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break out;
-                        }
-                        if (peek == null) {
-                            break;
-                        } else {
-                            peek.run();
-                            break;
-                        }
-                    }
-                }
+//                } else {
+//                    while (true) {
+//                        Runnable peek = null;
+//                        try {
+//                            peek = actionQueue.take();
+//                        } catch (InterruptedException e) {
+//                            Thread.currentThread().interrupt();
+//                            break out;
+//                        }
+//                        if (peek == null) {
+//                            break;
+//                        } else {
+//                            peek.run();
+//                            break;
+//                        }
+//                    }
+//                }
 //                SystemClock.sleep(8);
                 invalidated = false;
 
@@ -396,13 +409,15 @@ public class ChartViewGL extends TextureView {
 
 
                 for (GLChartProgram c : scrollbar) {
-                    invalidated = invalidated || c.draw(t);
+                    boolean it_invalid = c.draw(t);
+                    invalidated = invalidated || it_invalid;
                 }
                 overlay.draw(t);
 
                 ruler.draw(t);
                 for (GLChartProgram chartProgram : chart) {
-                    invalidated = invalidated || chartProgram.draw(t);
+                    boolean it_invalid = chartProgram.draw(t);
+                    invalidated = invalidated || it_invalid;
                 }
 
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
