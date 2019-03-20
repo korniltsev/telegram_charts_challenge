@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.gl.ChartViewGL;
+import korniltsev.telegram.charts.ui.Dimen;
 
 import static android.graphics.PixelFormat.OPAQUE;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
@@ -137,12 +138,14 @@ public class MainActivity extends Activity {
 
         frame.addView(toolbar, lp);
         frame.addView(chart);
-        for (final ColumnData c : datum.data) {
+        ColumnData[] data1 = datum.data;
+        for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
+            final ColumnData c = data1[i];
             if (c.id.equals(ChartData.COLUMN_ID_X)) {
                 continue;
             }
             CheckBox cb = new CheckBox(this);
-            MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground);
+            MyColorDrawable d = new MyColorDrawable(Color.WHITE);
             ds.add(d);
             cb.setBackgroundDrawable(d);
             cb.setText(c.name);
@@ -153,6 +156,9 @@ public class MainActivity extends Activity {
                     chart.setChecked(c.id, isChecked);
                 }
             });
+            LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+            cblp.topMargin = 1;//todo this is wrong, it is not full width
+            cb.setLayoutParams(cblp);
             frame.addView(cb);
 
         }

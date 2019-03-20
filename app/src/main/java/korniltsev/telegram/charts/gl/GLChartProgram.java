@@ -9,7 +9,8 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import korniltsev.telegram.charts.data.ColumnData;
-import korniltsev.telegram.charts.Dimen;
+import korniltsev.telegram.charts.ui.Dimen;
+import korniltsev.telegram.charts.ui.MyAnimation;
 
 public final class GLChartProgram {
 

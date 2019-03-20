@@ -3,13 +3,12 @@ package korniltsev.telegram.charts.gl;
 import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
-import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import korniltsev.telegram.charts.Dimen;
+import korniltsev.telegram.charts.ui.Dimen;
 
 public final class GLScrollbarOverlayProgram {
 

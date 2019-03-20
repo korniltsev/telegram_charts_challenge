@@ -1,4 +1,4 @@
-package korniltsev.telegram.charts.gl;
+package korniltsev.telegram.charts.ui;
 
 import android.os.SystemClock;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -13,7 +13,7 @@ public class MyAnimation {
         private final long duration;
 
         long endTime;
-        boolean ended = false;
+        public boolean ended = false;
 
         public Float(long duration, float from, float to) {
             this.duration = duration;

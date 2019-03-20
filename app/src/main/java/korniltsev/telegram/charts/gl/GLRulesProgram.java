@@ -15,7 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import korniltsev.telegram.charts.Dimen;
+import korniltsev.telegram.charts.ui.Dimen;
 
 public final class GLRulesProgram {
 

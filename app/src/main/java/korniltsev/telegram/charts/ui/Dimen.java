@@ -1,4 +1,4 @@
-package korniltsev.telegram.charts;
+package korniltsev.telegram.charts.ui;
 
 import android.content.Context;
 import android.util.DisplayMetrics;
