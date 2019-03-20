@@ -62,6 +62,7 @@ import static android.opengl.GLES10.glClearColor;
     stop drawing when nothing changes and draw only animation / changes
     chart pointer response for max animation
     animation double tap bug (jump)
+    scrollbar animation bug when last value is zero
 
     toolbar shadow, scrollbar night mode, text night mode + animation
     horizontal lables + animations

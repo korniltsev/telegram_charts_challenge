@@ -124,9 +124,9 @@ public class MainActivity extends Activity {
 
         ChartData datum = data[4];
         if (DEBUG) {
-            ColumnData vs = datum.data[datum.data.length - 1];
-            vs.minValue = 0;
-            vs.values[vs.values.length - 1] = 0;
+//            ColumnData vs = datum.data[datum.data.length - 1];
+//            vs.minValue = 0;
+//            vs.values[vs.values.length - 1] = 0;
         }
 
         chart = new ChartViewGL(this, datum.data, dimen, currentColorSet);
