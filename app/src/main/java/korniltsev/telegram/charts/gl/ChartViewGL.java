@@ -4,14 +4,17 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.nfc.Tag;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
+import android.os.Debug;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.ViewConfiguration;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -61,7 +64,7 @@ import static android.opengl.GLES10.glClearColor;
     + rules vertical animation
     + stop drawing when nothing changes and draw only animation / changes
 
-    > chart pointer response for max animation
+    + chart pointer response for max animation
 
     animation double tap bug (jump)
     scrollbar animation bug when last value is zero
@@ -70,6 +73,7 @@ import static android.opengl.GLES10.glClearColor;
 
     toooltip by touching
     ---------------------------------------- 20 march
+    replace actionQueue.add with something better?
     optimize ruler rendering
     horizontal lables + animations
     checkbox + animations + divider width
@@ -128,6 +132,7 @@ import static android.opengl.GLES10.glClearColor;
 */
 public class ChartViewGL extends TextureView {
     public static final String LOG_TAG = "tg.ch.gl";
+    public static final boolean DIRTY_CHECK = false;
     private final Dimen dimen;
 
     public final int dimen_v_padding8;
@@ -141,6 +146,7 @@ public class ChartViewGL extends TextureView {
     private final int rulerColor;
     public int bgColor;
     public MyAnimation.Color bgAnim = null;
+//    private long currentMax;
 //    private ColorSet currentColorsSet;
 
     public ChartViewGL(Context context, ColumnData[] c, Dimen dimen, ColorSet currentColorsSet) {
@@ -230,6 +236,10 @@ public class ChartViewGL extends TextureView {
 
                 return;
             }
+            File filesDir = getContext().getFilesDir();
+            File trace = new File(filesDir, "trace");
+            Debug.startMethodTracing(trace.getAbsolutePath(), 1024  * 1024 * 10);
+
             initGL(surface);
             initPrograms();
             loop();
@@ -255,14 +265,14 @@ public class ChartViewGL extends TextureView {
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false);
             }
-            for (GLChartProgram it : chart) {
-                it.maxValue = max;
-                it.minValue = 0;
-            }
-            prevMax = max;
+//            for (GLChartProgram it : chart) {
+//                it.maxValue = max;
+//                it.minValue = 0;
+//            }
+//            prevMax = max;
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this);
-            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, rulerColor, prevMax);
+            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, rulerColor);
         }
 
 
@@ -316,21 +326,28 @@ public class ChartViewGL extends TextureView {
                             c.animateMinMax(min, max, true);
                         }
                     }
-                    float ratio = prevMax / (float) max;
-                    Log.d(LOG_TAG, "anim ratio " + ratio);
-                    // chart
+
                     for (GLChartProgram c : chart) {
                         if (c.column.id.equals(id)) {
                             c.animateAlpha(isChecked);
                         }
+                    }
+
+                    long scaledMax = calculateMax(r.overlay.left, r.overlay.right);
+                    //todo
+                    float ratio = prevMax / (float) scaledMax;
+                    Log.d(LOG_TAG, "anim ratio " + ratio);
+
+                    // chart
+                    for (GLChartProgram c : chart) {
                         if (checkedCount != 0) {
-                            c.animateMinMax(0, max, true);
+                            c.animateMinMax(0, scaledMax, true);
                         }
                     }
-                    if (prevMax != max) {
-                        ruler.animateScale(ratio, max);
+                    if (prevMax != scaledMax) {
+                        ruler.animateScale(ratio, scaledMax);
+                        prevMax = scaledMax;
                     }
-                    prevMax = max;
 
                 }
             });
@@ -345,11 +362,14 @@ public class ChartViewGL extends TextureView {
             debugRects.add(new MyRect(w, dimen_v_padding8 * 2 + dimen_scrollbar_height, 0, 0, Color.GREEN, w, h));
             debugRects.add(new MyRect(w, dimen.dpi(280), 0, dimen.dpi(80), Color.BLUE, w, h));
             boolean invalidated = true;
-            boolean dirtyCheck = false;
+
             long frameCount = 0;
             long prevReportTime = SystemClock.uptimeMillis();
+            int ccc = 0;
+            boolean rulerInitDone = false;
             out:
             while (true) {
+                ccc++;
                 int cnt = 0;
                 while (true) {
 
@@ -358,7 +378,7 @@ public class ChartViewGL extends TextureView {
                         if (invalidated || cnt != 0) {
                             break;
                         } else {
-                            if (dirtyCheck) {
+                            if (DIRTY_CHECK) {
                                 continue;
                             } else {
                                 break;
@@ -369,7 +389,14 @@ public class ChartViewGL extends TextureView {
                         peek.run();
                     }
                 }
-
+                if (!rulerInitDone) {
+                    prevMax = calculateMax(r.overlay.left, r.overlay.right);
+                    ruler.init(prevMax);
+                    for (GLChartProgram glChartProgram : chart) {
+                        glChartProgram.maxValue = prevMax;
+                    }
+                    rulerInitDone = true;
+                }
                 invalidated = false;
 
                 long t = SystemClock.uptimeMillis();
@@ -433,6 +460,9 @@ public class ChartViewGL extends TextureView {
                 }
 //                prevReportTime;
 //                break;
+                if (ccc == 1) {
+                    Debug.stopMethodTracing();
+                }
             }
         }
 
@@ -603,6 +633,39 @@ public class ChartViewGL extends TextureView {
         }
 
 
+        public void updateLeftRight(float left, float right, float scale) {
+            overlay.setLeftRight(left, right);
+//                long t = SystemClock.elapsedRealtimeNanos();
+//            long newMax = calculateMax(left, right);
+            long scaledMax = calculateMax(left, right);
+
+            for (GLChartProgram glChartProgram : r.chart) {
+                glChartProgram.zoom = scale;
+                glChartProgram.left = left;
+                if (prevMax != scaledMax) {
+                    glChartProgram.animateMinMax(0, scaledMax, true);
+                }
+            }
+
+
+            //todo
+            float ratio = prevMax / (float) scaledMax;
+            Log.d(LOG_TAG, "anim ratio " + ratio);
+
+            // chart
+//            for (GLChartProgram c : chart) {
+//                if (c.column.id.equals(id)) {
+//                    c.animateAlpha(isChecked);
+//                }
+//                if (checkedCount != 0) {
+//
+//                }
+//            }
+            if (prevMax != scaledMax) {
+                ruler.animateScale(ratio, scaledMax);
+                prevMax = scaledMax;
+            }
+        }
     }
 
     public static final boolean LOGGING = true; //todo
@@ -735,7 +798,7 @@ public class ChartViewGL extends TextureView {
 
 //    private static final BlockingQueue<MyMotionEvent> motionEvents = new ArrayBlockingQueue<MyMotionEvent>(100);
 
-    public void setOverlayPos() {
+    public final void setOverlayPos() {
         final float left = (float) (scroller_left - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float right = (float) (scroller__right - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float scale = (right - left);
@@ -743,13 +806,27 @@ public class ChartViewGL extends TextureView {
         r.actionQueue.add(new Runnable() {//todo do not allocate
             @Override
             public void run() {
-                r.overlay.setLeftRight(left, right);
-                for (GLChartProgram glChartProgram : r.chart) {
-                    glChartProgram.zoom = scale;
-                    glChartProgram.left = left;
-                }
+
+                r.updateLeftRight(left, right, scale);
+
             }
         });
+    }
+
+    public final long calculateMax(float left, float right) {
+        long max = -1;
+        int len = r.chart[0].column.values.length;
+        int from = Math.max(0, (int)Math.ceil(len * (left-0.02f)));
+        int to = Math.min(len, (int)Math.ceil(len * (right+0.02f)));
+        for (GLChartProgram glChartProgram : r.chart) {
+            if (glChartProgram.checked) {
+                long[] values = glChartProgram.column.values;
+                for (int i = from; i < to; i++) {
+                    max = (max >= values[i]) ? max : values[i];
+                }
+            }
+        }
+        return max;
     }
 
     public void animateToColors(final ColorSet colors) {

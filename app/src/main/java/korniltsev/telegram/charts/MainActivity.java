@@ -47,7 +47,7 @@ public class MainActivity extends Activity {
 
     public static final String TAG = "tg.ch";
     public static final boolean DEBUG = BuildConfig.DEBUG;
-    public static final boolean TRACE = BuildConfig.DEBUG && true;
+    public static final boolean TRACE = BuildConfig.DEBUG && false;
     public static final boolean LOGGING = DEBUG;
     public static final int DATASET = 0;
 

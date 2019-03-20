@@ -143,7 +143,7 @@ public final class GLRulersProgram {
 
     private final ArrayList<Ruler> rs = new ArrayList<>();
 
-    public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int initialColor, long prevMax) {
+    public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int initialColor) {
 
 
         this.canvasW = canvasW;
@@ -192,7 +192,11 @@ public final class GLRulersProgram {
 
 //        textZero = new TextTex("0", paint);
 
-        Ruler r = new Ruler(prevMax, 1.0f, paint);
+//        init();
+    }
+
+    public void init(long max) {
+        Ruler r = new Ruler(max, 1.0f, paint);
         rs.add(r);
     }
 

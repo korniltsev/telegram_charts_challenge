@@ -50,8 +50,8 @@ public final class GLScrollbarOverlayProgram {
 
     final ChartViewGL root;
 
-    float left = 0.5f;
-    float right = 1.0f;
+    public float left = 0.5f;
+    public float right = 1.0f;
 
     float vertices[] = {
             0, 0,
