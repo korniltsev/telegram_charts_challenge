@@ -68,12 +68,14 @@ import static android.opengl.GLES10.glClearColor;
 
     + do not animate first show
     + animation double tap bug (jump)
-    scrollbar animation bug when last value is zero
+
 
     toolbar shadow, scrollbar night mode, text night mode + animation
 
     toooltip by touching
     ---------------------------------------- 20 march
+    move left-right alot, fps goes down, do not animate-out rulers who already animating-out
+    scrollbar animation bug when last value is zero
     replace actionQueue.add with something better?
     optimize ruler rendering
     horizontal lables + animations
