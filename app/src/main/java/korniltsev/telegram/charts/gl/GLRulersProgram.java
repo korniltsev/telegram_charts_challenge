@@ -18,7 +18,7 @@ import java.nio.FloatBuffer;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 
-public final class GLRulesProgram {
+public final class GLRulersProgram {
 
     private static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
@@ -99,7 +99,7 @@ public final class GLRulesProgram {
     private MyAnimation.Color colorAnim;
 
 
-    public GLRulesProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int initialColor) {
+    public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int initialColor) {
         this.canvasW = canvasW;
         this.canvasH = canvasH;
         this.dimen = dimen;

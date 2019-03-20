@@ -205,7 +205,7 @@ public class ChartViewGL extends TextureView {
         private GLChartProgram[] scrollbar;
         private GLChartProgram[] chart;
         private GLScrollbarOverlayProgram overlay;
-        private GLRulesProgram ruler;
+        private GLRulersProgram ruler;
 
 
         public Render(ColumnData[] column) {
@@ -251,7 +251,7 @@ public class ChartViewGL extends TextureView {
             }
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this);
-            ruler = new GLRulesProgram(w, h, dimen, ChartViewGL.this, rulerColor);
+            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, rulerColor);
         }
 
 
