@@ -102,8 +102,6 @@ import static android.opengl.GLES10.glClearColor;
 //    compare label fonts with design
 
 // todo nice to have
-//     support rtl since telegram supports
-//     support split screen?
 //     adjust theme for smooth transition
 //     checkbox animations
 //     static layout warmup / background init
@@ -524,33 +522,69 @@ public class ChartViewGL extends TextureView {
         private EGLConfig chooseEglConfig() {
             int[] configsCount = new int[1];
             EGLConfig[] configs = new EGLConfig[1];
-            int[] configSpec = getConfig();
-            if (!mEgl.eglChooseConfig(mEglDisplay, configSpec, configs, 1,
-                    configsCount)) {
-                throw new IllegalArgumentException("eglChooseConfig failed" +
-                        GLUtils.getEGLErrorString(mEgl.eglGetError()));
-            } else if (configsCount[0] > 0) {
+
+            // with sample buffers
+            boolean b = mEgl.eglChooseConfig(mEglDisplay, getConfig(true), configs, 1, configsCount);
+            if (b) {
                 return configs[0];
+            } else {
+                String eglErrorString = GLUtils.getEGLErrorString(mEgl.eglGetError());
+//                throw new IllegalArgumentException("eglChooseConfig failed" +
+//                        eglErrorString);
+                if (LOGGING) {
+                    Log.e(LOG_TAG, "err" + eglErrorString);
+                }
             }
-            return null;
+            // without sample buffers
+            b = mEgl.eglChooseConfig(mEglDisplay, getConfig(false), configs, 1, configsCount);
+            if (b) {
+                return configs[0];
+            } else {
+                String eglErrorString = GLUtils.getEGLErrorString(mEgl.eglGetError());
+                throw new IllegalArgumentException("eglChooseConfig failed" +
+                        eglErrorString);
+//                if (LOGGING) {
+//                    Log.e(LOG_TAG, "err" + eglErrorString);
+//                }
+
+            }
+//            return null;
         }
 
-        private int[] getConfig() {
-            return new int[]{
-                    EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-                    EGL10.EGL_RED_SIZE, 8,
-                    EGL10.EGL_GREEN_SIZE, 8,
-                    EGL10.EGL_BLUE_SIZE, 8,
-                    EGL10.EGL_ALPHA_SIZE, 8,
-                    EGL10.EGL_DEPTH_SIZE, 0,
-                    EGL10.EGL_STENCIL_SIZE, 0,
+        private int[] getConfig(boolean sampleBuffers) {
+            if (sampleBuffers) {
 
-                    //todo try catch and try without sampel buffers, at least it wont crash
-                    EGL10.EGL_SAMPLE_BUFFERS, 1,
+                return new int[]{
+                        EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+                        EGL10.EGL_RED_SIZE, 8,
+                        EGL10.EGL_GREEN_SIZE, 8,
+                        EGL10.EGL_BLUE_SIZE, 8,
+                        EGL10.EGL_ALPHA_SIZE, 8,
+                        EGL10.EGL_DEPTH_SIZE, 0,
+                        EGL10.EGL_STENCIL_SIZE, 0,
+
+                        EGL10.EGL_SAMPLE_BUFFERS, 1,
 //                    EGL10.EGL_SAMPLES, 2,
 
-                    EGL10.EGL_NONE
-            };
+                        EGL10.EGL_NONE
+                };
+            } else {
+                return new int[]{
+                        EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+                        EGL10.EGL_RED_SIZE, 8,
+                        EGL10.EGL_GREEN_SIZE, 8,
+                        EGL10.EGL_BLUE_SIZE, 8,
+                        EGL10.EGL_ALPHA_SIZE, 8,
+                        EGL10.EGL_DEPTH_SIZE, 0,
+                        EGL10.EGL_STENCIL_SIZE, 0,
+
+//                        EGL10.EGL_SAMPLE_BUFFERS, 1,
+//                    EGL10.EGL_SAMPLES, 2,
+//                    EGL10.EGL_SAMPLES, 2,
+
+                        EGL10.EGL_NONE
+                };
+            }
         }
 
 
