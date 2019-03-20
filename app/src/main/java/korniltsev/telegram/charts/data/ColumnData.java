@@ -5,7 +5,7 @@ public class ColumnData {
     public final String name;
     public final long[] values;
     public final long maxValue;
-    public final long minValue;
+    public long minValue;
     public final String type;
     public final int color;
 

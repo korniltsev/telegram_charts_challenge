@@ -5,6 +5,9 @@ import android.util.Log;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
 public class MyAnimation {
+    public static final int ANIM_DRATION = 160;
+
+
     public static final AccelerateDecelerateInterpolator INTERPOLATOR = new AccelerateDecelerateInterpolator();
     public static final class Float {
 

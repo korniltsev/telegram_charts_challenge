@@ -2,8 +2,6 @@ package korniltsev.telegram.charts.ui;
 
 
 public class ColorSet {
-    //    public static final int COLOR_ACTION_BAR_LIGHT = 0xff517DA2;//todo make a theme object
-    //    public static final int COLOR_ACTION_BAR_DARK = 0xff212D3B;//todo make a theme object
         public static final ColorSet DAY = new ColorSet(0xff517DA2,
             0xffF0F0F0,
             0xffffffff,

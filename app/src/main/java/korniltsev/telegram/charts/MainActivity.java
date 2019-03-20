@@ -123,12 +123,17 @@ public class MainActivity extends Activity {
         Log.d(TAG, "data len " + data.length);
 
         ChartData datum = data[4];
+        if (DEBUG) {
+            ColumnData vs = datum.data[datum.data.length - 1];
+            vs.minValue = 0;
+            vs.values[vs.values.length - 1] = 0;
+        }
 
         chart = new ChartViewGL(this, datum.data, dimen, currentColorSet);
 
         LinearLayout frame = new LinearLayout(this);
         bgRoot = new MyColorDrawable(currentColorSet.darkBackground, false);
-        frame.setBackgroundDrawable(bgRoot);//todo set in theme
+        frame.setBackgroundDrawable(bgRoot);
         frame.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         chart.setLayoutParams(lp);

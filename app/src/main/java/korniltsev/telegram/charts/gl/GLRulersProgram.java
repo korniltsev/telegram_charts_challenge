@@ -14,6 +14,7 @@ import android.text.TextPaint;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
@@ -55,10 +56,12 @@ public final class GLRulersProgram {
     static final String texFragmentShader =
             "precision mediump float;       \n"
                     + "varying vec2 textureCoordinate;\n"
+                    + "uniform float alpha;\n"
                     + "uniform sampler2D frame;\n"
                     + "void main()                    \n"
                     + "{                              \n"
-                    + "   gl_FragColor = texture2D(frame, textureCoordinate);     \n"
+                    + "   vec4 c=texture2D(frame, textureCoordinate);                               \n"
+                    + "   gl_FragColor = vec4(c.xyz, c.w * alpha);     \n"
                     + "}                              \n";
     private final int lineMVPHandle;
     private final int linePositionHandle;
@@ -72,6 +75,7 @@ public final class GLRulersProgram {
     private final int texProgram;
     private final int texMVPHandle;
     private final int texPositionHandle;
+    private final int texAlphaHandle;
 
     private float[] MVP = new float[16];
 
@@ -97,9 +101,46 @@ public final class GLRulersProgram {
     };
     int color;
     private MyAnimation.Color colorAnim;
+//    private long prevmax;
+
+    public void animateScale(float ratio) {
+//        if (prevmax == max) {
+//            return;
+//        }
+//        prevmax = max;
+        //todo do not animate if max is not changed
+        for (int i = 0, rsSize = rs.size(); i < rsSize; i++) {
+            Ruler r = rs.get(i);
+            r.scaleAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.scale, ratio);
+            r.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.alpha, 0f);
+        }
+        Ruler e = new Ruler(1000, 1f);
+        e.alpha = 0f;
+//        e.scaleAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.scale, ratio);
+        e.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, e.alpha, 1f);
+        rs.add(e);
+    }
+
+    public static final class Ruler {
+        long maxValue;
+        float scale = 1f;
+        float alpha = 1f;
+        MyAnimation.Float scaleAnim;
+        MyAnimation.Float alphaAnim;
 
 
-    public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int initialColor) {
+        public Ruler(long maxValue, float scale) {
+            this.maxValue = maxValue;
+            this.scale = scale;
+        }
+    }
+
+    private final ArrayList<Ruler> rs = new ArrayList<>();
+
+    public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int initialColor, long prevMax) {
+        Ruler r = new Ruler(prevMax, 1.0f);
+        rs.add(r);
+
         this.canvasW = canvasW;
         this.canvasH = canvasH;
         this.dimen = dimen;
@@ -114,6 +155,7 @@ public final class GLRulersProgram {
 
         texProgram = MyGL.createProgram(texVertexShader, texFragmentShader);
         texMVPHandle = GLES20.glGetUniformLocation(texProgram, "u_MVPMatrix");
+        texAlphaHandle = GLES20.glGetUniformLocation(texProgram, "alpha");
         texPositionHandle = GLES20.glGetAttribLocation(texProgram, "a_Position");
 
 
@@ -147,8 +189,7 @@ public final class GLRulersProgram {
     }
 
     public void animate(int ruler) {
-        colorAnim = new MyAnimation.Color(160, color, ruler);
-
+        colorAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, color, ruler);
     }
 
 
@@ -212,18 +253,45 @@ public final class GLRulersProgram {
                 colorAnim = null;
             }
         }
+        for (int i = 0, rsSize = rs.size(); i < rsSize; i++) {
+            Ruler r = rs.get(i);
+
+            if (r.scaleAnim != null) {
+                r.scale = r.scaleAnim.tick(t);
+                if (r.scaleAnim.ended) {
+                    r.scaleAnim = null;
+                }
+            }
+            if (r.alphaAnim != null) {
+                r.alpha = r.alphaAnim.tick(t);
+                if (r.alphaAnim.ended) {
+                    r.alphaAnim = null;
+                }
+            }
+        }
 
         final float hpadding = dimen.dpf(16);
-        float dy = dimen.dpf(80);
-        for (int i = 0; i < 6; ++i) {
-            //todo draw lines first, then text, so we can minimize program switch
-            drawLine(hpadding, dy, canvasW - 2 * hpadding);
-            drawText(textZero, hpadding, dy);
-            dy += dimen.dpf(51);
+
+
+        //todo draw zero only once
+        for (int ruler_i = 0, rsSize = rs.size(); ruler_i < rsSize; ruler_i++) {
+            Ruler r = rs.get(ruler_i);
+
+            float zero = dimen.dpf(80);
+            float dy = 0;
+
+            for (int i = 0; i < 6; ++i) {
+                //todo draw lines first, then text, so we can minimize program switch
+
+                drawLine(hpadding, zero + dy * r.scale, canvasW - 2 * hpadding, r.alpha);
+                drawText(textZero, hpadding, zero + dy * r.scale, r.alpha);
+                dy += dimen.dpf(51);
+            }
+            drawLine(hpadding, zero + root.dimen_chart_height-10, (canvasW - 2 * hpadding)/2, 1.0f);
         }
     }
 
-    private void drawText(TextTex textZero, float x, float y) {
+    private void drawText(TextTex textZero, float x, float y, float alpha) {
         GLES20.glUseProgram(texProgram);
         MyGL.checkGlError2();
 
@@ -246,6 +314,7 @@ public final class GLRulersProgram {
 
 //        GLES20.glLineWidth(dimen.dpf(2.0f / 3.0f));
         GLES20.glUniformMatrix4fv(texMVPHandle, 1, false, MVP, 0);
+        GLES20.glUniform1f(texAlphaHandle, alpha);
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textZero.tex);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, texVertices.length / 2);
@@ -253,13 +322,13 @@ public final class GLRulersProgram {
     }
 
 
-    public void drawLine(float x, float y, float w) {
+    public void drawLine(float x, float y, float w, float alpha) {
         GLES20.glUseProgram(lineProgram);
         MyGL.checkGlError2();
         LINE_COLOR_PARTS[0] = Color.red(color) / 255f;
         LINE_COLOR_PARTS[1] = Color.green(color) / 255f;
         LINE_COLOR_PARTS[2] = Color.blue(color) / 255f;
-        LINE_COLOR_PARTS[3] = 1f;
+        LINE_COLOR_PARTS[3] = alpha;
         GLES20.glUniform4fv(lineColorHandle, 1, LINE_COLOR_PARTS, 0);//todo try to bind only once
 
         GLES20.glEnableVertexAttribArray(linePositionHandle);

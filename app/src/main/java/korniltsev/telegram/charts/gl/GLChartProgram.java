@@ -163,13 +163,11 @@ public final class GLChartProgram {
             Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), yscale, 1.0f);
             GLES20.glLineWidth(dimen.dpf(1f));
         } else {
-            int ypx = root.dimen_v_padding8
-                    + root.dimen_scrollbar_height
-                    + root.dimen_v_padding8
-                    + root.dimen_v_padding8;
+            int ypx = dimen.dpi(80);
             Matrix.translateM(MVP, 0, hpadding, ypx, 0);
             float w = this.w - 2 * hpadding;
-            int h = root.dimen_chart_height;
+//            int h = root.dimen_chart_height;
+            int h = dimen.dpi(280);
             float xdiff = maxx - minx;
             Matrix.scaleM(MVP, 0, w / xdiff /zoom, h  /  (float)(maxValue * maxValueAnim ), 1.0f);
             Matrix.translateM(MVP, 0, -left * xdiff , 0f, 0f);
@@ -191,7 +189,7 @@ public final class GLChartProgram {
 
     public void animateAlpha(boolean isChecked) {
         if (this.checked != isChecked) {
-            alphaAnim = new MyAnimation.Float(160, alpha, isChecked ? 1.0f : 0.0f);
+            alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, alpha, isChecked ? 1.0f : 0.0f);
             this.checked = isChecked;
         }
     }
@@ -210,8 +208,8 @@ public final class GLChartProgram {
             maxValueAnim = (float)prevMax / max;
 //            minValue = min;
 //            maxValue = max;
-            minAnim = new MyAnimation.Float(160, minValueAnim, 1.0f);
-            maxAnim = new MyAnimation.Float(160, maxValueAnim, 1.0f);
+            minAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, minValueAnim, 1.0f);
+            maxAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, maxValueAnim, 1.0f);
         }
 
     }

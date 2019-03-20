@@ -12,6 +12,8 @@ import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.ViewConfiguration;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -57,7 +59,9 @@ import static android.opengl.GLES10.glClearColor;
     ---------------------------------------- 19 march
 
     rules vertical animation
+    stop drawing when nothing changes and draw only animation / changes
     chart pointer response for max animation
+    animation double tap bug (jump)
 
     toolbar shadow, scrollbar night mode, text night mode + animation
     horizontal lables + animations
@@ -78,7 +82,7 @@ import static android.opengl.GLES10.glClearColor;
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 // todo
-stop drawing when nothing changes and draw only animation / changes
+
 //     todo first animation is SLOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!, trace with tracer emulator, if possible - warmup, if not - rewrite custom ripple or just replace with state list drawable
 //     snap scrollbar near zeros
 //     implement empty chart
@@ -206,6 +210,7 @@ public class ChartViewGL extends TextureView {
         private GLChartProgram[] chart;
         private GLScrollbarOverlayProgram overlay;
         private GLRulersProgram ruler;
+        private long prevMax;
 
 
         public Render(ColumnData[] column) {
@@ -249,9 +254,10 @@ public class ChartViewGL extends TextureView {
                 it.maxValue = max;
                 it.minValue = 0;
             }
+            prevMax = max;
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this);
-            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, rulerColor);
+            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, rulerColor, prevMax);
         }
 
 
@@ -305,7 +311,8 @@ public class ChartViewGL extends TextureView {
                             c.animateMinMax(min, max, true);
                         }
                     }
-
+                    float ratio = prevMax / (float) max;
+                    Log.d(LOG_TAG, "anim ratio " + ratio);
                     // chart
                     for (GLChartProgram c : chart) {
                         if (c.column.id.equals(id)) {
@@ -315,6 +322,11 @@ public class ChartViewGL extends TextureView {
                             c.animateMinMax(0, max, true);
                         }
                     }
+                    if (prevMax != max) {
+                        ruler.animateScale(ratio);
+                    }
+                    prevMax = max;
+
                 }
             });
         }
@@ -323,7 +335,10 @@ public class ChartViewGL extends TextureView {
 
 
         private void loop() {
-
+            List<MyRect> debugRects = new ArrayList<>();
+            debugRects.add(new MyRect(w, h, 0, 0, Color.RED, w, h));
+            debugRects.add(new MyRect(w, dimen_v_padding8 *2 + dimen_scrollbar_height, 0, 0, Color.GREEN, w, h));
+            debugRects.add(new MyRect(w, dimen.dpi(280), 0, dimen.dpi(80), Color.BLUE, w, h));
             while (true) {
                 while (true) {
                     Runnable peek = actionQueue.poll();
@@ -348,6 +363,10 @@ public class ChartViewGL extends TextureView {
                         1.0f
                 );
                 glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+//                for (MyRect r : debugRects) {
+//
+//                    r.draw();
+//                }
 
                 for (GLChartProgram c : scrollbar) {
                     c.draw(t);
@@ -647,7 +666,7 @@ public class ChartViewGL extends TextureView {
         r.actionQueue.add(new Runnable() {
             @Override
             public void run() {
-                bgAnim = new MyAnimation.Color(160, bgColor, colors.lightBackground);
+                bgAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, bgColor, colors.lightBackground);
                 r.ruler.animate(colors.ruler);
             }
         });

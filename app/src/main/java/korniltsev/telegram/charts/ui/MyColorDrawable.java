@@ -24,7 +24,7 @@ public class MyColorDrawable extends Drawable {
     }
 
     public void animate(final int to) {
-        bgAnim = new MyAnimation.Color(160, color, to);
+        bgAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, color, to);
 //        if (anim != null) {
 //            anim.cancel();
 //        }
