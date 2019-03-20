@@ -632,7 +632,7 @@ public class ChartViewGL extends TextureView {
             }
         }
 
-
+        boolean firstLeftRightUpdate = true;
         public void updateLeftRight(float left, float right, float scale) {
             overlay.setLeftRight(left, right);
 //                long t = SystemClock.elapsedRealtimeNanos();
@@ -643,9 +643,10 @@ public class ChartViewGL extends TextureView {
                 glChartProgram.zoom = scale;
                 glChartProgram.left = left;
                 if (prevMax != scaledMax) {
-                    glChartProgram.animateMinMax(0, scaledMax, true);
+                    glChartProgram.animateMinMax(0, scaledMax, !firstLeftRightUpdate);
                 }
             }
+            firstLeftRightUpdate = false;
 
 
             //todo
