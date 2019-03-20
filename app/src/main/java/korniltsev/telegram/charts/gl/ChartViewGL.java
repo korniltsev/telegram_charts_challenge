@@ -70,7 +70,10 @@ import static android.opengl.GLES10.glClearColor;
     + animation double tap bug (jump)
 
 
-    toolbar shadow, scrollbar night mode, text night mode + animation
+    toolbar shadow
+    animate titlebar day night
+    scrollbar night mode,
+    rulers text night mode + animation
 
     toooltip by touching
     ---------------------------------------- 20 march
@@ -80,7 +83,8 @@ import static android.opengl.GLES10.glClearColor;
     optimize ruler rendering
     horizontal lables + animations
     checkbox + animations + divider width
-    todo animate titlebar day night
+
+    "folorwers"  text night mode + animation
     ---------------------------------------- 21 march
 
 
