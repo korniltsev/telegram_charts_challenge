@@ -72,6 +72,7 @@ import static android.opengl.GLES10.glClearColor;
     optimize ruler rendering
 
     checkbox + animations + divider width
+    todo animate titlebar day night
 
     alpha animation, wrong blending for charts
     >>>>>>>>>>>>>>>> https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
