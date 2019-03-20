@@ -60,7 +60,9 @@ import static android.opengl.GLES10.glClearColor;
 
     + rules vertical animation
     + stop drawing when nothing changes and draw only animation / changes
-    chart pointer response for max animation
+
+    > chart pointer response for max animation
+
     animation double tap bug (jump)
     scrollbar animation bug when last value is zero
 
