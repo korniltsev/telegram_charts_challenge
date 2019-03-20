@@ -4,6 +4,9 @@ import android.graphics.Color;
 
 import org.junit.Test;
 
+import korniltsev.telegram.charts.ui.ArgbEvaluator;
+import korniltsev.telegram.charts.ui.ColorSet;
+
 import static org.junit.Assert.*;
 
 
@@ -71,5 +74,20 @@ public class ExampleUnitTest {
             int green,
             int blue) {
         return 0xff000000 | (red << 16) | (green << 8) | blue;
+    }
+
+    @Test
+    public void name() {
+        for (float i = 0; i <= 1.01; i += 0.1) {
+            if (i > 1) {
+                i = 1.0f;
+            }
+
+            int res = ArgbEvaluator.sInstance.evaluate(i,
+                    ColorSet.DAY.lightBackground,
+                    ColorSet.NIGHT.lightBackground);
+            System.out.println(i + " " + Integer.toHexString(res).substring(2)
+            );
+        }
     }
 }

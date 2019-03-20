@@ -1,6 +1,7 @@
 package korniltsev.telegram.charts.gl;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
@@ -21,7 +22,9 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
 import korniltsev.telegram.charts.data.ColumnData;
+import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
+import korniltsev.telegram.charts.ui.MyAnimation;
 
 import static android.opengl.EGL14.EGL_CONTEXT_CLIENT_VERSION;
 import static android.opengl.EGL14.EGL_OPENGL_ES2_BIT;
@@ -120,14 +123,18 @@ public class ChartViewGL extends TextureView {
     private final int initial_scroller_dith;
     private final int resize_touch_area2;
     private final int touchSlop;
+    public int bgColor;
+    public MyAnimation.Color bgAnim = null;
+//    private ColorSet currentColorsSet;
 
-    public ChartViewGL(Context context, ColumnData[] c, Dimen dimen) {
+    public ChartViewGL(Context context, ColumnData[] c, Dimen dimen, ColorSet currentColorsSet) {
         super(context);
         this.dimen = dimen;
         dimen_v_padding8 = dimen.dpi(8);
         dimen_chart_height = dimen.dpi(300);
         dimen_scrollbar_height = dimen.dpi(38);
         r = new Render(c);
+        this.bgColor = currentColorsSet.lightBackground;
         r.start();
         setSurfaceTextureListener(r);
 
@@ -318,10 +325,22 @@ public class ChartViewGL extends TextureView {
                         peek.run();
                     }
                 }
-
-                glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-                glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+//                SystemClock.sleep(8);
                 long t = SystemClock.uptimeMillis();
+                if (bgAnim != null) {
+                    bgColor = bgAnim.tick(t);
+                    if (bgAnim.ended) {
+                        bgAnim = null;
+                    }
+                }
+                glClearColor(
+                        Color.red(bgColor) / 255f,
+                        Color.green(bgColor) / 255f,
+                        Color.blue(bgColor) / 255f,
+                        1.0f
+                );
+                glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
                 for (GLChartProgram c : scrollbar) {
                     c.draw(t);
                 }
@@ -612,6 +631,15 @@ public class ChartViewGL extends TextureView {
                     glChartProgram.zoom = scale;
                     glChartProgram.left = left;
                 }
+            }
+        });
+    }
+
+    public void animateToColors(final ColorSet colors) {
+        r.actionQueue.add(new Runnable() {
+            @Override
+            public void run() {
+                bgAnim = new MyAnimation.Color(160, bgColor, colors.lightBackground);
             }
         });
     }
