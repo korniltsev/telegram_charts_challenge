@@ -208,16 +208,25 @@ public final class GLChartProgram {
         this.minValue = min;
         this.maxValue = max;
         if (alpha == 0f || !animate) {
-            minValueAnim = 1.0f;
-            maxValueAnim = 1.0f;
+            minValueAnim = 1f;
+            maxValueAnim = 1f;
         } else {
-            //todo mb double?
-            minValueAnim = (float)prevMin / min;
-            maxValueAnim = (float)prevMax / max;
-//            minValue = min;
-//            maxValue = max;
-            minAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, minValueAnim, 1.0f);
-            maxAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, maxValueAnim, 1.0f);
+            if (prevMin != min) {
+                minValueAnim = (float)prevMin / min;
+                //todo play with interpolation
+                minAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, minValueAnim, 1.0f);
+            } else {
+                minValueAnim = 1f;
+                minAnim = null;
+            }
+
+            if (prevMax != max) {
+                maxValueAnim = (float)prevMax / max;
+                maxAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, maxValueAnim, 1.0f);
+            } else {
+                maxValueAnim = 1f;
+                maxAnim = null;
+            }
         }
 
     }
