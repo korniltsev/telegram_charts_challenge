@@ -70,10 +70,11 @@ import static android.opengl.GLES10.glClearColor;
     + animation double tap bug (jump)
 
 
+    scrollbar night mode,
     toolbar shadow
     animate titlebar day night
-    scrollbar night mode,
     rulers text night mode + animation
+    format digits on rulers
 
     toooltip by touching
     ---------------------------------------- 20 march
@@ -151,6 +152,7 @@ public class ChartViewGL extends TextureView {
     private final int resize_touch_area2;
     private final int touchSlop;
     private final int rulerColor;
+    private final ColorSet init_colors;
     public int bgColor;
     public MyAnimation.Color bgAnim = null;
 //    private long currentMax;
@@ -158,6 +160,7 @@ public class ChartViewGL extends TextureView {
 
     public ChartViewGL(Context context, ColumnData[] c, Dimen dimen, ColorSet currentColorsSet) {
         super(context);
+        this.init_colors = currentColorsSet;
         this.dimen = dimen;
         dimen_v_padding8 = dimen.dpi(8);
         dimen_chart_height = dimen.dpi(300);
@@ -278,7 +281,7 @@ public class ChartViewGL extends TextureView {
 //            }
 //            prevMax = max;
 
-            overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this);
+            overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay);
             ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, rulerColor);
         }
 
@@ -843,6 +846,7 @@ public class ChartViewGL extends TextureView {
             public void run() {
                 bgAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, bgColor, colors.lightBackground);
                 r.ruler.animate(colors.ruler);
+                r.overlay.animate(colors.scrollbarBorder, colors.scrollbarOverlay);
             }
         });
     }

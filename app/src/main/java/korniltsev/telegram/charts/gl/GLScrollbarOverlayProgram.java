@@ -9,13 +9,14 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import korniltsev.telegram.charts.ui.Dimen;
+import korniltsev.telegram.charts.ui.MyAnimation;
 
 public final class GLScrollbarOverlayProgram {
 
     private static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
     private static final int POSITION_DATA_SIZE = 2;
-    public static final int OVERLAY_COLOR = 0xbff1f5f7;
+//    public static final int OVERLAY_COLOR = 0xbff1f5f7;
     public static final int BORDER_COLOR = 0x334b87b4;
 
     final String vertexShader =
@@ -39,6 +40,8 @@ public final class GLScrollbarOverlayProgram {
     private final int vbo;
     private final FloatBuffer buf1;
     private final int colorHandle;
+    private int color_overlay;
+    private int color_border;
 
     private float[] MVP = new float[16];
 
@@ -62,8 +65,12 @@ public final class GLScrollbarOverlayProgram {
             1, 0,
             0, 0,
     };
+    private MyAnimation.Color borderAnim;
+    private MyAnimation.Color overlayAnim;
 
-    public GLScrollbarOverlayProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root) {
+    public GLScrollbarOverlayProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int colorBorder, int coloroVerlay) {
+        this.color_overlay = coloroVerlay;
+        this.color_border = colorBorder;
         this.canvasW = canvasW;
         this.canvasH = canvasH;
         this.dimen = dimen;
@@ -91,21 +98,28 @@ public final class GLScrollbarOverlayProgram {
 
     }
 
-    float[] color_overlay = new float[]{ //todo try to do only once
-            Color.red(OVERLAY_COLOR) / 255f,
-            Color.green(OVERLAY_COLOR) / 255f,
-            Color.blue(OVERLAY_COLOR) / 255f,
-            Color.alpha(OVERLAY_COLOR) / 255f,
-    };
+    float[] color_parts = new float[4];
 
-    float [] color_border = new float[]{ //todo try to do only once
-            Color.red(BORDER_COLOR) / 255f,
-            Color.green(BORDER_COLOR) / 255f,
-            Color.blue(BORDER_COLOR) / 255f,
-            Color.alpha(BORDER_COLOR) / 255f,
-    };
+//    float [] color_border = new float[]{ //todo try to do only once
+//            Color.red(BORDER_COLOR) / 255f,
+//            Color.green(BORDER_COLOR) / 255f,
+//            Color.blue(BORDER_COLOR) / 255f,
+//            Color.alpha(BORDER_COLOR) / 255f,
+//    };
 
-    public final void draw(float t) {
+    public final void draw(long t) {
+        if (borderAnim != null) {
+            color_border = borderAnim.tick(t);
+            if (borderAnim.ended) {
+                borderAnim = null;
+            }
+        }
+        if (overlayAnim != null) {
+            color_overlay = overlayAnim.tick(t);
+            if (overlayAnim.ended) {
+                overlayAnim = null;
+            }
+        }
         GLES20.glUseProgram(program);
         MyGL.checkGlError2();
 
@@ -120,7 +134,11 @@ public final class GLScrollbarOverlayProgram {
         final float vline2h = dimen.dpf(1f);
 
 
-        GLES20.glUniform4fv(colorHandle, 1, color_overlay, 0);
+        color_parts[0] = Color.red(color_overlay) / 255f;
+        color_parts[1] = Color.green(color_overlay) / 255f;
+        color_parts[2] = Color.blue(color_overlay) / 255f;
+        color_parts[3] = Color.alpha(color_overlay) / 255f;
+        GLES20.glUniform4fv(colorHandle, 1, color_parts, 0);
         if (left != 0.0f) {
             drawRect(hpadding, root.dimen_v_padding8, left*scrollerW, root.dimen_scrollbar_height);
         }
@@ -128,7 +146,12 @@ public final class GLScrollbarOverlayProgram {
             drawRect(hpadding + scrollerW * right, root.dimen_v_padding8, scrollerW * (1.0f-right), root.dimen_scrollbar_height);
         }
 
-        GLES20.glUniform4fv(colorHandle, 1, color_border, 0);
+        color_parts[0] = Color.red(color_border) / 255f;
+        color_parts[1] = Color.green(color_border) / 255f;
+        color_parts[2] = Color.blue(color_border) / 255f;
+        color_parts[3] = Color.alpha(color_border) / 255f;
+
+        GLES20.glUniform4fv(colorHandle, 1, color_parts, 0);
         drawRect(hpadding + scrollerW * left, root.dimen_v_padding8, vline1w, root.dimen_scrollbar_height);
         drawRect(hpadding + scrollerW * right - vline1w, root.dimen_v_padding8, vline1w, root.dimen_scrollbar_height);
         float l = hpadding + scrollerW * left + vline1w;
@@ -158,5 +181,10 @@ public final class GLScrollbarOverlayProgram {
         this.left = left;
         this.right = right;
 //        Log.d("OVERLAY", " " + left + " " + right);
+    }
+
+    public void animate(int scrollbarBorder, int scrollbarOverlay) {
+        borderAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, color_border, scrollbarBorder);
+        overlayAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, color_overlay, scrollbarOverlay);
     }
 }
