@@ -152,40 +152,7 @@ public final class GLChartProgram {
 
     }
 
-    public void step1(){
-
-    }
-
-    public void step2() {
-
-    }
-
-    public void useChart(){
-        GLES20.glUseProgram(program);
-        MyGL.checkGlError2();
-    }
-
-    public final void draw(float[] pxMat) {
-
-        useChart();
-
-
-
-
-
-        { //todo try to do only once
-            colors[0] = Color.red(column.color) / 255f;
-            colors[1] = Color.green(column.color) / 255f;
-            colors[2] = Color.blue(column.color) / 255f;
-            colors[3] = alpha;
-        };
-        GLES20.glUniform4fv(colorHandle, 1, colors, 0);
-
-
-        GLES20.glEnableVertexAttribArray(positionHandle);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-        GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
-
+    public void step1(float []pxMat){
         float hpadding = dimen.dpf(16);
         float minx = vertices[0];
         float maxx = vertices[vertices.length - 2];
@@ -196,11 +163,6 @@ public final class GLChartProgram {
         System.arraycopy(pxMat, 0, MVP, 0, 16);
 
 
-        float r_ndc = scalex * dimen.dpf(scrollbar ? 0.5f : 1f);
-//        radius_px[0] = rpx;
-//        radius_px[1] = 0;
-//        radius_px[2] = 0;
-//        radius_px[3] = 0;
 //        Matrix.multiplyMV(radius_ndc, 0, MVP, 0, radius_px, 0);
         //todo learn matrixes ¯\_(ツ)_/¯
         if (scrollbar) {
@@ -215,13 +177,6 @@ public final class GLChartProgram {
             float dy = -yscale * minValue * minValueAnim;
             Matrix.translateM(MVP, 0, 0, dy, 0);
             Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), yscale, 1.0f);
-
-            GLES20.glLineWidth(dimen.dpf(1f));
-            GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
-            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
-
-
-            lineJoining.draw(MVP, colors, r_ndc);
         } else {
             int ypx = dimen.dpi(80);
             Matrix.translateM(MVP, 0, hpadding, ypx, 0);
@@ -234,12 +189,16 @@ public final class GLChartProgram {
 
             Matrix.scaleM(MVP, 0, ws, hs, 1.0f);
             Matrix.translateM(MVP, 0, -left * xdiff , 0f, 0f);
-//            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), h  /  (float)(maxValue ), 1.0f);
-            GLES20.glLineWidth(dimen.dpf(2f));
-            GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
-            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+        }
 
-            lineJoining.draw(MVP, colors, r_ndc * 2);
+    }
+
+    public void step3() {
+
+        float scalex = 2.0f / w;
+        //todo learn matrixes ¯\_(ツ)_/¯
+        if (scrollbar) {
+        } else {
 
             if (goodCircle != null) {
                 goodCircle.draw(MVP, colors, 0, 1, dimen.dpf(5) * scalex);
@@ -250,6 +209,61 @@ public final class GLChartProgram {
                 goodCircle.draw(MVP, white, 0, 1, dimen.dpf(3) * scalex);
             }
         }
+
+    }
+
+    public void step2() {
+
+        { //todo try to do only once
+            colors[0] = Color.red(column.color) / 255f;
+            colors[1] = Color.green(column.color) / 255f;
+            colors[2] = Color.blue(column.color) / 255f;
+            colors[3] = alpha;
+        };
+        GLES20.glUniform4fv(colorHandle, 1, colors, 0);
+
+
+        GLES20.glEnableVertexAttribArray(positionHandle);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
+        GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
+
+        float scalex = 2.0f / w;
+
+
+
+        float r_ndc = scalex * dimen.dpf(scrollbar ? 0.5f : 1f);
+        //todo learn matrixes ¯\_(ツ)_/¯
+        if (scrollbar) {
+            GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
+            GLES20.glLineWidth(dimen.dpf(1f));
+            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+
+
+            lineJoining.draw(MVP, colors, r_ndc);
+        } else {
+
+            GLES20.glLineWidth(dimen.dpf(2f));
+            GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
+            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+
+            lineJoining.draw(MVP, colors, r_ndc * 2);
+
+        }
+
+    }
+
+    public void useChart(){
+        GLES20.glUseProgram(program);
+        MyGL.checkGlError2();
+    }
+
+    public final void draw(float[] pxMat) {
+
+        useChart();
+
+        step1(pxMat);
+        step2();
+        step3();
 
 
     }
