@@ -62,9 +62,6 @@ public class MyCircles {
     private final int canvash;
 
     public MyCircles(Dimen dimen, int canvasw, int canvash, long []values, float radiusDip) {
-//        this.x = x;
-//        this.y = y;
-//        this.color = Color.RED;
         this.canvasw = canvasw;
         this.canvash = canvash;
 
@@ -150,17 +147,9 @@ public class MyCircles {
     public final void draw(float[] MVP, float[] colors) {
 
         GLES20.glUseProgram(program);
-//        float[] colors = new float[]{
-//                Color.red(color),
-//                Color.green(color),
-//                Color.blue(color),
-//                Color.alpha(color),
-//        };
-
-//        GLES20.glUseProgram(program);
 //        MyGL.checkGlError2();
         GLES20.glUniform2fv(anglesHandle, triangle_count, angles, 0);
-        MyGL.checkGlError2();
+//        MyGL.checkGlError2();
         GLES20.glUniform4fv(colorHandle, 1, colors, 0);//todo try to bind only once
 
         GLES20.glEnableVertexAttribArray(positionHandle);
@@ -170,26 +159,12 @@ public class MyCircles {
         GLES20.glEnableVertexAttribArray(attributeNoHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
         GLES20.glVertexAttribPointer(attributeNoHandle, 1, GLES20.GL_FLOAT, false, 12, 8);
-        MyGL.checkGlError2();
+//        MyGL.checkGlError2();
 
-//        final float scalex = 2.0f / canvasw;
-//        final float scaley = 2.0f / canvash;
-//        Matrix.setIdentityM(MVP, 0);
-//        Matrix.translateM(MVP, 0, -1.0f, -1.0f, 0);
-//        Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
-//
-////        System.arraycopy(MVP, 0, V, 0, 16);
-//
-//        Matrix.translateM(MVP, 0, 100f, y, 0);
-//        Matrix.scaleM(MVP, 0, 1f, 10, 1.0f);
-
-//        GLES20.glLineWidth(20);
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
-//        GLES20.glUniformMatrix4fv(VHandle, 1, false, V, 0);
         //todo relace with draw elements
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vs.size() );
-        MyGL.checkGlError2();
-//        GLES20.glDrawArrays(GLES20.GL_LINES, 0, vertices.length / 2);
+//        MyGL.checkGlError2();
 
 
     }
