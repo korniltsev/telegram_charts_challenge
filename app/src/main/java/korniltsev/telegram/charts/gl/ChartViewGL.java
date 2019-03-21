@@ -4,10 +4,8 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
-import android.nfc.Tag;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
-import android.os.Debug;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -81,8 +79,10 @@ import static android.opengl.GLES10.glClearColor;
     ---------------------------------------- 20 march
     + animate statusbar day night
     [ ! ] toooltip by touching
-
+    [ ! ] Color-> MyColor
+    [ ! ] implement empty chart
     [ ! ] horizontal lables + animations
+
     [ ! ] rulers text night mode + animation
     [ ! ] move "folorwers" to gl +   text night mode + animation
     [ ! ] checkbox + animations + divider width
@@ -90,7 +90,8 @@ import static android.opengl.GLES10.glClearColor;
 
     ---------------------------------------- 21 march
     [?] replace actionQueue.add with something better?
-    [ ! ] implement empty chart
+    [?] try to play with thread priority?
+
     [ * ] move left-right alot, fps goes down, do not animate-out rulers who already animating-out
     [ * ] scrollbar animation bug when last value is zero
     [ * ] optimize ruler rendering
@@ -140,8 +141,6 @@ import static android.opengl.GLES10.glClearColor;
 
 */
 public class ChartViewGL extends TextureView {
-    public static final String LOG_TAG = "tg.ch.gl";
-    public static final boolean DIRTY_CHECK = false;
     private final Dimen dimen;
 
     public final int dimen_v_padding8;
@@ -154,8 +153,12 @@ public class ChartViewGL extends TextureView {
     private final int touchSlop;
     private final int rulerColor;
     private final ColorSet init_colors;
+    private final ColumnData[] data;
     public int bgColor;
     public MyAnimation.Color bgAnim = null;
+    private int chartBottom;
+    private int chartTop;
+    private int hpadding;
 //    private long currentMax;
 //    private ColorSet currentColorsSet;
 
@@ -163,6 +166,7 @@ public class ChartViewGL extends TextureView {
         super(context);
         this.init_colors = currentColorsSet;
         this.dimen = dimen;
+        this.data = c;
         dimen_v_padding8 = dimen.dpi(8);
         dimen_chart_height = dimen.dpi(300);
         dimen_scrollbar_height = dimen.dpi(38);
@@ -172,6 +176,7 @@ public class ChartViewGL extends TextureView {
         r.start();
         setSurfaceTextureListener(r);
 
+        hpadding = dimen.dpi(16);
         h = dimen_v_padding8
                 + dimen_chart_height
                 + dimen_v_padding8
@@ -189,8 +194,9 @@ public class ChartViewGL extends TextureView {
         int w = MeasureSpec.getSize(widthMeasureSpec);
 //
 //        int scrollbar_top = chart_bottom + this.scroll_bar_v_padding;
-        scrollbar.left = dimen.dpi(16);
-        scrollbar.right = w - dimen.dpi(16);
+
+        scrollbar.left = hpadding;
+        scrollbar.right = w - hpadding;
         scrollbar.bottom = h - dimen_v_padding8;
         scrollbar.top = scrollbar.bottom - dimen_scrollbar_height;
 
@@ -206,6 +212,10 @@ public class ChartViewGL extends TextureView {
             scroller_left = scrollbar.right - initial_scroller_dith;
             setOverlayPos();
         }
+
+        chartBottom =  bottom - dimen.dpi(80);
+        chartTop =  chartBottom - dimen.dpi(280);
+//        chartTop = dimen.dpi(80);
     }
 
     public void setChecked(String id, boolean isChecked) {
@@ -247,8 +257,8 @@ public class ChartViewGL extends TextureView {
 
                 return;
             }
-            File filesDir = getContext().getFilesDir();
-            File trace = new File(filesDir, "trace");
+//            File filesDir = getContext().getFilesDir();
+//            File trace = new File(filesDir, "trace");
 //            if (MainActivity.TRACE) {
 //                Debug.startMethodTracing(trace.getAbsolutePath(), 1024  * 1024 * 10);
 //            }
@@ -349,7 +359,7 @@ public class ChartViewGL extends TextureView {
                     long scaledMax = calculateMax(r.overlay.left, r.overlay.right);
                     //todo
                     float ratio = prevMax / (float) scaledMax;
-                    Log.d(LOG_TAG, "anim ratio " + ratio);
+//                    if (MainActivity.LOGGING) Log.d(MainActivity.TAG, "anim ratio " + ratio);
 
                     // chart
                     for (GLChartProgram c : chart) {
@@ -391,7 +401,7 @@ public class ChartViewGL extends TextureView {
                         if (invalidated || cnt != 0) {
                             break;
                         } else {
-                            if (DIRTY_CHECK) {
+                            if (MainActivity.DIRTY_CHECK) {
                                 continue;
                             } else {
                                 break;
@@ -459,9 +469,9 @@ public class ChartViewGL extends TextureView {
                     long t7 = SystemClock.uptimeMillis();
 //                frameCount++;
                     long timeSinceLastReport = t - prevReportTime;
-                    if (timeSinceLastReport > 1000) {
+                    if (MainActivity.LOG_FPS && timeSinceLastReport > 1000) {
                         float fps = (float) frameCount * 1000 / timeSinceLastReport;
-                        Log.d(LOG_TAG, "fps " + fps);
+                        Log.d(MainActivity.TAG, "fps " + fps);
                         prevReportTime = t;
                         frameCount = 0;
                         log_trace("swap", t7, t6);
@@ -483,7 +493,7 @@ public class ChartViewGL extends TextureView {
         }
 
         private void log_trace(String name, long t5, long t4) {
-            Log.d(LOG_TAG, "trace " + name + " " + (t5 - t4));
+            Log.d(MainActivity.TAG, "trace " + name + " " + (t5 - t4));
         }
 
 
@@ -540,7 +550,7 @@ public class ChartViewGL extends TextureView {
             if (mEglSurface == null || mEglSurface == EGL10.EGL_NO_SURFACE) {
                 int error = mEgl.eglGetError();
                 if (error == EGL10.EGL_BAD_NATIVE_WINDOW) {
-                    Log.e(LOG_TAG, "createWindowSurface returned EGL_BAD_NATIVE_WINDOW.");
+                    Log.e(MainActivity.TAG, "createWindowSurface returned EGL_BAD_NATIVE_WINDOW.");
                     return;
                 }
                 throw new RuntimeException("createWindowSurface failed "
@@ -592,8 +602,8 @@ public class ChartViewGL extends TextureView {
                 String eglErrorString = GLUtils.getEGLErrorString(mEgl.eglGetError());
 //                throw new IllegalArgumentException("eglChooseConfig failed" +
 //                        eglErrorString);
-                if (LOGGING) {
-                    Log.e(LOG_TAG, "err" + eglErrorString);
+                if (MainActivity.LOGGING) {
+                    Log.e(MainActivity.TAG, "err" + eglErrorString);
                 }
             }
             // without sample buffers
@@ -667,7 +677,7 @@ public class ChartViewGL extends TextureView {
 
             //todo
             float ratio = prevMax / (float) scaledMax;
-            Log.d(LOG_TAG, "anim ratio " + ratio);
+//            if (MainActivity.LOGGING) Log.d(MainActivity.TAG, "anim ratio " + ratio);
 
             // chart
 //            for (GLChartProgram c : chart) {
@@ -685,16 +695,15 @@ public class ChartViewGL extends TextureView {
         }
     }
 
-    public static final boolean LOGGING = true; //todo
-    private int scroller_width;//todo replace with scroller_left/right
-    private int scroller_pos = -1;
+    //    private int scroller_width;//todo replace with scroller_left/right
+//    private int scroller_pos = -1;
     private Rect scrollbar = new Rect();
     //    private int scroller_move_down_x;
     static final int DOWN_MOVE = 0;
     static final int DOWN_RESIZE_LEFT = 1;
     static final int DOWN_RESIZE_RIGHT = 2;
     float last_x = -1f;
-    int resze_scroller_right = -1;
+//    int resze_scroller_right = -1;
     int down_target = -1;
     boolean dragging;
 
@@ -715,34 +724,36 @@ public class ChartViewGL extends TextureView {
         float y = event.getY();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                //todo check scroll edges
-                boolean b = y >= scrollbar.top && y <= scrollbar.bottom;
-                if (b) {
+                boolean scrollbar = y >= this.scrollbar.top && y <= this.scrollbar.bottom;
+                if (scrollbar) {
                     if (Math.abs(x - scroller_left) <= resize_touch_area2) {
-                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize left");
+                        if (MainActivity.LOGGING) Log.d("tg.chart", "touchevent DOWN resize left");
                         last_x = x;
                         down_target = DOWN_RESIZE_LEFT;
 //                        resze_scroller_right = scroller_left + scroller_width;
                         return true;
                     } else if (Math.abs(x - (scroller__right)) < resize_touch_area2) {
-                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize right");
+                        if (MainActivity.LOGGING) Log.d("tg.chart", "touchevent DOWN resize right");
                         last_x = x;
                         down_target = DOWN_RESIZE_RIGHT;
                         return true;
                     } else if (x >= scroller_left && x <= scroller__right) {
-                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN inside scrollbar");
-                        //todo check x inside scroller
+                        if (MainActivity.LOGGING) Log.d("tg.chart", "touchevent DOWN inside scrollbar");
                         last_x = x;
                         scroller_move_down_x = (int) (x - scroller_left);
                         scroller_move_down_width = scroller__right - scroller_left;
                         down_target = DOWN_MOVE;
                         return true;
                     } else {
-                        //todo check scroll edges
-                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
+                        if (MainActivity.LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
                     }
                 } else {
-                    if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
+                    boolean chart = y >= this.chartTop && y <= this.chartBottom;
+                    if (chart) {
+                        dispatchTouchDownChart(x);
+                    } else {
+                        if (MainActivity.LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
+                    }
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -754,13 +765,13 @@ public class ChartViewGL extends TextureView {
 
                             scroller_left = (int) (x - scroller_move_down_x);
                             scroller__right = scroller_left + scroller_move_down_width;
-                            if (scroller_left < scrollbar.left) {
-                                scroller_left = scrollbar.left;
-                                scroller__right = scrollbar.left + scroller_move_down_width;
+                            if (scroller_left < this.scrollbar.left) {
+                                scroller_left = this.scrollbar.left;
+                                scroller__right = this.scrollbar.left + scroller_move_down_width;
                             }
-                            if (scroller__right > scrollbar.right) {
-                                scroller__right = scrollbar.right;
-                                scroller_left = scrollbar.right - scroller_move_down_width;
+                            if (scroller__right > this.scrollbar.right) {
+                                scroller__right = this.scrollbar.right;
+                                scroller_left = this.scrollbar.right - scroller_move_down_width;
                             }
                             setOverlayPos();
 //                            invalidate();
@@ -768,8 +779,8 @@ public class ChartViewGL extends TextureView {
 //                            scroller_left = Math.min(Math.max(scroller_left, scrollbar.left), scrollbar.right - scroller_width);
                         } else if (down_target == DOWN_RESIZE_RIGHT) {
                             scroller__right = (int) x;
-                            if (scroller__right > scrollbar.right) {
-                                scroller__right = scrollbar.right;
+                            if (scroller__right > this.scrollbar.right) {
+                                scroller__right = this.scrollbar.right;
                             }
                             // check the scrollbar is not too small
                             if (scroller__right - scroller_left < initial_scroller_dith) {
@@ -779,8 +790,8 @@ public class ChartViewGL extends TextureView {
 //                            invalidate();
                         } else if (down_target == DOWN_RESIZE_LEFT) {
                             scroller_left = (int) x;
-                            if (scroller_left < scrollbar.left) {
-                                scroller_left = scrollbar.left;
+                            if (scroller_left < this.scrollbar.left) {
+                                scroller_left = this.scrollbar.left;
                             }
 //                            scroller_width = resze_scroller_right - scroller_left;
                             if (scroller__right - scroller_left < initial_scroller_dith) {
@@ -811,6 +822,31 @@ public class ChartViewGL extends TextureView {
                 break;
         }
         return false;
+    }
+
+    private void dispatchTouchDownChart(float x) {
+        if (x < scrollbar.left || x > scrollbar.right) {
+            if (MainActivity.LOGGING) Log.d(MainActivity.TAG, "chart down miss");
+        } else {
+            int i = (int) (r.data.length * (x - scrollbar.left) / scrollbar.width());
+            if (i < 0) {
+                i = 0;
+            }
+            if (i >= r.data.length) {
+                i = r.data.length - 1;
+            }
+            final int finali = i;
+            r.actionQueue.add(new Runnable() {
+                @Override
+                public void run() {
+                    for (GLChartProgram glChartProgram : r.chart) {
+                        glChartProgram.tooltipIndex = finali;
+                    }
+                }
+            });
+
+            if (MainActivity.LOGGING) Log.d(MainActivity.TAG, "chart touch down");
+        }
     }
 
 //    private static final BlockingQueue<MyMotionEvent> motionEvents = new ArrayBlockingQueue<MyMotionEvent>(100);

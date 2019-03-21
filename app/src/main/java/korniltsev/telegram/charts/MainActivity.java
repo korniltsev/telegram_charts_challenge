@@ -58,8 +58,10 @@ public class MainActivity extends Activity {
     public static final boolean TRACE = BuildConfig.DEBUG && false;
     public static final boolean LOGGING = DEBUG;
     public static final int DATASET = 0;
+    public static final boolean DIRTY_CHECK = true;
+    public static final boolean LOG_FPS = false;
 
-//    private MyColorDrawable bgRoot;
+    //    private MyColorDrawable bgRoot;
     private ArrayList<MyColorDrawable> ds = new ArrayList<>();
 
     ColorSet currentColorSet = ColorSet.DAY;
@@ -79,7 +81,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         ChartData[] data = readData();
-        if (LOGGING) Log.d(TAG, "data len " + data.length);
+//        if (LOGGING) Log.d(TAG, "data len " + data.length);
 
         ChartData datum = data[DATASET];
         if (DEBUG) {

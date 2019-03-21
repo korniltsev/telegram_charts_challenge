@@ -5,7 +5,7 @@ import android.util.Log;
 
 import static android.opengl.GLES10.GL_NO_ERROR;
 import static android.opengl.GLES10.glGetError;
-import static korniltsev.telegram.charts.gl.ChartViewGL.LOG_TAG;
+import static korniltsev.telegram.charts.MainActivity.TAG;
 
 public class MyGL {
     public static int createProgram(String vertexShaderSource, String fragmentShadersource) {
@@ -48,7 +48,7 @@ public class MyGL {
         if (error != GL_NO_ERROR) {
             String msg = "GL error = 0x" +
                     Integer.toHexString(error);
-            Log.w(LOG_TAG, msg);
+            Log.w(TAG, msg);
             throw new AssertionError(msg);
         }
     }

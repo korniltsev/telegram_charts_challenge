@@ -44,6 +44,7 @@ public final class GLChartProgram {
     private final int colorHandle;
     public float zoom = 1f;//1 -- all, 0.2 - partial
     public float left = 0;
+    public int tooltipIndex;
 
     private float[] MVP = new float[16];
 
