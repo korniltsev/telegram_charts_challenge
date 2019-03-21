@@ -2,8 +2,12 @@ package korniltsev.telegram.charts;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -13,6 +17,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -38,6 +43,7 @@ import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.gl.ChartViewGL;
 import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
+import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyColorDrawable;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
@@ -53,7 +59,7 @@ public class MainActivity extends Activity {
     public static final boolean LOGGING = DEBUG;
     public static final int DATASET = 4;
 
-    private MyColorDrawable bgRoot;
+//    private MyColorDrawable bgRoot;
     private ArrayList<MyColorDrawable> ds = new ArrayList<>();
 
     ColorSet currentColorSet = ColorSet.DAY;
@@ -66,6 +72,7 @@ public class MainActivity extends Activity {
     private TextView title;
     private ImageView imageButton;
     private ChartViewGL chart_;
+    private MyContentRoot root;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +90,7 @@ public class MainActivity extends Activity {
 
         dimen = new Dimen(this);
 
-        bgRoot = new MyColorDrawable(currentColorSet.darkBackground, false);
+//        bgRoot = new MyColorDrawable(currentColorSet.darkBackground, false);
         final int toolbar_size = dimen.dpi(56);
 
 
@@ -155,13 +162,7 @@ public class MainActivity extends Activity {
         sgadow.setBackgroundDrawable(getResources().getDrawable(R.drawable.header_shadow));
         contentFrame.addView(sgadow, MATCH_PARENT, dimen.dpi(3));
 
-        LinearLayout root = new LinearLayout(this){
-            @Override
-            public WindowInsets onApplyWindowInsets(WindowInsets insets) {
-                return super.onApplyWindowInsets(insets);
-            }
-        };
-        root.setBackgroundDrawable(bgRoot);
+        root = new MyContentRoot(this, currentColorSet.statusbar, currentColorSet.darkBackground);
         root.setOrientation(LinearLayout.VERTICAL);
         root.addView(toolbar, lp);
         root.addView(contentFrame);
@@ -196,13 +197,13 @@ public class MainActivity extends Activity {
 //            root.requestApplyInsets();
 //            //todo
 //            root.setFitsSystemWindows(false);
-//            root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-//                @Override
-//                public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
-//                    return insets.consumeSystemWindowInsets();
-//                }
-//            });
 
+
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            );
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
         setContentView(root);
 
@@ -217,11 +218,11 @@ public class MainActivity extends Activity {
             currentColorSet = ColorSet.DAY;
         }
         if (Build.VERSION.SDK_INT >= 21) {
+            root.animateColors(currentColorSet.statusbar, currentColorSet.darkBackground);
             //todo replace with insets and color animatione
-            getWindow().setStatusBarColor(currentColorSet.statusbar);
+//            getWindow().setStatusBarColor(currentColorSet.statusbar);
         }
         bgToolbar.animate(currentColorSet.toolbar);
-        bgRoot.animate(currentColorSet.darkBackground);
         for (MyColorDrawable d : ds) {
             d.animate(currentColorSet.lightBackground);
         }
@@ -300,4 +301,87 @@ public class MainActivity extends Activity {
     }
 
 
+    public static class MyContentRoot extends LinearLayout {
+        public static final boolean USE_INSETS = Build.VERSION.SDK_INT >= 21;
+        private final Paint paintStatus;
+        private final Paint paintBg;
+        private MyAnimation.Color animStatus;
+        private MyAnimation.Color animBg;
+        int colorStatusbar;
+        int colorBackground;
+
+        public MyContentRoot(Context context, int colorStatusbar, int colorBackground) {
+            super(context);
+            setWillNotDraw(false);
+            this.colorBackground = colorBackground;
+            this.colorStatusbar = colorStatusbar;
+            paintStatus = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paintStatus.setColor(colorStatusbar);
+
+            paintBg = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paintBg.setColor(colorBackground);
+        }
+
+
+
+        @Override
+        public WindowInsets onApplyWindowInsets(WindowInsets insets) {
+            if (USE_INSETS) {
+                int systemWindowInsetTop = insets.getSystemWindowInsetTop();
+                this.setPadding(insets.getSystemWindowInsetLeft(),
+                        systemWindowInsetTop,
+                        insets.getSystemWindowInsetRight(),
+                        insets.getSystemWindowInsetBottom());
+
+                return insets.consumeSystemWindowInsets();
+            } else {
+                return insets;
+            }
+        }
+
+        public void animateColors(int status, int bg){
+            animStatus = new MyAnimation.Color(MyAnimation.ANIM_DRATION, this.colorStatusbar, status);
+            animBg = new MyAnimation.Color(MyAnimation.ANIM_DRATION, this.colorBackground, bg);
+            invalidate();
+        }
+
+
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            long time = -1;
+            boolean invalidated = false;
+            if (animBg != null) {
+                time = SystemClock.uptimeMillis();
+                colorBackground = animBg.tick(time);
+                paintBg.setColor(colorBackground);
+                if (animBg.ended) {
+                    animBg = null;
+                }
+                invalidated = true;
+                invalidate();
+            }
+            if (animStatus != null) {
+                if (time == -1) {
+                    time = SystemClock.uptimeMillis();
+                }
+                colorStatusbar = animStatus.tick(time);
+                paintStatus.setColor(colorStatusbar);
+                if (animStatus.ended) {
+                    animStatus = null;
+                }
+                if (!invalidated) {
+                    invalidate();
+                }
+            }
+            if (USE_INSETS) {
+                int top = getPaddingTop();
+                canvas.drawRect(0, 0, getWidth(), top, paintStatus);
+                canvas.drawRect(0, top, getWidth(), getHeight(), paintBg);
+            } else {
+                canvas.drawRect(0, 0, getWidth(), getHeight(), paintBg);
+            }
+        }
+    }
 }
