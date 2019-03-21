@@ -465,10 +465,7 @@ public class ChartViewGL extends TextureView {
 //                }
                 long t2 = SystemClock.uptimeMillis();
 
-                for (GLChartProgram c : scrollbar) {
-                    boolean it_invalid = c.draw(t);
-                    invalidated = invalidated || it_invalid;
-                }
+                invalidated = drawScrollbar(invalidated, t);
                 long t3 = SystemClock.uptimeMillis();
                 overlay.draw(t);
                 long t4 = SystemClock.uptimeMillis();
@@ -509,6 +506,15 @@ public class ChartViewGL extends TextureView {
 //                }
             }
         }
+
+        private boolean drawScrollbar(boolean invalidated, long t) {
+            for (GLChartProgram c : scrollbar) {
+                boolean it_invalid = c.draw(t);
+                invalidated = invalidated || it_invalid;
+            }
+            return invalidated;
+        }
+
         private boolean drawChart(boolean invalidated, long t) {
             for (GLChartProgram chartProgram : chart) {
                 boolean it_invalid = chartProgram.draw(t);
