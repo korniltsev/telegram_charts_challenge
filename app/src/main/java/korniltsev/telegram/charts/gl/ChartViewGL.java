@@ -73,22 +73,29 @@ import static android.opengl.GLES10.glClearColor;
     + scrollbar night mode,
     + toolbar shadow
     + format digits on rulers
-    animate statusbar day night
-    rulers text night mode + animation
 
-    toooltip by touching
+
+
+
     ---------------------------------------- 20 march
-    move left-right alot, fps goes down, do not animate-out rulers who already animating-out
-    scrollbar animation bug when last value is zero
-    replace actionQueue.add with something better?
-    optimize ruler rendering
-    horizontal lables + animations
-    checkbox + animations + divider width
+    + animate statusbar day night
+    [ ! ] toooltip by touching
 
-    "folorwers"  text night mode + animation
+    [ ! ] horizontal lables + animations
+    [ ! ] rulers text night mode + animation
+    [ ! ] move "folorwers" to gl +   text night mode + animation
+    [ ! ] checkbox + animations + divider width
+
+
     ---------------------------------------- 21 march
+    [?] replace actionQueue.add with something better?
+    [ ! ] implement empty chart
+    [ * ] move left-right alot, fps goes down, do not animate-out rulers who already animating-out
+    [ * ] scrollbar animation bug when last value is zero
+    [ * ] optimize ruler rendering
 
 
+    ACHTUNG
     alpha animation, wrong blending for charts
     >>>>>>>>>>>>>>>> https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
     calculating normal in vertex shader
@@ -101,30 +108,23 @@ import static android.opengl.GLES10.glClearColor;
 ----------------------------------------------------------------------
 // todo
 
-//     todo first animation is SLOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!, trace with tracer emulator, if possible - warmup, if not - rewrite custom ripple or just replace with state list drawable
-// boolean dirtyCheck = true;/
-//     snap scrollbar near zeros
-//     implement empty chart
-//     implement y=0 chart
+//      boolean dirtyCheck = true;/
+//     implement y=0 y=x chart
 //     scrolling/caling allocations & perf
 //     initial zoom for small charts is terrible
 //    mb scale linewidth when drawing 365 points
 
 
 // todo design
-//    overlay color seems wrong
-//    lollipop bg gradient
 //    check colors & paddings with collor picker
 //    add 1dp padding to the scrollbar charts
 //    compare label fonts with design
 
 // todo nice to have
-//     adjust theme for smooth transition
 //     checkbox animations
-//     static layout warmup / background init
 //     nice app icon
 //      https://github.com/facebook/redex
-// check for accessor methods
+//      try to iptimize bytecode, check for accessor methods etc
 
 
 //todo testing

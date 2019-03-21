@@ -209,6 +209,7 @@ public class MainActivity extends Activity {
 
     }
 
+    final Handler h = new Handler();
 
     private void animateTheme() {
 //        trace(500);
@@ -227,7 +228,14 @@ public class MainActivity extends Activity {
             d.animate(currentColorSet.lightBackground);
         }
         chart_.animateToColors(currentColorSet);
-        imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton));
+        h.removeCallbacksAndMessages(null);
+        h.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton));
+            }
+        }, 300);
+
         if (Build.VERSION.SDK_INT >= 21) {
             title.postDelayed(new Runnable() {
                 @Override
@@ -287,16 +295,15 @@ public class MainActivity extends Activity {
         return baos.toByteArray();
     }
 
+    public static final boolean USE_RIPPLE = true;
     public final Drawable createButtonBackground(int pressedColor) {
-        boolean useRipple = false;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !useRipple) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !USE_RIPPLE) {
             StateListDrawable stateListDrawable = new StateListDrawable();
             stateListDrawable.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(pressedColor));
             return stateListDrawable;
         } else {
             ColorDrawable maskDrawable = null;
             return new RippleDrawable(ColorStateList.valueOf(pressedColor), null, maskDrawable);
-//            return null;
         }
     }
 
