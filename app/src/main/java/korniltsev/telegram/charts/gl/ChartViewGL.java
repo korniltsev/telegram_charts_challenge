@@ -508,17 +508,23 @@ public class ChartViewGL extends TextureView {
         }
 
         private boolean drawScrollbar(boolean invalidated, long t) {
-            for (GLChartProgram c : scrollbar) {
-                boolean it_invalid = c.draw(t);
+            for (GLChartProgram chartProgram : scrollbar) {
+                boolean it_invalid = chartProgram.animateionTick(t);
                 invalidated = invalidated || it_invalid;
+            }
+            for (GLChartProgram c : scrollbar) {
+                c.draw();
             }
             return invalidated;
         }
 
         private boolean drawChart(boolean invalidated, long t) {
             for (GLChartProgram chartProgram : chart) {
-                boolean it_invalid = chartProgram.draw(t);
+                boolean it_invalid = chartProgram.animateionTick(t);
                 invalidated = invalidated || it_invalid;
+            }
+            for (GLChartProgram chartProgram : chart) {
+                chartProgram.draw();
             }
             return invalidated;
         }

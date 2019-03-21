@@ -112,11 +112,8 @@ public final class GLChartProgram {
     int tooltipFillColor;
     float[] white = new float[4];
 
-    public final boolean draw(long t) {
+    public boolean animateionTick(long t) {
         boolean invalidate = false;
-        GLES20.glUseProgram(program);
-        MyGL.checkGlError2();
-
         if (alphaAnim != null) {
             alpha = alphaAnim.tick(t);
             if (alphaAnim.ended) {
@@ -150,6 +147,14 @@ public final class GLChartProgram {
                 invalidate = true;
             }
         }
+
+        return invalidate;
+
+    }
+    public final void draw() {
+        GLES20.glUseProgram(program);
+        MyGL.checkGlError2();
+
 
 
 
@@ -244,7 +249,6 @@ public final class GLChartProgram {
         }
 
 
-        return invalidate;
     }
 
     boolean checked = true;
