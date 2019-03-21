@@ -476,10 +476,7 @@ public class ChartViewGL extends TextureView {
                 ruler.draw(t);
                 long t5 = SystemClock.uptimeMillis();
 //                circle.draw();
-                for (GLChartProgram chartProgram : chart) {
-                    boolean it_invalid = chartProgram.draw(t);
-                    invalidated = invalidated || it_invalid;
-                }
+                invalidated = drawChart(invalidated, t);
                 long t6 = SystemClock.uptimeMillis();
 
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
@@ -511,6 +508,13 @@ public class ChartViewGL extends TextureView {
 //                    Debug.stopMethodTracing();
 //                }
             }
+        }
+        private boolean drawChart(boolean invalidated, long t) {
+            for (GLChartProgram chartProgram : chart) {
+                boolean it_invalid = chartProgram.draw(t);
+                invalidated = invalidated || it_invalid;
+            }
+            return invalidated;
         }
 
         private void log_trace(String name, long t5, long t4) {
