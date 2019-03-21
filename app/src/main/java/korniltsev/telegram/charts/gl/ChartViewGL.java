@@ -78,22 +78,26 @@ import static android.opengl.GLES10.glClearColor;
 
     ---------------------------------------- 20 march
     + animate statusbar day night
+    + [ ! ] round joining + alpha animation
+
     [ ! ] toooltip by touching
-    [ ! ] Color-> MyColor
-    [ ! ] implement empty chart
     [ ! ] horizontal lables + animations
 
+    [ ! ] implement empty chart
     [ ! ] rulers text night mode + animation
     [ ! ] move "folorwers" to gl +   text night mode + animation
     [ ! ] checkbox + animations + divider width
-
-
+    [ ! ] alpha animation blending
     ---------------------------------------- 21 march
+    [?] optimize minmax animation, introduce step?, do not cancel animations or try to continue?
+    [?] why DIRTY slow?
     [?] replace actionQueue.add with something better?
     [?] try to play with thread priority?
     [?] enabled blending only for overlay
     [?] reuse shaders between objects for faster start?
     [?] don't draw if vertes is far behind the screen
+
+    [ ? ] Color-> MyColor, Matrix?
 
     [ * ] move left-right alot, fps goes down, do not animate-out rulers who already animating-out
     [ * ] scrollbar animation bug when last value is zero
@@ -101,8 +105,8 @@ import static android.opengl.GLES10.glClearColor;
 
 
     ACHTUNG
-    alpha animation, wrong blending for charts
-    >>>>>>>>>>>>>>>> https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
+    chart line dithering
+    https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
     calculating normal in vertex shader
     https://github.com/learnopengles/Learn-OpenGLES-Tutorials/blob/641fcc25158dc30f45a7b2faaab165ec61ebb54b/android/AndroidOpenGLESLessonsCpp/app/src/main/assets/vertex/per_pixel_vertex_shader_tex_and_light.glsl#L22
 
@@ -391,7 +395,7 @@ public class ChartViewGL extends TextureView {
             debugRects.add(new MyRect(w, dimen.dpi(280), 0, dimen.dpi(80), Color.BLUE, w, h));
             boolean invalidated = true;
 
-            MyCircle circle = new MyCircle(dimen, 0, 0, Color.RED, w, h);
+//            MyCircle circle = new MyCircle(dimen,  w, h);
 
             long frameCount = 0;
             long prevReportTime = SystemClock.uptimeMillis();
@@ -459,13 +463,13 @@ public class ChartViewGL extends TextureView {
                 overlay.draw(t);
                 long t4 = SystemClock.uptimeMillis();
 
-//                ruler.draw(t);
+                ruler.draw(t);
                 long t5 = SystemClock.uptimeMillis();
-                circle.draw();
-//                for (GLChartProgram chartProgram : chart) {
-//                    boolean it_invalid = chartProgram.draw(t);
-//                    invalidated = invalidated || it_invalid;
-//                }
+//                circle.draw();
+                for (GLChartProgram chartProgram : chart) {
+                    boolean it_invalid = chartProgram.draw(t);
+                    invalidated = invalidated || it_invalid;
+                }
                 long t6 = SystemClock.uptimeMillis();
 
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
@@ -500,7 +504,7 @@ public class ChartViewGL extends TextureView {
         }
 
         private void log_trace(String name, long t5, long t4) {
-            Log.d(MainActivity.TAG, "trace " + name + " " + (t5 - t4));
+            if (MainActivity.LOGGING) Log.d(MainActivity.TAG, "trace " + name + " " + (t5 - t4));
         }
 
 

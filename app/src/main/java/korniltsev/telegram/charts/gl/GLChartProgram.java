@@ -42,6 +42,7 @@ public final class GLChartProgram {
     private final FloatBuffer buf1;
     public final ColumnData column;
     private final int colorHandle;
+    private final MyCircle circle;
     public float zoom = 1f;//1 -- all, 0.2 - partial
     public float left = 0;
     public int tooltipIndex;
@@ -98,7 +99,11 @@ public final class GLChartProgram {
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * BYTES_PER_FLOAT, buf1, GLES20.GL_STATIC_DRAW);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
+        circle = new MyCircle(dimen, w, h, column.values, scrollbar ? 0.5f : 1f);
+
     }
+
+    float[] colors = new float[4];
 
     public final boolean draw(long t) {
         boolean invalidate = false;
@@ -132,11 +137,12 @@ public final class GLChartProgram {
         }
 
 
-        float[] colors = new float[]{ //todo try to do only once
-                Color.red(column.color) / 255f,
-                Color.green(column.color) / 255f,
-                Color.blue(column.color) / 255f,
-                alpha,
+
+        { //todo try to do only once
+            colors[0] = Color.red(column.color) / 255f;
+            colors[1] = Color.green(column.color) / 255f;
+            colors[2] = Color.blue(column.color) / 255f;
+            colors[3] = alpha;
         };
         GLES20.glUniform4fv(colorHandle, 1, colors, 0);
 
@@ -170,6 +176,10 @@ public final class GLChartProgram {
             Matrix.translateM(MVP, 0, 0, dy, 0);
             Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), yscale, 1.0f);
             GLES20.glLineWidth(dimen.dpf(1f));
+            GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
+            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+
+            circle.draw(MVP, colors);
         } else {
             int ypx = dimen.dpi(80);
             Matrix.translateM(MVP, 0, hpadding, ypx, 0);
@@ -181,12 +191,13 @@ public final class GLChartProgram {
             Matrix.translateM(MVP, 0, -left * xdiff , 0f, 0f);
 //            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), h  /  (float)(maxValue ), 1.0f);
             GLES20.glLineWidth(dimen.dpf(2f));
+            GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
+            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+
+            circle.draw(MVP, colors);
         }
 
-//        Matrix.scaleM(MVP, 0, 5.0f, 1.0f, 1.0f);
-        GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
 
-        GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
         return invalidate;
     }
 

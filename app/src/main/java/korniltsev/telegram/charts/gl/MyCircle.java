@@ -15,10 +15,10 @@ import java.util.Locale;
 import korniltsev.telegram.charts.ui.Dimen;
 
 public class MyCircle {
-    private final float[] MVP = new float[16];
+//    private final float[] MVP = new float[16];
     //    private final float[] V = new float[16];
-    final int x;
-    final int y;
+//    final int x;
+//    final int y;
     private final ArrayList<Vertex> vs;
     private final int attributeNoHandle;
     //    private final int VHandle;
@@ -26,7 +26,7 @@ public class MyCircle {
     private final float[] angles;
     private final int triangle_count;
     //    private final float[] vertices;
-    private int color;
+//    private int color;
 
     final String vertexShader = "const int triangle_count = %d;\n" +
             "uniform vec2 u_angles[triangle_count];\n" +
@@ -61,15 +61,14 @@ public class MyCircle {
     private final int canvasw;
     private final int canvash;
 
-    public MyCircle(Dimen dimen, int x, int y, int color, int canvasw, int canvash) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
+    public MyCircle(Dimen dimen, int canvasw, int canvash, long []values, float radiusDip) {
+//        this.x = x;
+//        this.y = y;
+//        this.color = Color.RED;
         this.canvasw = canvasw;
         this.canvash = canvash;
 
         triangle_count = 16;
-        float radius = 32f;
         String vertexShaderFormatted = String.format(Locale.US, vertexShader, triangle_count);
         program = MyGL.createProgram(vertexShaderFormatted, fragmentShader);
         MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
@@ -86,7 +85,7 @@ public class MyCircle {
         float[] radiusVector = new float[4];
         Matrix.setIdentityM(V, 0);
         Matrix.scaleM(V, 0, 2f / canvasw, 2f / canvash, 1f);
-        Matrix.multiplyMV(radiusVector, 0, V, 0, new float[]{dimen.dpf(radius), 0f, 0f, 1f}, 0);
+        Matrix.multiplyMV(radiusVector, 0, V, 0, new float[]{dimen.dpf(radiusDip), 0f, 0f, 1f}, 0);
 
         float[] tmp = new float[16];
         angles = new float[triangle_count * 2];//uniform matrixes
@@ -101,13 +100,18 @@ public class MyCircle {
             angles[i * 2 + 1] = tmpres[1];
         }
         vs = new ArrayList<Vertex>();
-        for (int xx = 0; xx < 500; xx += 100) {
+        for (int x = 0, valuesLength = values.length; x < valuesLength; x++) {
+            long y = values[x];
+//            vertices[x * 2] = x;
+//            vertices[x * 2 + 1] = y;
+//        }
+//        for (int xx = 0; xx < 500; xx += 100) {
             for (int i = 0; i < triangle_count; i++) {
-                boolean b = xx / 100 % 2 == 1;
-                vs.add(new Vertex(xx, b ? 50f : 20f, -1));
-                vs.add(new Vertex(xx, b ? 50f : 20f, i));
+//                boolean b = xx / 100 % 2 == 1;
+                vs.add(new Vertex(x, y, -1));
+                vs.add(new Vertex(x, y, i));
                 int no = (i + 1) % triangle_count;
-                vs.add(new Vertex(xx, b ? 50f : 20f, no));
+                vs.add(new Vertex(x, y, no));
             }
         }
         ByteBuffer b = ByteBuffer.allocateDirect(vs.size() * 3 * 4)
@@ -143,15 +147,15 @@ public class MyCircle {
         }
     }
 
-    public final void draw() {
+    public final void draw(float[] MVP, float[] colors) {
 
         GLES20.glUseProgram(program);
-        float[] colors = new float[]{
-                Color.red(color),
-                Color.green(color),
-                Color.blue(color),
-                Color.alpha(color),
-        };
+//        float[] colors = new float[]{
+//                Color.red(color),
+//                Color.green(color),
+//                Color.blue(color),
+//                Color.alpha(color),
+//        };
 
 //        GLES20.glUseProgram(program);
 //        MyGL.checkGlError2();
@@ -168,16 +172,16 @@ public class MyCircle {
         GLES20.glVertexAttribPointer(attributeNoHandle, 1, GLES20.GL_FLOAT, false, 12, 8);
         MyGL.checkGlError2();
 
-        final float scalex = 2.0f / canvasw;
-        final float scaley = 2.0f / canvash;
-        Matrix.setIdentityM(MVP, 0);
-        Matrix.translateM(MVP, 0, -1.0f, -1.0f, 0);
-        Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
-
-//        System.arraycopy(MVP, 0, V, 0, 16);
-
-        Matrix.translateM(MVP, 0, 100f, y, 0);
-        Matrix.scaleM(MVP, 0, 1f, 10, 1.0f);
+//        final float scalex = 2.0f / canvasw;
+//        final float scaley = 2.0f / canvash;
+//        Matrix.setIdentityM(MVP, 0);
+//        Matrix.translateM(MVP, 0, -1.0f, -1.0f, 0);
+//        Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
+//
+////        System.arraycopy(MVP, 0, V, 0, 16);
+//
+//        Matrix.translateM(MVP, 0, 100f, y, 0);
+//        Matrix.scaleM(MVP, 0, 1f, 10, 1.0f);
 
 //        GLES20.glLineWidth(20);
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
