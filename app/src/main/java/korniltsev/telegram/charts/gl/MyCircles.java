@@ -179,7 +179,7 @@ public class MyCircles {
         GLES20.glUseProgram(shader.program);
         GLES20.glUniform2fv(shader.anglesHandle, triangle_count, angles, 0);
         GLES20.glUniform1f(shader.u_radiusHandle, radius);
-        GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);//todo try to bind only once
+        GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
 
         GLES20.glEnableVertexAttribArray(shader.positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
