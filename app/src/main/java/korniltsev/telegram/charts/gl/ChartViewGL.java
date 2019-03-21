@@ -70,9 +70,9 @@ import static android.opengl.GLES10.glClearColor;
     + animation double tap bug (jump)
 
 
-    scrollbar night mode,
+    + scrollbar night mode,
     toolbar shadow
-    animate titlebar day night
+    animate statusbar day night
     rulers text night mode + animation
     format digits on rulers
 

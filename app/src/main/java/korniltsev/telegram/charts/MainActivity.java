@@ -18,6 +18,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -63,14 +64,25 @@ public class MainActivity extends Activity {
     private MyColorDrawable bgToolbar;
     private TextView title;
     private ImageView imageButton;
-    private ChartViewGL chart;
+    private ChartViewGL chart_;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        trace(2000);
+
+        ChartData[] data = readData();
+        Log.d(TAG, "data len " + data.length);
+
+        ChartData datum = data[DATASET];
+        if (DEBUG) {
+//            ColumnData vs = datum.data[datum.data.length - 1];
+//            vs.minValue = 0;
+//            vs.values[vs.values.length - 1] = 0;
+        }
 
         dimen = new Dimen(this);
+
+        bgRoot = new MyColorDrawable(currentColorSet.darkBackground, false);
         final int toolbar_size = dimen.dpi(56);
 
 
@@ -121,29 +133,33 @@ public class MainActivity extends Activity {
         ds.add(d1);
         legend.setBackgroundDrawable(d1);
 
-        ChartData[] data = readData();
-        Log.d(TAG, "data len " + data.length);
 
-        ChartData datum = data[DATASET];
-        if (DEBUG) {
-//            ColumnData vs = datum.data[datum.data.length - 1];
-//            vs.minValue = 0;
-//            vs.values[vs.values.length - 1] = 0;
-        }
-
-        chart = new ChartViewGL(this, datum.data, dimen, currentColorSet);
-
-        LinearLayout frame = new LinearLayout(this);
-        bgRoot = new MyColorDrawable(currentColorSet.darkBackground, false);
-        frame.setBackgroundDrawable(bgRoot);
-        frame.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-        chart.setLayoutParams(lp);
+        chart_ = new ChartViewGL(this, datum.data, dimen, currentColorSet);
+        chart_.setLayoutParams(lp);
 
 
-        frame.addView(toolbar, lp);
-        frame.addView(legend);
-        frame.addView(chart);
+        FrameLayout.LayoutParams listLP = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+        LinearLayout list = new LinearLayout(this);
+        list.setOrientation(LinearLayout.VERTICAL);
+        list.setLayoutParams(listLP);
+        list.addView(legend);
+        list.addView(chart_);
+
+        LinearLayout.LayoutParams frameLP = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, 1f);
+        FrameLayout contentFrame = new FrameLayout(this);
+        contentFrame.setLayoutParams(frameLP);
+        contentFrame.addView(list);
+        View sgadow = new View(this);
+        sgadow.setBackgroundDrawable(getResources().getDrawable(R.drawable.header_shadow));
+        contentFrame.addView(sgadow, MATCH_PARENT, dimen.dpi(3));
+
+        LinearLayout root = new LinearLayout(this);
+        root.setBackgroundDrawable(bgRoot);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.addView(toolbar, lp);
+        root.addView(contentFrame);
+
         ColumnData[] data1 = datum.data;
         for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
             final ColumnData c = data1[i];
@@ -159,20 +175,16 @@ public class MainActivity extends Activity {
             cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    chart.setChecked(c.id, isChecked);
+                    chart_.setChecked(c.id, isChecked);
                 }
             });
             LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
             cblp.topMargin = 1;//todo this is wrong, it is not full width
             cb.setLayoutParams(cblp);
-            frame.addView(cb);
+            list.addView(cb);
 
         }
-        setContentView(frame);
-
-//        ColorDrawable d;
-//        d.setColor();
-
+        setContentView(root);
 
     }
 
@@ -189,7 +201,7 @@ public class MainActivity extends Activity {
         for (MyColorDrawable d : ds) {
             d.animate(currentColorSet.lightBackground);
         }
-        chart.animateToColors(currentColorSet);
+        chart_.animateToColors(currentColorSet);
         imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton));
         if (Build.VERSION.SDK_INT >= 21) {
             title.postDelayed(new Runnable() {
