@@ -91,6 +91,9 @@ import static android.opengl.GLES10.glClearColor;
     ---------------------------------------- 21 march
     [?] replace actionQueue.add with something better?
     [?] try to play with thread priority?
+    [?] enabled blending only for overlay
+    [?] reuse shaders between objects for faster start?
+    [?] don't draw if vertes is far behind the screen
 
     [ * ] move left-right alot, fps goes down, do not animate-out rulers who already animating-out
     [ * ] scrollbar animation bug when last value is zero
@@ -117,6 +120,7 @@ import static android.opengl.GLES10.glClearColor;
 //    mb scale linewidth when drawing 365 points
 
 
+
 // todo design
 //    check colors & paddings with collor picker
 //    add 1dp padding to the scrollbar charts
@@ -136,6 +140,7 @@ import static android.opengl.GLES10.glClearColor;
 //     monkey test   + screenshots
 //     fuzz test     + screenshots
 //     nagative values
+
 
 
 
@@ -386,6 +391,8 @@ public class ChartViewGL extends TextureView {
             debugRects.add(new MyRect(w, dimen.dpi(280), 0, dimen.dpi(80), Color.BLUE, w, h));
             boolean invalidated = true;
 
+            MyCircle circle = new MyCircle(dimen, 0, 0, Color.RED, w, h);
+
             long frameCount = 0;
             long prevReportTime = SystemClock.uptimeMillis();
             int ccc = 0;
@@ -440,7 +447,6 @@ public class ChartViewGL extends TextureView {
                 );
                 glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 //                for (MyRect r : debugRects) {
-//
 //                    r.draw();
 //                }
                 long t2 = SystemClock.uptimeMillis();
@@ -453,12 +459,13 @@ public class ChartViewGL extends TextureView {
                 overlay.draw(t);
                 long t4 = SystemClock.uptimeMillis();
 
-                ruler.draw(t);
+//                ruler.draw(t);
                 long t5 = SystemClock.uptimeMillis();
-                for (GLChartProgram chartProgram : chart) {
-                    boolean it_invalid = chartProgram.draw(t);
-                    invalidated = invalidated || it_invalid;
-                }
+                circle.draw();
+//                for (GLChartProgram chartProgram : chart) {
+//                    boolean it_invalid = chartProgram.draw(t);
+//                    invalidated = invalidated || it_invalid;
+//                }
                 long t6 = SystemClock.uptimeMillis();
 
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {

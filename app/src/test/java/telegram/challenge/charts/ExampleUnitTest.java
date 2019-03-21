@@ -1,8 +1,11 @@
 package telegram.challenge.charts;
 
 import android.graphics.Color;
+import android.opengl.Matrix;
 
 import org.junit.Test;
+
+import java.util.Arrays;
 
 import korniltsev.telegram.charts.ui.ArgbEvaluator;
 import korniltsev.telegram.charts.ui.ColorSet;
@@ -90,5 +93,6 @@ public class ExampleUnitTest {
             );
         }
     }
+
 
 }
