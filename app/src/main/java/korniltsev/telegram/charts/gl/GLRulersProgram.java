@@ -252,7 +252,7 @@ public final class GLRulersProgram {
 
 //    public static final int LINE_COLOR = 0xffE7E8E9;
 
-    static final float[] LINE_COLOR_PARTS = new float[4];
+    final float[] LINE_COLOR_PARTS = new float[4];
     //{
 //            Color.red(LINE_COLOR) / 255f,
 //            Color.green(LINE_COLOR) / 255f,
