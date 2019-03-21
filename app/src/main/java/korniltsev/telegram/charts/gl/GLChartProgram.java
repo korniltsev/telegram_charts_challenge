@@ -156,11 +156,16 @@ public final class GLChartProgram {
 
     }
 
+    public void step2() {
+
+    }
+
     public void useChart(){
         GLES20.glUseProgram(program);
         MyGL.checkGlError2();
     }
-    public final void draw() {
+
+    public final void draw(float[] pxMat) {
 
         useChart();
 
@@ -188,10 +193,7 @@ public final class GLChartProgram {
         float scaley = 2.0f / h;
 
 
-        Matrix.setIdentityM(MVP, 0);
-
-        Matrix.translateM(MVP, 0, -1.0f, -1.0f, 0);
-        Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
+        System.arraycopy(pxMat, 0, MVP, 0, 16);
 
 
         float r_ndc = scalex * dimen.dpf(scrollbar ? 0.5f : 1f);

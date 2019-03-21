@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
+import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -246,6 +247,7 @@ public class ChartViewGL extends TextureView {
     class Render extends Thread implements TextureView.SurfaceTextureListener {
 
 
+        private final float[] pxMat = new float[16];
         private final ColumnData[] data;
         private EGL10 mEgl;
         private EGLDisplay mEglDisplay;
@@ -315,6 +317,13 @@ public class ChartViewGL extends TextureView {
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay);
             ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, rulerColor);
+
+
+            float scalex = 2.0f / w;
+            float scaley = 2.0f / h;
+            Matrix.setIdentityM(pxMat, 0);
+            Matrix.translateM(pxMat, 0, -1.0f, -1.0f, 0);
+            Matrix.scaleM(pxMat, 0, scalex, scaley, 1.0f);
         }
 
 
@@ -513,7 +522,7 @@ public class ChartViewGL extends TextureView {
                 invalidated = invalidated || it_invalid;
             }
             for (GLChartProgram c : scrollbar) {
-                c.draw();
+                c.draw(pxMat);
             }
             return invalidated;
         }
@@ -524,7 +533,7 @@ public class ChartViewGL extends TextureView {
                 invalidated = invalidated || it_invalid;
             }
             for (GLChartProgram chartProgram : chart) {
-                chartProgram.draw();
+                chartProgram.draw(pxMat);
             }
             return invalidated;
         }
