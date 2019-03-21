@@ -329,7 +329,10 @@ public class MainActivity extends Activity {
             paintBg.setColor(colorBackground);
         }
 
-
+        @Override
+        public boolean isOpaque() {
+            return true;
+        }
 
         @Override
         public WindowInsets onApplyWindowInsets(WindowInsets insets) {
