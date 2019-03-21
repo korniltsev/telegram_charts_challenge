@@ -42,7 +42,7 @@ public final class GLChartProgram {
     private final FloatBuffer buf1;
     public final ColumnData column;
     private final int colorHandle;
-    private final MyCircle circle;
+    private final MyCircles lineJoining;
     public float zoom = 1f;//1 -- all, 0.2 - partial
     public float left = 0;
     public int tooltipIndex;
@@ -99,7 +99,7 @@ public final class GLChartProgram {
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * BYTES_PER_FLOAT, buf1, GLES20.GL_STATIC_DRAW);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
-        circle = new MyCircle(dimen, w, h, column.values, scrollbar ? 0.5f : 1f);
+        lineJoining = new MyCircles(dimen, w, h, column.values, scrollbar ? 0.5f : 1f);
 
     }
 
@@ -179,7 +179,7 @@ public final class GLChartProgram {
             GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
             GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
 
-            circle.draw(MVP, colors);
+            lineJoining.draw(MVP, colors);
         } else {
             int ypx = dimen.dpi(80);
             Matrix.translateM(MVP, 0, hpadding, ypx, 0);
@@ -194,7 +194,7 @@ public final class GLChartProgram {
             GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
             GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
 
-            circle.draw(MVP, colors);
+            lineJoining.draw(MVP, colors);
         }
 
 

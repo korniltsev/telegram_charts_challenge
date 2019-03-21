@@ -14,7 +14,7 @@ import java.util.Locale;
 
 import korniltsev.telegram.charts.ui.Dimen;
 
-public class MyCircle {
+public class MyCircles {
 //    private final float[] MVP = new float[16];
     //    private final float[] V = new float[16];
 //    final int x;
@@ -61,7 +61,7 @@ public class MyCircle {
     private final int canvasw;
     private final int canvash;
 
-    public MyCircle(Dimen dimen, int canvasw, int canvash, long []values, float radiusDip) {
+    public MyCircles(Dimen dimen, int canvasw, int canvash, long []values, float radiusDip) {
 //        this.x = x;
 //        this.y = y;
 //        this.color = Color.RED;
