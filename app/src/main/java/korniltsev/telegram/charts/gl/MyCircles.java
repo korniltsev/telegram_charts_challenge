@@ -33,9 +33,9 @@ public class MyCircles {
     final String vertexShader = "precision highp float;\n" +
             "const int triangle_count = %d;\n" +
             "uniform highp vec2 u_angles[triangle_count];\n" +
-            "uniform mat4 u_MVPMatrix;\n" +
-            "uniform float u_radius;\n" +
-            "attribute vec2 a_Position;\n" +
+            "uniform highp mat4 u_MVPMatrix;\n" +
+            "uniform highp float u_radius;\n" +
+            "attribute highp vec2 a_Position;\n" +
             "attribute float a_no;\n" +
             "void main()\n" +
             "{\n" +
@@ -46,7 +46,8 @@ public class MyCircles {
             "   } else {\n" +
             "       delta = u_angles[index];\n" +
             "   }\n" +
-            "   gl_Position =  u_radius * vec4(delta.xy, 0.0, 0.0) + u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0) ;\n" +
+            "   float fixmeplease = 1.054;\n" +
+            "   gl_Position =  u_radius * vec4(delta.x, fixmeplease * delta.y, 0.0, 0.0) + u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0) ;\n" +
             "}\n";
 
     final String fragmentShader =
@@ -87,23 +88,32 @@ public class MyCircles {
 //        }
 
         float[] V = new float[16];
-        float[] radiusVector = new float[4];
-        Matrix.setIdentityM(V, 0);
-        Matrix.scaleM(V, 0, 2f / canvasw, 2f / canvash, 1f);
-        Matrix.multiplyMV(radiusVector, 0, V, 0, new float[]{1.0f, 0f, 0f, 0f}, 0);
+//        float[] radiusVector = new float[4];
 
-        float[] tmp = new float[16];
+        float[] one = {1f, 0f, 0f, 0f};
+
+
+//        Matrix.multiplyMV(radiusVector, 0, V, 0, one, 0);
+
+//        float[] tmp = new float[16];
         angles = new float[triangle_count * 2];//uniform matrixes
         float[] tmpres = new float[4];
         for (int i = 0; i < triangle_count; i++) {
 //            int o = i * 16;
-            Matrix.setIdentityM(tmp, 0);
+
             float angle = 360f / triangle_count;
-            Matrix.rotateM(tmp, 0, angle * i, 0, 0, 1.0f);
-            Matrix.multiplyMV(tmpres, 0, tmp, 0, radiusVector, 0);
-            float l = Matrix.length(tmpres[0], tmpres[1], 0f);
-            angles[i * 2] = tmpres[0]/l;
-            angles[i * 2 + 1] = tmpres[1]/l;
+            Matrix.setIdentityM(V, 0);
+//            Matrix.scaleM(V, 0, 2f / canvasw, 2f / canvash, 1f);
+            Matrix.rotateM(V, 0, angle * i, 0, 0, 1.0f);
+//            Matrix.setIdentityM(tmp, 0);
+            Matrix.multiplyMV(tmpres, 0, V, 0, one, 0);
+            double l = Matrix.length(tmpres[0], tmpres[1], 0f);
+            double x = tmpres[0];
+//            x = x / l;
+            double y = tmpres[1];
+//            y = y / l;
+            angles[i * 2] = tmpres[0];
+            angles[i * 2 + 1] = tmpres[1];
         }
         vs = new ArrayList<Vertex>();
         for (int x = 0, valuesLength = yValues.length; x < valuesLength; x++) {
@@ -154,16 +164,16 @@ public class MyCircles {
         }
     }
 
-    public final void draw(float[] MVP, float[] colors, float r) {
-        draw(MVP, colors, 0, count, r);
+    public final void draw(float[] MVP, float[] colors, float radius) {
+        draw(MVP, colors, 0, count, radius);
     }
-    public final void draw(float[] MVP, float[] colors, int from, int to, float r) {
+    public final void draw(float[] MVP, float[] colors, int from, int to, float radius) {
 
 //        float radius = 0.1f;
         GLES20.glUseProgram(program);
 //        MyGL.checkGlError2();
         GLES20.glUniform2fv(anglesHandle, triangle_count, angles, 0);
-        GLES20.glUniform1f(u_radiusHandle, r);
+        GLES20.glUniform1f(u_radiusHandle, radius);
 //        MyGL.checkGlError2();
         GLES20.glUniform4fv(colorHandle, 1, colors, 0);//todo try to bind only once
 

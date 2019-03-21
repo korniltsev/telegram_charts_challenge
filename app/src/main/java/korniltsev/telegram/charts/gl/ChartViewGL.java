@@ -81,12 +81,14 @@ import static android.opengl.GLES10.glClearColor;
     + [ ! ] round joining + alpha animation
 
     Circles
-        - seems oval
+        + seems oval
+        - wrong touch calc
         - draw over lines
 
-    [ ! ] toooltip by touching
     [ ! ] status bar lollipop does not work
     [ ! ] horizontal lables + animations
+
+    [ ! ] toooltip by touching
 
 
     ---------------------------------------- 21 march

@@ -46,7 +46,7 @@ public final class GLChartProgram {
     private final MyCircles lineJoining;
     public float zoom = 1f;//1 -- all, 0.2 - partial
     public float left = 0;
-    public int tooltipIndex;
+    public int tooltipIndex = -1;
 
     private float[] MVP = new float[16];
 
@@ -211,7 +211,10 @@ public final class GLChartProgram {
 //            int h = root.dimen_chart_height;
             int h = dimen.dpi(280);
             float xdiff = maxx - minx;
-            Matrix.scaleM(MVP, 0, w / xdiff /zoom, h  /  (float)(maxValue * maxValueAnim ), 1.0f);
+            float ws = w / xdiff / zoom;
+            float hs = h / (float) (maxValue * maxValueAnim);
+
+            Matrix.scaleM(MVP, 0, ws, hs, 1.0f);
             Matrix.translateM(MVP, 0, -left * xdiff , 0f, 0f);
 //            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), h  /  (float)(maxValue ), 1.0f);
             GLES20.glLineWidth(dimen.dpf(2f));
@@ -227,9 +230,10 @@ public final class GLChartProgram {
                         goodCircle.release();
                     }
                     long[] vs = new long[]{column.values[tooltipIndex]};
-                    goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 18);
+                    goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 20);
                     goodCircleIndex = tooltipIndex;
                 }
+                float r = (float)this.h / this.w * hs/ws;
                 goodCircle.draw(MVP, colors, 0, 1, dimen.dpf(5) * scalex);
                 white[0] = Color.red(tooltipFillColor) / 255f;
                 white[1] = Color.green(tooltipFillColor) / 255f;
