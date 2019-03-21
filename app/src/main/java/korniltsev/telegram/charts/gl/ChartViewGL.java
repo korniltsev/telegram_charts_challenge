@@ -71,10 +71,10 @@ import static android.opengl.GLES10.glClearColor;
 
 
     + scrollbar night mode,
-    toolbar shadow
+    + toolbar shadow
+    + format digits on rulers
     animate statusbar day night
     rulers text night mode + animation
-    format digits on rulers
 
     toooltip by touching
     ---------------------------------------- 20 march

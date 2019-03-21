@@ -14,8 +14,10 @@ import android.text.TextPaint;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
@@ -117,6 +119,10 @@ public final class GLRulersProgram {
         rs.add(e);
     }
 
+//    Locale locale = new Locale("da", "DK");
+
+//    static final NumberFormat numberFormat = NumberFormat.getInstance(Locale.getDefault());
+
     public static final class Ruler {
         long maxValue;
         float scale = 1f;
@@ -135,7 +141,9 @@ public final class GLRulersProgram {
             for (int i = 0; i < 6; i++) {
                 float s = (float)dy / max;
                 long v = (long) (maxValue * s);
-                values.add(new TextTex(String.valueOf(v), p));
+                String text = String.valueOf(v);
+//                String format = numberFormat.format(v);
+                values.add(new TextTex(text, p));
                 dy += 50;
             }
         }
