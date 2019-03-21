@@ -880,7 +880,7 @@ public class ChartViewGL extends TextureView {
                 @Override
                 public void run() {
                     for (GLChartProgram glChartProgram : r.chart) {
-                        glChartProgram.tooltipIndex = finali;
+                        glChartProgram.setTooltipIndex(finali);
                     }
                 }
             });

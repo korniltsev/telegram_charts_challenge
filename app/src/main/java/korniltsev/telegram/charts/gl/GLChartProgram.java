@@ -46,7 +46,7 @@ public final class GLChartProgram {
     private final MyCircles lineJoining;
     public float zoom = 1f;//1 -- all, 0.2 - partial
     public float left = 0;
-    public int tooltipIndex = -1;
+    private int tooltipIndex = -1;
 
     private float[] MVP = new float[16];
 
@@ -151,9 +151,19 @@ public final class GLChartProgram {
         return invalidate;
 
     }
-    public final void draw() {
+
+    public void step1(){
+
+    }
+
+    public void useChart(){
         GLES20.glUseProgram(program);
         MyGL.checkGlError2();
+    }
+    public final void draw() {
+
+        useChart();
+
 
 
 
@@ -203,6 +213,7 @@ public final class GLChartProgram {
             float dy = -yscale * minValue * minValueAnim;
             Matrix.translateM(MVP, 0, 0, dy, 0);
             Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), yscale, 1.0f);
+
             GLES20.glLineWidth(dimen.dpf(1f));
             GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
             GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
@@ -228,17 +239,7 @@ public final class GLChartProgram {
 
             lineJoining.draw(MVP, colors, r_ndc * 2);
 
-            if (tooltipIndex != -1) {
-                if (goodCircle == null || goodCircleIndex != tooltipIndex) {
-                    if (goodCircle != null) {
-                        //todo
-                        goodCircle.release();
-                    }
-                    long[] vs = new long[]{column.values[tooltipIndex]};
-                    goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 20);
-                    goodCircleIndex = tooltipIndex;
-                }
-                float r = (float)this.h / this.w * hs/ws;
+            if (goodCircle != null) {
                 goodCircle.draw(MVP, colors, 0, 1, dimen.dpf(5) * scalex);
                 white[0] = Color.red(tooltipFillColor) / 255f;
                 white[1] = Color.green(tooltipFillColor) / 255f;
@@ -292,5 +293,19 @@ public final class GLChartProgram {
 
     public void animateColors(ColorSet colors) {
         tooltipFillColorAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, tooltipFillColor, colors.lightBackground);
+    }
+
+    public void setTooltipIndex(int tooltipIndex) {
+
+        if (goodCircle == null || goodCircleIndex != tooltipIndex) {
+            if (goodCircle != null) {
+                //todo
+                goodCircle.release();
+            }
+            long[] vs = new long[]{column.values[tooltipIndex]};
+            goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 20);
+            goodCircleIndex = tooltipIndex;
+        }
+        this.tooltipIndex = tooltipIndex;
     }
 }
