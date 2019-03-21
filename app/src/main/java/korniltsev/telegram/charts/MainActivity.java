@@ -27,6 +27,7 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -149,17 +150,21 @@ public class MainActivity extends Activity {
         chart_.setLayoutParams(lp);
 
 
-        FrameLayout.LayoutParams listLP = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+        ScrollView.LayoutParams listLP = new ScrollView.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
         list.setLayoutParams(listLP);
         list.addView(legend);
         list.addView(chart_);
 
+        ScrollView scrollView = new ScrollView(this);
+        scrollView.addView(list);
+
         LinearLayout.LayoutParams frameLP = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, 1f);
         FrameLayout contentFrame = new FrameLayout(this);
         contentFrame.setLayoutParams(frameLP);
-        contentFrame.addView(list);
+//        contentFrame.addView(scrollView, MATCH_PARENT, dimen.dpi(400));
+        contentFrame.addView(scrollView, MATCH_PARENT, MATCH_PARENT);
         View sgadow = new View(this);
         sgadow.setBackgroundDrawable(getResources().getDrawable(R.drawable.header_shadow));
         contentFrame.addView(sgadow, MATCH_PARENT, dimen.dpi(3));
@@ -321,6 +326,7 @@ public class MainActivity extends Activity {
 
         public MyContentRoot(Context context, int colorStatusbar, int colorBackground) {
             super(context);
+//            setFitsSystemWindows(true);
             setWillNotDraw(false);
             this.colorBackground = colorBackground;
             this.colorStatusbar = colorStatusbar;

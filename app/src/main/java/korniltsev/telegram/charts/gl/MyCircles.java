@@ -3,6 +3,7 @@ package korniltsev.telegram.charts.gl;
 import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import korniltsev.telegram.charts.MainActivity;
 import korniltsev.telegram.charts.ui.Dimen;
 
 public class MyCircles {
@@ -56,6 +58,7 @@ public class MyCircles {
     private final int MVPHandle;
     private final int positionHandle;
     private final int colorHandle;
+    private final int count;
     private int vbo;
 
     private final int canvasw;
@@ -64,6 +67,7 @@ public class MyCircles {
     public MyCircles(Dimen dimen, int canvasw, int canvash, long []values, float radiusDip) {
         this.canvasw = canvasw;
         this.canvash = canvash;
+        this.count = values.length;
 
         triangle_count = 16;
         String vertexShaderFormatted = String.format(Locale.US, vertexShader, triangle_count);
@@ -145,6 +149,9 @@ public class MyCircles {
     }
 
     public final void draw(float[] MVP, float[] colors) {
+        draw(MVP, colors, 0, count);
+    }
+    public final void draw(float[] MVP, float[] colors, int from, int to) {
 
         GLES20.glUseProgram(program);
 //        MyGL.checkGlError2();
@@ -163,7 +170,14 @@ public class MyCircles {
 
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
         //todo relace with draw elements
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vs.size() );
+        int n = to - from;
+        int ifrom = from * triangle_count;
+        int size = n * triangle_count * 3;
+        try {
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, ifrom, size );
+        } catch (Exception e) {
+            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "circles ", e);
+        }
 //        MyGL.checkGlError2();
 
 

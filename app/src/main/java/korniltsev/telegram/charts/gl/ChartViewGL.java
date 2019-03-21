@@ -81,6 +81,7 @@ import static android.opengl.GLES10.glClearColor;
     + [ ! ] round joining + alpha animation
 
     [ ! ] toooltip by touching
+    [ ! ] status bar lollipop does not work
     [ ! ] horizontal lables + animations
 
     [ ! ] implement empty chart
