@@ -80,16 +80,22 @@ import static android.opengl.GLES10.glClearColor;
     + animate statusbar day night
     + [ ! ] round joining + alpha animation
 
+    Circles
+        - seems oval
+        - draw over lines
+
     [ ! ] toooltip by touching
     [ ! ] status bar lollipop does not work
     [ ! ] horizontal lables + animations
 
+
+    ---------------------------------------- 21 march
     [ ! ] implement empty chart
     [ ! ] rulers text night mode + animation
     [ ! ] move "folorwers" to gl +   text night mode + animation
     [ ! ] checkbox + animations + divider width
     [ ! ] alpha animation blending
-    ---------------------------------------- 21 march
+
     [?] optimize minmax animation, introduce step?, do not cancel animations or try to continue?
     [?] why DIRTY slow?
     [?] replace actionQueue.add with something better?
@@ -285,7 +291,7 @@ public class ChartViewGL extends TextureView {
             long min = Long.MAX_VALUE;
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 ColumnData datum = data[i];
-                scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true);
+                scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground);
                 max = Math.max(max, datum.maxValue);
                 min = Math.min(min, datum.minValue);
             }
@@ -296,7 +302,7 @@ public class ChartViewGL extends TextureView {
 
             chart = new GLChartProgram[data.length - 1];
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
-                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false);
+                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground);
             }
 //            for (GLChartProgram it : chart) {
 //                it.maxValue = max;
@@ -840,12 +846,14 @@ public class ChartViewGL extends TextureView {
         if (x < scrollbar.left || x > scrollbar.right) {
             if (MainActivity.LOGGING) Log.d(MainActivity.TAG, "chart down miss");
         } else {
-            int i = (int) (r.data.length * (x - scrollbar.left) / scrollbar.width());
+            float s = (x - scrollbar.left) / scrollbar.width();
+            int n = r.data[0].values.length;
+            int i = (int) (n * s);
             if (i < 0) {
                 i = 0;
             }
-            if (i >= r.data.length) {
-                i = r.data.length - 1;
+            if (i >= n) {
+                i = n-1;
             }
             final int finali = i;
             r.actionQueue.add(new Runnable() {
@@ -901,6 +909,9 @@ public class ChartViewGL extends TextureView {
                 bgAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, bgColor, colors.lightBackground);
                 r.ruler.animate(colors.ruler);
                 r.overlay.animate(colors.scrollbarBorder, colors.scrollbarOverlay);
+                for (GLChartProgram glChartProgram : r.chart) {
+                    glChartProgram.animateColors(colors);
+                }
             }
         });
     }

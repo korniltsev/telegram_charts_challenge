@@ -9,6 +9,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import korniltsev.telegram.charts.data.ColumnData;
+import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 
@@ -62,9 +63,12 @@ public final class GLChartProgram {
     final ChartViewGL root;
 
     final boolean scrollbar;
+    private MyCircles goodCircle;
+    private int goodCircleIndex;
+    private MyAnimation.Color tooltipFillColorAnim;
 
-    public GLChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar) {
-
+    public GLChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, int toolttipFillColor) {
+        this.tooltipFillColor = toolttipFillColor;
         this.w = w;
         this.h = h;
         this.column = column;
@@ -99,11 +103,14 @@ public final class GLChartProgram {
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * BYTES_PER_FLOAT, buf1, GLES20.GL_STATIC_DRAW);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
-        lineJoining = new MyCircles(dimen, w, h, column.values, scrollbar ? 0.5f : 1f);
+        lineJoining = new MyCircles(w, h, 0, column.values, 6);
 
     }
 
     float[] colors = new float[4];
+
+    int tooltipFillColor;
+    float[] white = new float[4];
 
     public final boolean draw(long t) {
         boolean invalidate = false;
@@ -135,6 +142,14 @@ public final class GLChartProgram {
                 invalidate = true;
             }
         }
+        if (tooltipFillColorAnim != null){
+            tooltipFillColor = tooltipFillColorAnim.tick(t);
+            if (tooltipFillColorAnim.ended) {
+                tooltipFillColorAnim = null;
+            } else {
+                invalidate = true;
+            }
+        }
 
 
 
@@ -162,6 +177,14 @@ public final class GLChartProgram {
 
         Matrix.translateM(MVP, 0, -1.0f, -1.0f, 0);
         Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
+
+
+        float r_ndc = scalex * dimen.dpf(scrollbar ? 0.5f : 1f);
+//        radius_px[0] = rpx;
+//        radius_px[1] = 0;
+//        radius_px[2] = 0;
+//        radius_px[3] = 0;
+//        Matrix.multiplyMV(radius_ndc, 0, MVP, 0, radius_px, 0);
         //todo learn matrixes ¯\_(ツ)_/¯
         if (scrollbar) {
             final float dip2 = dimen.dpf(2);
@@ -179,7 +202,8 @@ public final class GLChartProgram {
             GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
             GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
 
-            lineJoining.draw(MVP, colors);
+
+            lineJoining.draw(MVP, colors, r_ndc);
         } else {
             int ypx = dimen.dpi(80);
             Matrix.translateM(MVP, 0, hpadding, ypx, 0);
@@ -194,7 +218,25 @@ public final class GLChartProgram {
             GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
             GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
 
-            lineJoining.draw(MVP, colors);
+            lineJoining.draw(MVP, colors, r_ndc * 2);
+
+            if (tooltipIndex != -1) {
+                if (goodCircle == null || goodCircleIndex != tooltipIndex) {
+                    if (goodCircle != null) {
+                        //todo
+                        goodCircle.release();
+                    }
+                    long[] vs = new long[]{column.values[tooltipIndex]};
+                    goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 18);
+                    goodCircleIndex = tooltipIndex;
+                }
+                goodCircle.draw(MVP, colors, 0, 1, dimen.dpf(5) * scalex);
+                white[0] = Color.red(tooltipFillColor) / 255f;
+                white[1] = Color.green(tooltipFillColor) / 255f;
+                white[2] = Color.blue(tooltipFillColor) / 255f;
+                white[3] = 1f;
+                goodCircle.draw(MVP, white, 0, 1, dimen.dpf(3) * scalex);
+            }
         }
 
 
@@ -238,5 +280,9 @@ public final class GLChartProgram {
             maxAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, maxValueAnim, 1.0f);
         }
 
+    }
+
+    public void animateColors(ColorSet colors) {
+        tooltipFillColorAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, tooltipFillColor, colors.lightBackground);
     }
 }

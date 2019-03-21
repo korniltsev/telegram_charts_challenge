@@ -30,9 +30,11 @@ public class MyCircles {
     //    private final float[] vertices;
 //    private int color;
 
-    final String vertexShader = "const int triangle_count = %d;\n" +
-            "uniform vec2 u_angles[triangle_count];\n" +
+    final String vertexShader = "precision highp float;\n" +
+            "const int triangle_count = %d;\n" +
+            "uniform highp vec2 u_angles[triangle_count];\n" +
             "uniform mat4 u_MVPMatrix;\n" +
+            "uniform float u_radius;\n" +
             "attribute vec2 a_Position;\n" +
             "attribute float a_no;\n" +
             "void main()\n" +
@@ -44,7 +46,7 @@ public class MyCircles {
             "   } else {\n" +
             "       delta = u_angles[index];\n" +
             "   }\n" +
-            "   gl_Position =  vec4(delta.xy, 0.0, 0.0) + u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0) ;\n" +
+            "   gl_Position =  u_radius * vec4(delta.xy, 0.0, 0.0) + u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0) ;\n" +
             "}\n";
 
     final String fragmentShader =
@@ -59,17 +61,18 @@ public class MyCircles {
     private final int positionHandle;
     private final int colorHandle;
     private final int count;
+    private final int u_radiusHandle;
     private int vbo;
 
     private final int canvasw;
     private final int canvash;
 
-    public MyCircles(Dimen dimen, int canvasw, int canvash, long []values, float radiusDip) {
+    public MyCircles(int canvasw, int canvash, int xOffset, long []yValues, int trianglesCount) {
         this.canvasw = canvasw;
         this.canvash = canvash;
-        this.count = values.length;
+        this.count = yValues.length;
 
-        triangle_count = 16;
+        triangle_count = trianglesCount;
         String vertexShaderFormatted = String.format(Locale.US, vertexShader, triangle_count);
         program = MyGL.createProgram(vertexShaderFormatted, fragmentShader);
         MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
@@ -77,16 +80,17 @@ public class MyCircles {
         positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
         colorHandle = GLES20.glGetUniformLocation(program, "u_color");
         anglesHandle = GLES20.glGetUniformLocation(program, "u_angles");
+        u_radiusHandle = GLES20.glGetUniformLocation(program, "u_radius");
         attributeNoHandle = GLES20.glGetAttribLocation(program, "a_no");
-        if (anglesHandle == -1 || attributeNoHandle == -1) {
-            throw new AssertionError();
-        }
+//        if (anglesHandle == -1 || attributeNoHandle == -1) {
+//            throw new AssertionError();
+//        }
 
         float[] V = new float[16];
         float[] radiusVector = new float[4];
         Matrix.setIdentityM(V, 0);
         Matrix.scaleM(V, 0, 2f / canvasw, 2f / canvash, 1f);
-        Matrix.multiplyMV(radiusVector, 0, V, 0, new float[]{dimen.dpf(radiusDip), 0f, 0f, 1f}, 0);
+        Matrix.multiplyMV(radiusVector, 0, V, 0, new float[]{1.0f, 0f, 0f, 0f}, 0);
 
         float[] tmp = new float[16];
         angles = new float[triangle_count * 2];//uniform matrixes
@@ -97,22 +101,24 @@ public class MyCircles {
             float angle = 360f / triangle_count;
             Matrix.rotateM(tmp, 0, angle * i, 0, 0, 1.0f);
             Matrix.multiplyMV(tmpres, 0, tmp, 0, radiusVector, 0);
-            angles[i * 2] = tmpres[0];
-            angles[i * 2 + 1] = tmpres[1];
+            float l = Matrix.length(tmpres[0], tmpres[1], 0f);
+            angles[i * 2] = tmpres[0]/l;
+            angles[i * 2 + 1] = tmpres[1]/l;
         }
         vs = new ArrayList<Vertex>();
-        for (int x = 0, valuesLength = values.length; x < valuesLength; x++) {
-            long y = values[x];
+        for (int x = 0, valuesLength = yValues.length; x < valuesLength; x++) {
+            long y = yValues[x];
 //            vertices[x * 2] = x;
 //            vertices[x * 2 + 1] = y;
 //        }
 //        for (int xx = 0; xx < 500; xx += 100) {
             for (int i = 0; i < triangle_count; i++) {
 //                boolean b = xx / 100 % 2 == 1;
-                vs.add(new Vertex(x, y, -1));
-                vs.add(new Vertex(x, y, i));
+                float xx = x + xOffset;
+                vs.add(new Vertex(xx, y, -1));
+                vs.add(new Vertex(xx, y, i));
                 int no = (i + 1) % triangle_count;
-                vs.add(new Vertex(x, y, no));
+                vs.add(new Vertex(xx, y, no));
             }
         }
         ByteBuffer b = ByteBuffer.allocateDirect(vs.size() * 3 * 4)
@@ -148,14 +154,16 @@ public class MyCircles {
         }
     }
 
-    public final void draw(float[] MVP, float[] colors) {
-        draw(MVP, colors, 0, count);
+    public final void draw(float[] MVP, float[] colors, float r) {
+        draw(MVP, colors, 0, count, r);
     }
-    public final void draw(float[] MVP, float[] colors, int from, int to) {
+    public final void draw(float[] MVP, float[] colors, int from, int to, float r) {
 
+//        float radius = 0.1f;
         GLES20.glUseProgram(program);
 //        MyGL.checkGlError2();
         GLES20.glUniform2fv(anglesHandle, triangle_count, angles, 0);
+        GLES20.glUniform1f(u_radiusHandle, r);
 //        MyGL.checkGlError2();
         GLES20.glUniform4fv(colorHandle, 1, colors, 0);//todo try to bind only once
 
@@ -171,7 +179,7 @@ public class MyCircles {
         GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
         //todo relace with draw elements
         int n = to - from;
-        int ifrom = from * triangle_count;
+        int ifrom = from * triangle_count * 3;
         int size = n * triangle_count * 3;
         try {
             GLES20.glDrawArrays(GLES20.GL_TRIANGLES, ifrom, size );
@@ -181,5 +189,9 @@ public class MyCircles {
 //        MyGL.checkGlError2();
 
 
+    }
+
+    public void release(){
+        //todo
     }
 }

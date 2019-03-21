@@ -198,9 +198,6 @@ public final class GLRulersProgram {
         paint.setColor(0xff96A2AA);
         paint.setTextSize(dimen.dpf(12f));
 
-//        textZero = new TextTex("0", paint);
-
-//        init();
     }
 
     public void init(long max) {
@@ -215,7 +212,7 @@ public final class GLRulersProgram {
 
     public static class TextTex {
         final String text;
-        final int tex;
+        final int[] tex = new int[1];
         final int w;
         final int h;
 
@@ -230,10 +227,10 @@ public final class GLRulersProgram {
             staticLayout.draw(c);
 
 
-            int[] textures = new int[1];
-            GLES20.glGenTextures(1, textures, 0);
-            tex = textures[0];
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+//            int[] textures = new int[1];
+            GLES20.glGenTextures(1, tex, 0);
+//            tex = textures[0];
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
 
             GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
             GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
@@ -245,8 +242,8 @@ public final class GLRulersProgram {
             b.recycle();
         }
 
-        public void release() {
-            //todo
+        public final void release() {
+            GLES20.glDeleteTextures(1, tex, 0);
         }
     }
 
@@ -294,6 +291,11 @@ public final class GLRulersProgram {
                 }
             }
             if (r.toBeDeleted && r.alphaAnim == null && r.scaleAnim == null) {
+                List<TextTex> values = r.values;
+                for (int i1 = 0, valuesSize = values.size(); i1 < valuesSize; i1++) {
+                    TextTex value = values.get(i1);
+                    value.release();
+                }
                 rs.remove(i);
             }
         }
@@ -344,7 +346,7 @@ public final class GLRulersProgram {
         GLES20.glUniformMatrix4fv(texMVPHandle, 1, false, MVP, 0);
         GLES20.glUniform1f(texAlphaHandle, alpha);
 
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textZero.tex);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textZero.tex[0]);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, texVertices.length / 2);
 
     }
