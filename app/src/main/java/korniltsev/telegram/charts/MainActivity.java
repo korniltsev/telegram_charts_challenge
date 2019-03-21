@@ -57,7 +57,7 @@ public class MainActivity extends Activity {
     public static final boolean DEBUG = BuildConfig.DEBUG;
     public static final boolean TRACE = BuildConfig.DEBUG && false;
     public static final boolean LOGGING = DEBUG;
-    public static final int DATASET = 4;
+    public static final int DATASET = 0;
 
 //    private MyColorDrawable bgRoot;
     private ArrayList<MyColorDrawable> ds = new ArrayList<>();
@@ -79,7 +79,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         ChartData[] data = readData();
-        Log.d(TAG, "data len " + data.length);
+        if (LOGGING) Log.d(TAG, "data len " + data.length);
 
         ChartData datum = data[DATASET];
         if (DEBUG) {

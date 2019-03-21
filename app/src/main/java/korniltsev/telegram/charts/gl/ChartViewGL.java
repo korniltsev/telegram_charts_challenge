@@ -26,6 +26,7 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
+import korniltsev.telegram.charts.MainActivity;
 import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
@@ -248,7 +249,9 @@ public class ChartViewGL extends TextureView {
             }
             File filesDir = getContext().getFilesDir();
             File trace = new File(filesDir, "trace");
-            Debug.startMethodTracing(trace.getAbsolutePath(), 1024  * 1024 * 10);
+//            if (MainActivity.TRACE) {
+//                Debug.startMethodTracing(trace.getAbsolutePath(), 1024  * 1024 * 10);
+//            }
 
             initGL(surface);
             initPrograms();
@@ -451,28 +454,31 @@ public class ChartViewGL extends TextureView {
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                     throw new RuntimeException("Cannot swap buffers");
                 }
-                long t7 = SystemClock.uptimeMillis();
+                if (MainActivity.LOGGING) {
+
+                    long t7 = SystemClock.uptimeMillis();
 //                frameCount++;
-                long timeSinceLastReport = t - prevReportTime;
-                if (timeSinceLastReport > 1000) {
-                    float fps = (float) frameCount * 1000 / timeSinceLastReport;
-                    Log.d(LOG_TAG, "fps " + fps);
-                    prevReportTime = t;
-                    frameCount = 0;
-                    log_trace("swap", t7, t6);
-                    log_trace("chart", t6, t5);
-                    log_trace("ruler", t5, t4);
-                    log_trace("overlay", t4, t3);
-                    log_trace("scrollbar", t3, t2);
-                    log_trace("f1", t2, t);
-                } else {
-                    frameCount++;
+                    long timeSinceLastReport = t - prevReportTime;
+                    if (timeSinceLastReport > 1000) {
+                        float fps = (float) frameCount * 1000 / timeSinceLastReport;
+                        Log.d(LOG_TAG, "fps " + fps);
+                        prevReportTime = t;
+                        frameCount = 0;
+                        log_trace("swap", t7, t6);
+                        log_trace("chart", t6, t5);
+                        log_trace("ruler", t5, t4);
+                        log_trace("overlay", t4, t3);
+                        log_trace("scrollbar", t3, t2);
+                        log_trace("f1", t2, t);
+                    } else {
+                        frameCount++;
+                    }
                 }
 //                prevReportTime;
 //                break;
-                if (ccc == 1) {
-                    Debug.stopMethodTracing();
-                }
+//                if (ccc == 1) {
+//                    Debug.stopMethodTracing();
+//                }
             }
         }
 
