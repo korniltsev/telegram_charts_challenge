@@ -13,7 +13,6 @@ import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.ViewConfiguration;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -294,9 +293,10 @@ public class ChartViewGL extends TextureView {
             scrollbar = new GLChartProgram[data.length - 1];
             long max = -1;
             long min = Long.MAX_VALUE;
+            GLChartProgram.Shader chartShader = new GLChartProgram.Shader();
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 ColumnData datum = data[i];
-                scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground);
+                scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, chartShader);
                 max = Math.max(max, datum.maxValue);
                 min = Math.min(min, datum.minValue);
             }
@@ -307,7 +307,7 @@ public class ChartViewGL extends TextureView {
 
             chart = new GLChartProgram[data.length - 1];
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
-                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground);
+                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground, chartShader);
             }
 //            for (GLChartProgram it : chart) {
 //                it.maxValue = max;
@@ -528,6 +528,7 @@ public class ChartViewGL extends TextureView {
         }
 
         private boolean drawChart(boolean invalidated, long t) {
+//            chart[0].shader.u
             for (GLChartProgram chartProgram : chart) {
                 boolean it_invalid = chartProgram.animateionTick(t);
                 invalidated = invalidated || it_invalid;

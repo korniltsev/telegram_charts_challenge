@@ -22,9 +22,7 @@ public class MyCircles {
 //    final int x;
 //    final int y;
     private final ArrayList<Vertex> vs;
-    private final int attributeNoHandle;
-    //    private final int VHandle;
-    private final int anglesHandle;
+
     private final float[] angles;
     private final int triangle_count;
     //    private final float[] vertices;
@@ -57,16 +55,41 @@ public class MyCircles {
                     + "{                              \n"
                     + "   gl_FragColor = u_color;     \n"
                     + "}                              \n";
-    private final int program;
-    private final int MVPHandle;
-    private final int positionHandle;
-    private final int colorHandle;
-    private final int count;
-    private final int u_radiusHandle;
+    private final Shader shader;
+
     private int vbo;
 
     private final int canvasw;
     private final int canvash;
+
+    private final int count;
+
+    class Shader {
+        final int triangleCount;
+        private final int program;
+        private final int MVPHandle;
+        private final int positionHandle;
+        private final int colorHandle;
+        private final int attributeNoHandle;
+        private final int anglesHandle;
+        private final int u_radiusHandle;
+
+        public Shader(int triangleCount) {
+
+            this.triangleCount = triangleCount;
+            String vertexShaderFormatted = String.format(Locale.US, vertexShader, triangle_count);
+            program = MyGL.createProgram(vertexShaderFormatted, fragmentShader);
+            MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
+//        VHandle = GLES20.glGetUniformLocation(program, "u_VMatrix");
+            positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
+            colorHandle = GLES20.glGetUniformLocation(program, "u_color");
+            anglesHandle = GLES20.glGetUniformLocation(program, "u_angles");
+            u_radiusHandle = GLES20.glGetUniformLocation(program, "u_radius");
+            attributeNoHandle = GLES20.glGetAttribLocation(program, "a_no");
+
+        }
+    }
+
 
     public MyCircles(int canvasw, int canvash, int xOffset, long []yValues, int trianglesCount) {
         this.canvasw = canvasw;
@@ -74,15 +97,8 @@ public class MyCircles {
         this.count = yValues.length;
 
         triangle_count = trianglesCount;
-        String vertexShaderFormatted = String.format(Locale.US, vertexShader, triangle_count);
-        program = MyGL.createProgram(vertexShaderFormatted, fragmentShader);
-        MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
-//        VHandle = GLES20.glGetUniformLocation(program, "u_VMatrix");
-        positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
-        colorHandle = GLES20.glGetUniformLocation(program, "u_color");
-        anglesHandle = GLES20.glGetUniformLocation(program, "u_angles");
-        u_radiusHandle = GLES20.glGetUniformLocation(program, "u_radius");
-        attributeNoHandle = GLES20.glGetAttribLocation(program, "a_no");
+
+        shader = new Shader(trianglesCount);
 //        if (anglesHandle == -1 || attributeNoHandle == -1) {
 //            throw new AssertionError();
 //        }
@@ -167,26 +183,28 @@ public class MyCircles {
     public final void draw(float[] MVP, float[] colors, float radius) {
         draw(MVP, colors, 0, count, radius);
     }
+
+
     public final void draw(float[] MVP, float[] colors, int from, int to, float radius) {
 
 //        float radius = 0.1f;
-        GLES20.glUseProgram(program);
+        GLES20.glUseProgram(shader.program);
 //        MyGL.checkGlError2();
-        GLES20.glUniform2fv(anglesHandle, triangle_count, angles, 0);
-        GLES20.glUniform1f(u_radiusHandle, radius);
+        GLES20.glUniform2fv(shader.anglesHandle, triangle_count, angles, 0);
+        GLES20.glUniform1f(shader.u_radiusHandle, radius);
 //        MyGL.checkGlError2();
-        GLES20.glUniform4fv(colorHandle, 1, colors, 0);//todo try to bind only once
+        GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);//todo try to bind only once
 
-        GLES20.glEnableVertexAttribArray(positionHandle);
+        GLES20.glEnableVertexAttribArray(shader.positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-        GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, 12, 0);
+        GLES20.glVertexAttribPointer(shader.positionHandle, 2, GLES20.GL_FLOAT, false, 12, 0);
 
-        GLES20.glEnableVertexAttribArray(attributeNoHandle);
+        GLES20.glEnableVertexAttribArray(shader.attributeNoHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-        GLES20.glVertexAttribPointer(attributeNoHandle, 1, GLES20.GL_FLOAT, false, 12, 8);
+        GLES20.glVertexAttribPointer(shader.attributeNoHandle, 1, GLES20.GL_FLOAT, false, 12, 8);
 //        MyGL.checkGlError2();
 
-        GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
+        GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
         //todo relace with draw elements
         int n = to - from;
         int ifrom = from * triangle_count * 3;
