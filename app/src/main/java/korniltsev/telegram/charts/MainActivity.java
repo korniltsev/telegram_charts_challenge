@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowInsets;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
@@ -154,7 +155,12 @@ public class MainActivity extends Activity {
         sgadow.setBackgroundDrawable(getResources().getDrawable(R.drawable.header_shadow));
         contentFrame.addView(sgadow, MATCH_PARENT, dimen.dpi(3));
 
-        LinearLayout root = new LinearLayout(this);
+        LinearLayout root = new LinearLayout(this){
+            @Override
+            public WindowInsets onApplyWindowInsets(WindowInsets insets) {
+                return super.onApplyWindowInsets(insets);
+            }
+        };
         root.setBackgroundDrawable(bgRoot);
         root.setOrientation(LinearLayout.VERTICAL);
         root.addView(toolbar, lp);
@@ -184,6 +190,20 @@ public class MainActivity extends Activity {
             list.addView(cb);
 
         }
+
+        if (Build.VERSION.SDK_INT >= 21) {
+//            root.isScrollContainer()
+//            root.requestApplyInsets();
+//            //todo
+//            root.setFitsSystemWindows(false);
+//            root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+//                @Override
+//                public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+//                    return insets.consumeSystemWindowInsets();
+//                }
+//            });
+
+        }
         setContentView(root);
 
     }
@@ -195,6 +215,10 @@ public class MainActivity extends Activity {
             currentColorSet = ColorSet.NIGHT;
         } else {
             currentColorSet = ColorSet.DAY;
+        }
+        if (Build.VERSION.SDK_INT >= 21) {
+            //todo replace with insets and color animatione
+            getWindow().setStatusBarColor(currentColorSet.statusbar);
         }
         bgToolbar.animate(currentColorSet.toolbar);
         bgRoot.animate(currentColorSet.darkBackground);
