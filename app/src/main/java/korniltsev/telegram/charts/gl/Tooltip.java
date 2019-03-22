@@ -1,9 +1,12 @@
 package korniltsev.telegram.charts.gl;
 
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.text.TextPaint;
+
+import org.w3c.dom.Text;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -166,8 +169,8 @@ public class Tooltip {
 
 
         Matrix.setIdentityM(VIEW, 0);
-        int texw = 200;
-        int texh = 100;
+        int texw = myTex.w;
+        int texh = myTex.h;
         Matrix.scaleM(VIEW, 0, texw, texh, 1f);
         Matrix.multiplyMM(MVP, 0, proj, 0, VIEW, 0);
 
@@ -196,12 +199,17 @@ public class Tooltip {
         private final ChartData data;
         private final int index;
         private final Dimen dimen;
+        public int w;
+        public int h;
+
         public MyTex(TexShader shader, ChartData data, int index, Dimen dimen) {
             this.shader = shader;
             this.data = data;
             this.index = index;
             this.dimen = dimen;
-
+            TextTex text = prepareTextTextures();
+            w = text.w;
+            h = text.h;
             //todo delete previous
 //        glDeleteFramebuffers(1, &fbo);
             int[] fbos = new int[1];
@@ -217,8 +225,8 @@ public class Tooltip {
 
 //            TextTex t = prepareTextTextures();
             MyGL.checkGlError2();
-            int width = 200;
-            int h = 100;
+            int width = text.w;
+            int h = text.h;
             GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGB, width, h, 0, GLES20.GL_RGB, GLES20.GL_UNSIGNED_BYTE, null);
 
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
@@ -232,6 +240,16 @@ public class Tooltip {
             if(check == GLES20.GL_FRAMEBUFFER_COMPLETE) {
                 System.out.println(check);
             }
+            drawTooltip(text);
+
+
+            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+//            if (texShader == null) {
+//                texShader = new TexShader();
+//            }
+        }
+
+        private void drawTooltip(TextTex t) {
             //todo probably need glViewPort()
             glClearColor(
                     1f,
@@ -240,15 +258,46 @@ public class Tooltip {
                     1.0f
             );
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+            float[] PROJ = new float[16];
+            Matrix.orthoM(PROJ, 0, 0, t.w, 0, t.h, -1.0f, 1.0f);
 
-            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-//            if (texShader == null) {
-//                texShader = new TexShader();
-//            }
+            float[] VIEW = new float[16];
+            float[] MVP = new float[16];
+            Matrix.setIdentityM(VIEW, 0);
+
+//            Matrix.scaleM(VIEW, 0, t.w, t.h,1);
+            final float scalex = 2.0f / t.w;
+            final float scaley = 2.0f / t.h;
+
+
+//            Matrix.setIdentityM(MVP, 0);
+//            Matrix.translateM(MVP, 0, -1.0f, -1.0f, 0);
+//            Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
+
+            Matrix.multiplyMM(MVP, 0, PROJ, 0, VIEW, 0);
+//            Matrix.scaleM(MVP, 0, t.w, t.h, 1f);
+
+            TexShader shader = this.shader;
+            GLES20.glUseProgram(shader.texProgram);
+            MyGL.checkGlError2();
+
+            GLES20.glEnableVertexAttribArray(shader.texPositionHandle);
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, shader.texVerticesVBO);
+            GLES20.glVertexAttribPointer(shader.texPositionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
+
+            GLES20.glUniformMatrix4fv(shader.texMVPHandle, 1, false, MVP, 0);
+            GLES20.glUniform1f(shader.texAlphaHandle, 1f);
+
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, t.tex[0]);
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, TexShader.texVertices.length / 2);
+
+//            MyRect myRect = new MyRect(0.025f, 0.05f, 0f,0f, Color.GREEN, 1f, 1f);
+//            myRect.draw();
         }
 
         public TextTex prepareTextTextures() {
             TextPaint p = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+            p.setColor(Color.BLACK);
             p.setTextSize(dimen.dpf(16f));
             TextTex t = new TextTex("Sat, Feb 24", p);
             return t;

@@ -10,10 +10,10 @@ import java.nio.FloatBuffer;
 
 public class MyRect {
     private final float[] MVP = new float[16];
-    final int w;
-    final int h;
-    final int x;
-    final int y;
+    final float w;
+    final float h;
+    final float x;
+    final float y;
     private final float[] vertices;
     private int color;
 
@@ -39,10 +39,10 @@ public class MyRect {
     private final int colorHandle;
     private int vbo;
 
-    private final int canvasw;
-    private final int canvash;
+    private final float canvasw;
+    private final float canvash;
 
-    public MyRect (int w, int h, int x, int y, int color, int canvasw, int canvash) {
+    public MyRect (float w,float h, float x, float y, int color, float canvasw, float canvash) {
         this.w = w;
         this.h = h;
         this.x = x;
