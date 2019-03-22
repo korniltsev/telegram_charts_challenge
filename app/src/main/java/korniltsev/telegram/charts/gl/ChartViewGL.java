@@ -101,6 +101,12 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
 
     [ ! ] implement empty chart
+            draw zero only once
+            when empty draw only one line
+            + do not show tooltip if empty
+            do not animate rulers when animting in-out from empty view
+            + remove tooltip when animating
+
 
     [ ! ] horizontal lables + animations
     [ ! ] alpha animation blending - render to fbo
@@ -394,6 +400,7 @@ public class ChartViewGL extends TextureView {
                     long max = -1;
                     long min = Long.MAX_VALUE;
                     int checkedCount = 0;
+
                     for (int i = 0; i < scrollbar.length; i++) {
                         GLChartProgram c = scrollbar[i];
                         if (c.column.id.equals(id)) {
@@ -415,6 +422,8 @@ public class ChartViewGL extends TextureView {
                     }
 
                     for (GLChartProgram c : chart) {
+                        c.setTooltipIndex(-1);
+
                         if (c.column.id.equals(id)) {
                             c.animateAlpha(isChecked);
                         }
@@ -975,8 +984,16 @@ public class ChartViewGL extends TextureView {
             r.actionQueue.add(new Runnable() {
                 @Override
                 public void run() {
+                    int checkedCount = 0;
                     for (GLChartProgram glChartProgram : r.chart) {
-                        glChartProgram.setTooltipIndex(finali);
+                        if (glChartProgram.checked) {
+                            checkedCount++;
+                        }
+                    }
+                    if (checkedCount > 0) {
+                        for (GLChartProgram glChartProgram : r.chart) {
+                            glChartProgram.setTooltipIndex(finali);
+                        }
                     }
                 }
             });

@@ -31,6 +31,7 @@ public class MyCircles {
 
     public final Shader shader;
 
+    int[] vbos = new int[1];
     private int vbo;
 
     private final int canvasw;
@@ -155,7 +156,7 @@ public class MyCircles {
         }
         buf1.position(0);
 
-        int[] vbos = new int[1];
+
         GLES20.glGenBuffers(1, vbos, 0);
         vbo = vbos[0];
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
@@ -213,6 +214,10 @@ public class MyCircles {
     }
 
     public void release(){
-        //todo
+        try {
+            GLES20.glDeleteBuffers(1, vbos, 0);
+        } catch (Throwable e) {
+            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err", e);
+        }
     }
 }

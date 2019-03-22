@@ -7,6 +7,9 @@ import android.opengl.GLUtils;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
+import android.util.Log;
+
+import korniltsev.telegram.charts.MainActivity;
 
 public class TextTex {
     final String text;
@@ -51,6 +54,10 @@ public class TextTex {
     }
 
     public final void release() {
-        GLES20.glDeleteTextures(1, tex, 0);
+        try {
+            GLES20.glDeleteTextures(1, tex, 0);
+        } catch (Throwable e) {
+            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err", e);
+        }
     }
 }
