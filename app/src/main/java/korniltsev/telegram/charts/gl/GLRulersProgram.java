@@ -121,7 +121,7 @@ public final class GLRulersProgram {
     public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int initialColor) {
 
 
-        texShader = new TexShader();
+        texShader = new TexShader(true);
         this.canvasW = canvasW;
         this.canvasH = canvasH;
         this.dimen = dimen;
@@ -157,7 +157,7 @@ public final class GLRulersProgram {
 
         paint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(0xff96A2AA);
-        paint.setTextSize(dimen.dpf(12f));
+        paint.setTextSize(dimen.dpi(12));
 
     }
 
@@ -192,6 +192,30 @@ public final class GLRulersProgram {
 
 
     public final void draw(long t) {
+        animationTick(t);
+
+        final float hpadding = dimen.dpf(16);
+
+
+        //todo draw zero only once
+        for (int ruler_i = 0, rsSize = rs.size(); ruler_i < rsSize; ruler_i++) {
+            Ruler r = rs.get(ruler_i);
+
+            float zero = dimen.dpf(80);
+            float dy = 0;
+
+            for (int i = 0; i < 6; ++i) {
+                //todo draw lines first, then text, so we can minimize program switch
+
+                drawLine(hpadding, zero + dy * r.scale, canvasW - 2 * hpadding, r.alpha);
+                drawText(r.values.get(i), hpadding, zero + dy * r.scale, r.alpha);
+                dy += dimen.dpf(50);
+            }
+//            drawLine(hpadding, zero + root.dimen_chart_height-10, (canvasW - 2 * hpadding)/2, 1.0f);
+        }
+    }
+
+    private void animationTick(long t) {
         //todo invalidate
         if (colorAnim != null) {
             color = colorAnim.tick(t);
@@ -222,26 +246,6 @@ public final class GLRulersProgram {
                 }
                 rs.remove(i);
             }
-        }
-
-        final float hpadding = dimen.dpf(16);
-
-
-        //todo draw zero only once
-        for (int ruler_i = 0, rsSize = rs.size(); ruler_i < rsSize; ruler_i++) {
-            Ruler r = rs.get(ruler_i);
-
-            float zero = dimen.dpf(80);
-            float dy = 0;
-
-            for (int i = 0; i < 6; ++i) {
-                //todo draw lines first, then text, so we can minimize program switch
-
-                drawLine(hpadding, zero + dy * r.scale, canvasW - 2 * hpadding, r.alpha);
-                drawText(r.values.get(i), hpadding, zero + dy * r.scale, r.alpha);
-                dy += dimen.dpf(50);
-            }
-//            drawLine(hpadding, zero + root.dimen_chart_height-10, (canvasW - 2 * hpadding)/2, 1.0f);
         }
     }
 

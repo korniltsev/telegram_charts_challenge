@@ -90,11 +90,12 @@ import static android.opengl.GLES10.glClearColor;
     ---------------------------------------- 21 march
 
     [ ! ] toooltip by touching + fix touch
-        - fbo
-        - rect
-        - text
+        + fbo
+        + rect
+        + text
+        - design
         - no shadows and round corners
-
+    scroll bug
     [ ! ] implement empty chart
     [ ! ] horizontal lables + animations
     [ ! ] alpha animation blending - render to fbo
@@ -280,6 +281,7 @@ public class ChartViewGL extends TextureView {
         private GLRulersProgram ruler;
         private long prevMax;
         private Tooltip tooltip;
+        private boolean rulerInitDone;
 
 
         public Render(ChartData column) {
@@ -439,7 +441,7 @@ public class ChartViewGL extends TextureView {
             long frameCount = 0;
             long prevReportTime = SystemClock.uptimeMillis();
             int ccc = 0;
-            boolean rulerInitDone = false;
+            rulerInitDone = false;
             out:
             while (true) {
                 ccc++;
@@ -560,7 +562,7 @@ public class ChartViewGL extends TextureView {
             int tooltipIndex = chart[0].getTooltipIndex();
             if (tooltipIndex != -1 ) {
                 if (this.tooltip == null) {
-                    this.tooltip = new Tooltip(new Tooltip.Shader(), dimen, w, currentColors, data);
+                    this.tooltip = new Tooltip(new Tooltip.Shader(), dimen, w, h, currentColors, data);
                 }
             }
             for (GLChartProgram chartProgram : chart) {
@@ -793,7 +795,9 @@ public class ChartViewGL extends TextureView {
 //                }
 //            }
             if (prevMax != scaledMax) {
-                ruler.animateScale(ratio, scaledMax);
+                if (rulerInitDone) {
+                    ruler.animateScale(ratio, scaledMax);
+                }
                 prevMax = scaledMax;
             }
         }
