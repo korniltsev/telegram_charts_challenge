@@ -136,50 +136,39 @@ public class Tooltip {
             myTex = new MyTex(shader1, data, index, dimen);
         }
 
+        // calc vline pos
         vec1[0] = index;
         vec1[3] = 1;
-
-
         Matrix.multiplyMV(vec2, 0, chartMVP, 0, vec1, 0);
-
-
         float ndcx = (vec2[0] + 1f) / 2f;
 
-//        Log.d("FUCK", "v" + ndcx);
+        // draw wline
         Matrix.setIdentityM(VIEW, 0);
         Matrix.translateM(VIEW, 0, 0, dimen.dpf(80f), 0f);
         Matrix.scaleM(VIEW, 0, w, dimen.dpf(290), 1f);
         Matrix.translateM(VIEW, 0, ndcx, 0f, 0f);
-
         Matrix.multiplyMM(MVP, 0, proj, 0, VIEW, 0);
-//        Matrix.translateM(MVP, 0, ndcx, 0f, 0f);
-
 
         GLES20.glUseProgram(shader.lineProgram);
-
         MyColor.set(colorParts, lineColor);
         GLES20.glUniform4fv(shader.lineColorHandle, 1, colorParts, 0);
-
         GLES20.glEnableVertexAttribArray(shader.linePositionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
         GLES20.glVertexAttribPointer(shader.linePositionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
-
         GLES20.glLineWidth(dimen.dpf(1f));
         GLES20.glUniformMatrix4fv(shader.lineMVPHandle, 1, false, MVP, 0);
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, lineVertices.length / 2);
 
-
-        // tooltip
-        //todo draw over chart
+        // ----------------
+        // tooltip        todo draw over chart
+        // ----------------
+        //
 
 
         Matrix.setIdentityM(VIEW, 0);
-//        Matrix.translateM(VIEW, 0, 0, dimen.dpf(80f), 0f);
         int texw = 200;
         int texh = 100;
         Matrix.scaleM(VIEW, 0, texw, texh, 1f);
-//        Matrix.translateM(VIEW, 0, ndcx, 0f, 0f);
-
         Matrix.multiplyMM(MVP, 0, proj, 0, VIEW, 0);
 
 
@@ -226,6 +215,8 @@ public class Tooltip {
             tex = textures[0];
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex);
 
+//            TextTex t = prepareTextTextures();
+            MyGL.checkGlError2();
             int width = 200;
             int h = 100;
             GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGB, width, h, 0, GLES20.GL_RGB, GLES20.GL_UNSIGNED_BYTE, null);
