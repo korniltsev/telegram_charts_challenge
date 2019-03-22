@@ -194,7 +194,7 @@ public class ChartViewGL extends TextureView {
     private final int initial_scroller_dith;
     private final int resize_touch_area2;
     private final int touchSlop;
-    private final int rulerColor;
+//    private final int rulerColor;
     private final ColorSet init_colors;
     private final ChartData data;
     public int bgColor;
@@ -216,7 +216,7 @@ public class ChartViewGL extends TextureView {
         dimen_scrollbar_height = dimen.dpi(38);
         r = new Render(c);
         this.bgColor = currentColorsSet.lightBackground;
-        this.rulerColor = currentColorsSet.ruler;
+//        this.rulerColor = currentColorsSet.ruler;
         r.start();
         setSurfaceTextureListener(r);
 
@@ -347,7 +347,7 @@ public class ChartViewGL extends TextureView {
 //            prevMax = max;
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay);
-            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, rulerColor);
+            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors);
 
 
             Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
@@ -1026,7 +1026,7 @@ public class ChartViewGL extends TextureView {
             public void run() {
                 currentColors = colors;
                 bgAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, bgColor, colors.lightBackground);
-                r.ruler.animate(colors.ruler);
+                r.ruler.animate(colors);
                 r.overlay.animate(colors.scrollbarBorder, colors.scrollbarOverlay);
                 for (GLChartProgram glChartProgram : r.chart) {
                     glChartProgram.animateColors(colors);

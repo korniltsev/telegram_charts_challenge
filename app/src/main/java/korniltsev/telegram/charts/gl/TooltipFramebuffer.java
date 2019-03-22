@@ -108,15 +108,15 @@ class TooltipFramebuffer {
         GLES20.glUseProgram(shader_.texProgram);
         MyGL.checkGlError2();
 
-        drawTitle(title, dimen.dpf(LEFT_RIGHT_PADDING), dimen.dpf(40), dateColor);
+        drawText(title, dimen.dpf(LEFT_RIGHT_PADDING), dimen.dpf(40), dateColor);
 
 
         float currentX = dimen.dpf(LEFT_RIGHT_PADDING);
         for (int i = 0; i < names.size(); i++) {
             TextTex name = names.get(i);
-            drawTitle(name, currentX, dimen.dpf(8), name.color);
+            drawText(name, currentX, dimen.dpf(8), name.color);
             TextTex value = values.get(i);
-            drawTitle(value, currentX, dimen.dpf(21), name.color);
+            drawText(value, currentX, dimen.dpf(21), name.color);
             currentX += Math.max(name.w, value.w) + dimen.dpf(PADDING_BETWEEN_VALUES);
         }
 
@@ -136,7 +136,7 @@ class TooltipFramebuffer {
     float[] VIEW = new float[16];
     float[] MVP = new float[16];
 
-    private void drawTitle(TextTex text, float x, float y, int color) {
+    private void drawText(TextTex text, float x, float y, int color) {
 
         Matrix.setIdentityM(VIEW, 0);
         Matrix.translateM(VIEW, 0, x, y, 0);
