@@ -139,19 +139,19 @@ public final class GLRulersProgram {
 
     final float[] LINE_COLOR_PARTS = new float[4];
     //{
-//            Color.red(LINE_COLOR) / 255f,
-//            Color.green(LINE_COLOR) / 255f,
-//            Color.blue(LINE_COLOR) / 255f,
-//            Color.alpha(LINE_COLOR) / 255f,
+//            MyColor.red(LINE_COLOR) / 255f,
+//            MyColor.green(LINE_COLOR) / 255f,
+//            MyColor.blue(LINE_COLOR) / 255f,
+//            MyColor.alpha(LINE_COLOR) / 255f,
 //    };
 
 //    public static final int DEBUG_COLOR = 0xff000000;
 
 //    static final float[] DEBUG_COLOR_PARTS = new float[]{
-//            Color.red(DEBUG_COLOR) / 255f,
-//            Color.green(DEBUG_COLOR) / 255f,
-//            Color.blue(DEBUG_COLOR) / 255f,
-//            Color.alpha(DEBUG_COLOR) / 255f,
+//            MyColor.red(DEBUG_COLOR) / 255f,
+//            MyColor.green(DEBUG_COLOR) / 255f,
+//            MyColor.blue(DEBUG_COLOR) / 255f,
+//            MyColor.alpha(DEBUG_COLOR) / 255f,
 //    };
 
 
@@ -266,9 +266,9 @@ public final class GLRulersProgram {
     public void drawLine(float x, float y, float w, float alpha) {
         GLES20.glUseProgram(lineProgram);
         MyGL.checkGlError2();
-        LINE_COLOR_PARTS[0] = Color.red(lineColor) / 255f;
-        LINE_COLOR_PARTS[1] = Color.green(lineColor) / 255f;
-        LINE_COLOR_PARTS[2] = Color.blue(lineColor) / 255f;
+        LINE_COLOR_PARTS[0] = MyColor.red(lineColor) / 255f;
+        LINE_COLOR_PARTS[1] = MyColor.green(lineColor) / 255f;
+        LINE_COLOR_PARTS[2] = MyColor.blue(lineColor) / 255f;
         LINE_COLOR_PARTS[3] = alpha;
         GLES20.glUniform4fv(lineColorHandle, 1, LINE_COLOR_PARTS, 0);//todo try to bind only once
 

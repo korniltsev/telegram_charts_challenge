@@ -8,6 +8,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import korniltsev.telegram.charts.ui.MyColor;
+
 public class MyRect {
     private final float[] MVP = new float[16];
     final float w;
@@ -81,10 +83,10 @@ public class MyRect {
 
         GLES20.glUseProgram(program);
         float[] colors = new float[]{
-                Color.red(color),
-                Color.green(color),
-                Color.blue(color),
-                Color.alpha(color),
+                MyColor.red(color),
+                MyColor.green(color),
+                MyColor.blue(color),
+                MyColor.alpha(color),
         };
         GLES20.glUniform4fv(colorHandle, 1, colors, 0);//todo try to bind only once
 

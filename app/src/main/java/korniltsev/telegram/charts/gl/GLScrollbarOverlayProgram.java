@@ -10,6 +10,7 @@ import java.nio.FloatBuffer;
 
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
+import korniltsev.telegram.charts.ui.MyColor;
 
 public final class GLScrollbarOverlayProgram {
 
@@ -101,10 +102,10 @@ public final class GLScrollbarOverlayProgram {
     float[] color_parts = new float[4];
 
 //    float [] color_border = new float[]{ //todo try to do only once
-//            Color.red(BORDER_COLOR) / 255f,
-//            Color.green(BORDER_COLOR) / 255f,
-//            Color.blue(BORDER_COLOR) / 255f,
-//            Color.alpha(BORDER_COLOR) / 255f,
+//            MyColor.red(BORDER_COLOR) / 255f,
+//            MyColor.green(BORDER_COLOR) / 255f,
+//            MyColor.blue(BORDER_COLOR) / 255f,
+//            MyColor.alpha(BORDER_COLOR) / 255f,
 //    };
 
     public final void draw(long t) {
@@ -134,10 +135,10 @@ public final class GLScrollbarOverlayProgram {
         final float vline2h = dimen.dpf(1f);
 
 
-        color_parts[0] = Color.red(color_overlay) / 255f;
-        color_parts[1] = Color.green(color_overlay) / 255f;
-        color_parts[2] = Color.blue(color_overlay) / 255f;
-        color_parts[3] = Color.alpha(color_overlay) / 255f;
+        color_parts[0] = MyColor.red(color_overlay) / 255f;
+        color_parts[1] = MyColor.green(color_overlay) / 255f;
+        color_parts[2] = MyColor.blue(color_overlay) / 255f;
+        color_parts[3] = MyColor.alpha(color_overlay) / 255f;
         GLES20.glUniform4fv(colorHandle, 1, color_parts, 0);
         if (left != 0.0f) {
             drawRect(hpadding, root.dimen_v_padding8, left*scrollerW, root.dimen_scrollbar_height);
@@ -146,10 +147,10 @@ public final class GLScrollbarOverlayProgram {
             drawRect(hpadding + scrollerW * right, root.dimen_v_padding8, scrollerW * (1.0f-right), root.dimen_scrollbar_height);
         }
 
-        color_parts[0] = Color.red(color_border) / 255f;
-        color_parts[1] = Color.green(color_border) / 255f;
-        color_parts[2] = Color.blue(color_border) / 255f;
-        color_parts[3] = Color.alpha(color_border) / 255f;
+        color_parts[0] = MyColor.red(color_border) / 255f;
+        color_parts[1] = MyColor.green(color_border) / 255f;
+        color_parts[2] = MyColor.blue(color_border) / 255f;
+        color_parts[3] = MyColor.alpha(color_border) / 255f;
 
         GLES20.glUniform4fv(colorHandle, 1, color_parts, 0);
         drawRect(hpadding + scrollerW * left, root.dimen_v_padding8, vline1w, root.dimen_scrollbar_height);

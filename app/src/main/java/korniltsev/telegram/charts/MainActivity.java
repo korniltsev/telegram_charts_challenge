@@ -88,9 +88,9 @@ public class MainActivity extends Activity {
 
         ChartData datum = data[DATASET];
 //        ChartData datum = new ChartData(new ColumnData[]{
-//                new ColumnData("x", "x", new long[]{1,2,3}, "line",  Color.RED),
-//                new ColumnData("Y1", "Y1", new long[]{5, 10, 5}, "line",  Color.RED),
-//                new ColumnData("Y2", "Y2", new long[]{2, 20, 2}, "line",  Color.GREEN),
+//                new ColumnData("x", "x", new long[]{1,2,3}, "line",  MyColor.red),
+//                new ColumnData("Y1", "Y1", new long[]{5, 10, 5}, "line",  MyColor.red),
+//                new ColumnData("Y2", "Y2", new long[]{2, 20, 2}, "line",  MyColor.green),
 //        });
         if (DEBUG) {
 //            ColumnData vs = datum.data[datum.data.length - 1];

@@ -100,9 +100,9 @@ class TooltipFramebuffer {
         GLES20.glViewport(0, 0, w, h);
         //todo probably need glViewPort()
         glClearColor(
-                Color.red(bgColor)/255f,
-                Color.green(bgColor)/255f,
-                Color.blue(bgColor)/255f,
+                MyColor.red(bgColor)/255f,
+                MyColor.green(bgColor)/255f,
+                MyColor.blue(bgColor)/255f,
                 1.0f
         );
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);

@@ -12,6 +12,7 @@ import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
+import korniltsev.telegram.charts.ui.MyColor;
 
 public final class GLChartProgram {
 
@@ -215,9 +216,9 @@ public final class GLChartProgram {
             if (alpha != 0f) {
                 if (goodCircle != null) {
                     goodCircle.draw(MVP, colors, 0, 1, dimen.dpf(5) * scalex, (float) h / w);
-                    white[0] = Color.red(tooltipFillColor) / 255f;
-                    white[1] = Color.green(tooltipFillColor) / 255f;
-                    white[2] = Color.blue(tooltipFillColor) / 255f;
+                    white[0] = MyColor.red(tooltipFillColor) / 255f;
+                    white[1] = MyColor.green(tooltipFillColor) / 255f;
+                    white[2] = MyColor.blue(tooltipFillColor) / 255f;
                     white[3] = alpha;
                     goodCircle.draw(MVP, white, 0, 1, dimen.dpf(3) * scalex, (float) h / w);
                 }
@@ -228,9 +229,9 @@ public final class GLChartProgram {
 
     public void step2() {
 
-        colors[0] = Color.red(column.color) / 255f;
-        colors[1] = Color.green(column.color) / 255f;
-        colors[2] = Color.blue(column.color) / 255f;
+        colors[0] = MyColor.red(column.color) / 255f;
+        colors[1] = MyColor.green(column.color) / 255f;
+        colors[2] = MyColor.blue(column.color) / 255f;
         colors[3] = alpha;
         GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
 

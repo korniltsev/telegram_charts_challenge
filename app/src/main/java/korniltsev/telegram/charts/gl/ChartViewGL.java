@@ -30,6 +30,7 @@ import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
+import korniltsev.telegram.charts.ui.MyColor;
 
 import static android.opengl.EGL14.EGL_CONTEXT_CLIENT_VERSION;
 import static android.opengl.EGL14.EGL_OPENGL_ES2_BIT;
@@ -461,10 +462,10 @@ public class ChartViewGL extends TextureView {
 
 
         private void loop() {
-            List<MyRect> debugRects = new ArrayList<>();
-            debugRects.add(new MyRect(w, h, 0, 0, Color.RED, w, h));
-            debugRects.add(new MyRect(w, dimen_v_padding8 * 2 + dimen_scrollbar_height, 0, 0, Color.GREEN, w, h));
-            debugRects.add(new MyRect(w, dimen.dpi(280), 0, dimen.dpi(80), Color.BLUE, w, h));
+//            List<MyRect> debugRects = new ArrayList<>();
+//            debugRects.add(new MyRect(w, h, 0, 0, MyColor.red, w, h));
+//            debugRects.add(new MyRect(w, dimen_v_padding8 * 2 + dimen_scrollbar_height, 0, 0, MyColor.green, w, h));
+//            debugRects.add(new MyRect(w, dimen.dpi(280), 0, dimen.dpi(80), MyMyColor.blue, w, h));
             boolean invalidated = true;
 
 //            MyCircle circle = new MyCircle(dimen,  w, h);
@@ -516,9 +517,9 @@ public class ChartViewGL extends TextureView {
                     }
                 }
                 glClearColor(
-                        Color.red(bgColor) / 255f,
-                        Color.green(bgColor) / 255f,
-                        Color.blue(bgColor) / 255f,
+                        MyColor.red(bgColor) / 255f,
+                        MyColor.green(bgColor) / 255f,
+                        MyColor.blue(bgColor) / 255f,
                         1.0f
                 );
                 glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
