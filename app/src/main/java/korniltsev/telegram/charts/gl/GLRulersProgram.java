@@ -52,6 +52,7 @@ public final class GLRulersProgram {
 
 //    private final int texVerticesVBO;
     private final TexShader texShader;
+    private final TextTex zero;
     private ColorSet colors;
 
 
@@ -119,6 +120,7 @@ public final class GLRulersProgram {
         paint.setColor(Color.BLUE);
         paint.setTextSize(dimen.dpi(12));
 
+        zero = new TextTex("0", paint);
     }
 
     public void init(long max) {
@@ -160,18 +162,24 @@ public final class GLRulersProgram {
 
 
         //todo draw zero only once
+
+        final float zero = dimen.dpf(80);
+        drawLine(hpadding, zero + 0, canvasW - 2 * hpadding, 1f);
+        drawText(this.zero, hpadding, zero, 1f);
+
+        final float dip50 = dimen.dpf(50);
         for (int ruler_i = 0, rsSize = rs.size(); ruler_i < rsSize; ruler_i++) {
             Ruler r = rs.get(ruler_i);
 
-            float zero = dimen.dpf(80);
-            float dy = 0;
+            float dy = dip50;
 
-            for (int i = 0; i < 6; ++i) {
+            for (int i = 1; i < 6; ++i) {
                 //todo draw lines first, then text, so we can minimize program switch
 
                 drawLine(hpadding, zero + dy * r.scale, canvasW - 2 * hpadding, r.alpha);
-                drawText(r.values.get(i), hpadding, zero + dy * r.scale, r.alpha);
-                dy += dimen.dpf(50);
+                drawText(r.values.get(i-1), hpadding, zero + dy * r.scale, r.alpha);
+
+                dy += dip50;
             }
 //            drawLine(hpadding, zero + root.dimen_chart_height-10, (canvasW - 2 * hpadding)/2, 1.0f);
         }
@@ -290,18 +298,31 @@ public final class GLRulersProgram {
 //        Log.d("OVERLAY", " " + left + " " + right);
 //    }
 
-    public void animateScale(float ratio, long maxValue) {
+    public void animateScale(float ratio, long maxValue, int checkedCount, int prevCheckedCOunt) {
         for (int i = 0, rsSize = rs.size(); i < rsSize; i++) {
             Ruler r = rs.get(i);
-            r.scaleAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.scale, ratio);
+            if (r.toBeDeleted) {
+                continue;
+            }
+            if (checkedCount == 0 && prevCheckedCOunt != 0) {
+
+            } else {
+                r.scaleAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.scale, ratio);
+            }
             r.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.alpha, 0f);
             r.toBeDeleted = true;
         }
-        Ruler e = new Ruler(maxValue, 1f/ratio, paint);
-        e.alpha = 0f;
-        e.scaleAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, e.scale, 1f);
-        e.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, e.alpha, 1f);
-        rs.add(e);
+        if (checkedCount != 0) {
+            Ruler e = new Ruler(maxValue, 1f/ratio, paint);
+            e.alpha = 0f;
+            if (prevCheckedCOunt == 0) {
+                e.scale = 1f;
+            } else {
+                e.scaleAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, e.scale, 1f);
+            }
+            e.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, e.alpha, 1f);
+            rs.add(e);
+        }
     }
 
 //    Locale locale = new Locale("da", "DK");
@@ -321,9 +342,9 @@ public final class GLRulersProgram {
             this.maxValue = maxValue;
             this.scale = scale;
             this.p = p;
-            int dy = 0;
+            int dy = 50;
             int max = 280;
-            for (int i = 0; i < 6; i++) {
+            for (int i = 1; i < 6; i++) {
                 float s = (float)dy / max;
                 long v = (long) (maxValue * s);
                 String text = String.valueOf(v);

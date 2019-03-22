@@ -101,10 +101,10 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
 
     [ ! ] implement empty chart
-            draw zero only once
-            when empty draw only one line
+            + draw zero only once
+            + when empty draw only one line
             + do not show tooltip if empty
-            do not animate rulers when animting in-out from empty view
+            + do not animate rulers when animting in-out from empty view
             + remove tooltip when animating
 
 
@@ -395,6 +395,12 @@ public class ChartViewGL extends TextureView {
                     if (scrollbar == null || chart == null) {
                         return;
                     }
+                    int prevCheckedCOunt = 0;
+                    for (GLChartProgram glChartProgram : chart) {
+                        if (glChartProgram.checked) {
+                            prevCheckedCOunt++;
+                        }
+                    }
                     // scrollbar
                     GLChartProgram found = null;
                     long max = -1;
@@ -441,7 +447,7 @@ public class ChartViewGL extends TextureView {
                         }
                     }
                     if (prevMax != scaledMax) {
-                        ruler.animateScale(ratio, scaledMax);
+                        ruler.animateScale(ratio, scaledMax, checkedCount, prevCheckedCOunt);
                         prevMax = scaledMax;
                     }
 
@@ -800,9 +806,13 @@ public class ChartViewGL extends TextureView {
 //            long newMax = calculateMax(left, right);
             long scaledMax = calculateMax(left, right);
 
+            int checkedCount = 0;
             for (GLChartProgram glChartProgram : r.chart) {
                 glChartProgram.zoom = scale;
                 glChartProgram.left = left;
+                if (glChartProgram.checked) {
+                    checkedCount++;
+                }
                 if (prevMax != scaledMax) {
                     glChartProgram.animateMinMax(0, scaledMax, !firstLeftRightUpdate);
                 }
@@ -825,7 +835,7 @@ public class ChartViewGL extends TextureView {
 //            }
             if (prevMax != scaledMax) {
                 if (rulerInitDone) {
-                    ruler.animateScale(ratio, scaledMax);
+                    ruler.animateScale(ratio, scaledMax, checkedCount,checkedCount);
                 }
                 prevMax = scaledMax;
             }
