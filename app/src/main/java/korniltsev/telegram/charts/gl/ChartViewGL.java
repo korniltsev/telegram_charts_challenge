@@ -102,7 +102,7 @@ import static android.opengl.GLES10.glClearColor;
     -------------
     NICE TO HAVE
 
-
+    look for aliased line
 
     [ ! ] tweak inital zoom for smal datasets
     [ ! ] rulers text night mode + animation
