@@ -135,10 +135,7 @@ public final class GLScrollbarOverlayProgram {
         final float vline2h = dimen.dpf(1f);
 
 
-        color_parts[0] = MyColor.red(color_overlay) / 255f;
-        color_parts[1] = MyColor.green(color_overlay) / 255f;
-        color_parts[2] = MyColor.blue(color_overlay) / 255f;
-        color_parts[3] = MyColor.alpha(color_overlay) / 255f;
+        MyColor.set(color_parts, color_overlay);
         GLES20.glUniform4fv(colorHandle, 1, color_parts, 0);
         if (left != 0.0f) {
             drawRect(hpadding, root.dimen_v_padding8, left*scrollerW, root.dimen_scrollbar_height);
@@ -147,11 +144,7 @@ public final class GLScrollbarOverlayProgram {
             drawRect(hpadding + scrollerW * right, root.dimen_v_padding8, scrollerW * (1.0f-right), root.dimen_scrollbar_height);
         }
 
-        color_parts[0] = MyColor.red(color_border) / 255f;
-        color_parts[1] = MyColor.green(color_border) / 255f;
-        color_parts[2] = MyColor.blue(color_border) / 255f;
-        color_parts[3] = MyColor.alpha(color_border) / 255f;
-
+        MyColor.set(color_parts, color_border);
         GLES20.glUniform4fv(colorHandle, 1, color_parts, 0);
         drawRect(hpadding + scrollerW * left, root.dimen_v_padding8, vline1w, root.dimen_scrollbar_height);
         drawRect(hpadding + scrollerW * right - vline1w, root.dimen_v_padding8, vline1w, root.dimen_scrollbar_height);
