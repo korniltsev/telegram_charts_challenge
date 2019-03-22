@@ -18,7 +18,7 @@ public final class GLChartProgram {
     private static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
     private static final int POSITION_DATA_SIZE = 2;
-
+    public static final int CHART_HEIGHT = 280;
 
 
     private final int vbo;
@@ -31,9 +31,9 @@ public final class GLChartProgram {
     public float left = 0;
     private int tooltipIndex = -1;
 
-//    private float[] M = new float[16];
-    private float[] V = new float[16];
-    private float[] MVP = new float[16];
+    //    private float[] M = new float[16];
+    public float[] V = new float[16];
+    public final float[] MVP = new float[16];
 
     public final int w;
     public final int h;
@@ -49,7 +49,7 @@ public final class GLChartProgram {
 
     final boolean scrollbar;
     public MyCircles goodCircle;
-    private int goodCircleIndex;
+    //    private int goodCircleIndex;
     private MyAnimation.Color tooltipFillColorAnim;
 
     public static final class Shader {
@@ -81,7 +81,7 @@ public final class GLChartProgram {
             colorHandle = GLES20.glGetUniformLocation(program, "u_color");
         }
 
-        public void use(){
+        public void use() {
             GLES20.glUseProgram(program);
             MyGL.checkGlError2();
         }
@@ -127,7 +127,7 @@ public final class GLChartProgram {
 
     float[] colors = new float[4];
 
-//    float tooltipFillColorAlpha = 1f;
+    //    float tooltipFillColorAlpha = 1f;
     int tooltipFillColor;
     float[] white = new float[4];
 
@@ -145,7 +145,7 @@ public final class GLChartProgram {
             minValueAnim = minAnim.tick(t);
             if (minAnim.ended) {
                 minAnim = null;
-            }else {
+            } else {
                 invalidate = true;
             }
         }
@@ -154,11 +154,11 @@ public final class GLChartProgram {
             maxValueAnim = maxAnim.tick(t);
             if (maxAnim.ended) {
                 maxAnim = null;
-            }else {
+            } else {
                 invalidate = true;
             }
         }
-        if (tooltipFillColorAnim != null){
+        if (tooltipFillColorAnim != null) {
             tooltipFillColor = tooltipFillColorAnim.tick(t);
             if (tooltipFillColorAnim.ended) {
                 tooltipFillColorAnim = null;
@@ -171,27 +171,18 @@ public final class GLChartProgram {
 
     }
 
-    public void step1(float []PROJ){
+    public void step1(float[] PROJ) {
         float hpadding = dimen.dpf(16);
         float minx = vertices[0];
         float maxx = vertices[vertices.length - 2];
-        float scalex = 2.0f / w;
-        float scaley = 2.0f / h;
 
-//        Matrix.setIdentityM(M, 0);
         Matrix.setIdentityM(V, 0);
-//        System.arraycopy(pxMat, 0, MVP, 0, 16);
-
-
-//        Matrix.multiplyMV(radius_ndc, 0, MVP, 0, radius_px, 0);
-        //todo learn matrixes ¯\_(ツ)_/¯
         if (scrollbar) {
             final float dip2 = dimen.dpf(2);
             Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + dip2, 0);
             float w = this.w - 2 * hpadding;
             float h = root.dimen_scrollbar_height - 2 * dip2;
             float ydiff = maxValueAnim * maxValue - minValueAnim * minValue;
-//            float xx = ydiff / minValue ;
             Matrix.translateM(V, 0, 0, 0, 0f);
             float yscale = h / ydiff;
             float dy = -yscale * minValue * minValueAnim;
@@ -203,8 +194,7 @@ public final class GLChartProgram {
             int ypx = dimen.dpi(80);
             Matrix.translateM(V, 0, hpadding, ypx, 0);
             float w = this.w - 2 * hpadding;
-//            int h = root.dimen_chart_height;
-            int h = dimen.dpi(280);
+            int h = dimen.dpi(CHART_HEIGHT);
             float xdiff = maxx - minx;
             float ws = w / xdiff / zoom;
             float hs = h / (float) (maxValue * maxValueAnim);
@@ -220,17 +210,16 @@ public final class GLChartProgram {
     public void step4() {
 
         float scalex = 2.0f / w;
-        //todo learn matrixes ¯\_(ツ)_/¯
         if (scrollbar) {
         } else {
             if (alpha != 0f) {
                 if (goodCircle != null) {
-                    goodCircle.draw(MVP, colors, 0, 1,  dimen.dpf(5) * scalex, (float) h /w);
+                    goodCircle.draw(MVP, colors, 0, 1, dimen.dpf(5) * scalex, (float) h / w);
                     white[0] = Color.red(tooltipFillColor) / 255f;
                     white[1] = Color.green(tooltipFillColor) / 255f;
                     white[2] = Color.blue(tooltipFillColor) / 255f;
                     white[3] = alpha;
-                    goodCircle.draw(MVP, white, 0, 1,  dimen.dpf(3) * scalex, (float) h / w);
+                    goodCircle.draw(MVP, white, 0, 1, dimen.dpf(3) * scalex, (float) h / w);
                 }
             }
         }
@@ -239,12 +228,10 @@ public final class GLChartProgram {
 
     public void step2() {
 
-        { //todo try to do only once
-            colors[0] = Color.red(column.color) / 255f;
-            colors[1] = Color.green(column.color) / 255f;
-            colors[2] = Color.blue(column.color) / 255f;
-            colors[3] = alpha;
-        };
+        colors[0] = Color.red(column.color) / 255f;
+        colors[1] = Color.green(column.color) / 255f;
+        colors[2] = Color.blue(column.color) / 255f;
+        colors[3] = alpha;
         GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
 
 
@@ -255,17 +242,11 @@ public final class GLChartProgram {
         float scalex = 2.0f / w;
 
 
-
-        float r_ndc = scalex * dimen.dpf(scrollbar ? 0.5f : 1f);
-        //todo learn matrixes ¯\_(ツ)_/¯
         if (scrollbar) {
             GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
             GLES20.glLineWidth(dimen.dpf(1f));
             GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
-
-
         } else {
-
             GLES20.glLineWidth(dimen.dpf(2f));
             GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
             GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
@@ -276,44 +257,15 @@ public final class GLChartProgram {
     }
 
 
-    public final void draw(float[] pxMat) {
-
-//        shader.use();
-
-        step1(pxMat);
-        step2();
-        step3();
-        step4();
-
-
-    }
-
     public void step3() {
-
-//        { //todo try to do only once
-//            colors[0] = Color.red(column.color) / 255f;
-//            colors[1] = Color.green(column.color) / 255f;
-//            colors[2] = Color.blue(column.color) / 255f;
-//            colors[3] = alpha;
-//        };
-//        GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
-
-
-//        GLES20.glEnableVertexAttribArray(shader.positionHandle);
-//        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-//        GLES20.glVertexAttribPointer(shader.positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
-
         float scalex = 2.0f / w;
-
-
-
         float r_ndc = scalex * dimen.dpf(scrollbar ? 0.5f : 1f);
         //todo learn matrixes ¯\_(ツ)_/¯
         if (scrollbar) {
-            lineJoining.draw(MVP, colors, r_ndc, (float) h /w);
+            lineJoining.draw(MVP, colors, r_ndc, (float) h / w);
         } else {
 
-            lineJoining.draw(MVP, colors, r_ndc , (float) h / w);
+            lineJoining.draw(MVP, colors, r_ndc, (float) h / w);
 
         }
 
@@ -333,7 +285,7 @@ public final class GLChartProgram {
     }
 
     public void animateMinMax(long min, long max, boolean animate) {
-        long prevMin = this.minValue ;
+        long prevMin = this.minValue;
         long prevMax = this.maxValue;
         if (minValueAnim != 1f) {
             prevMin = (long) (prevMin * minValueAnim);
@@ -347,11 +299,8 @@ public final class GLChartProgram {
             minValueAnim = 1.0f;
             maxValueAnim = 1.0f;
         } else {
-            //todo mb double?
-            minValueAnim = (float)prevMin / min;
-            maxValueAnim = (float)prevMax / max;
-//            minValue = min;
-//            maxValue = max;
+            minValueAnim = (float) prevMin / min;
+            maxValueAnim = (float) prevMax / max;
             minAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, minValueAnim, 1.0f);
             maxAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, maxValueAnim, 1.0f);
         }
@@ -362,16 +311,22 @@ public final class GLChartProgram {
         tooltipFillColorAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, tooltipFillColor, colors.lightBackground);
     }
 
+    public int getTooltipIndex() {
+        return tooltipIndex;
+    }
+
     public void setTooltipIndex(int tooltipIndex) {
 
-        if (goodCircle == null || goodCircleIndex != tooltipIndex) {
+        if (goodCircle == null || this.tooltipIndex != tooltipIndex) {
             if (goodCircle != null) {
-                //todo
-                goodCircle.release();
+                goodCircle.release();//todo
+                goodCircle = null;
+
             }
-            long[] vs = new long[]{column.values[tooltipIndex]};
-            goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 24);
-            goodCircleIndex = tooltipIndex;
+            if (tooltipIndex != -1) {
+                long[] vs = new long[]{column.values[tooltipIndex]};
+                goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 24);
+            }
         }
         this.tooltipIndex = tooltipIndex;
     }

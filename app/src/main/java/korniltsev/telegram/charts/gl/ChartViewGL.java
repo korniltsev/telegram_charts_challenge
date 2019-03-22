@@ -80,24 +80,17 @@ import static android.opengl.GLES10.glClearColor;
     + animate statusbar day night
     + [ ! ] round joining + alpha animation
 
-    Circles
+    + Circles
         + wrong touch calc
         + draw over lines
-        - seems oval
-
-
-
-    [ ! ] horizontal lables + animations
-
-    [ ! ] toooltip by touching
+        + seems oval
 
 
     ---------------------------------------- 21 march
-
-
+    [ ! ] toooltip by touching + fix touch
     [ ! ] implement empty chart
-
-    [ ! ] alpha animation blending
+    [ ! ] horizontal lables + animations
+    [ ! ] alpha animation blending - render to fbo
 
 
     MUST HAVE
@@ -106,7 +99,7 @@ import static android.opengl.GLES10.glClearColor;
 
 
 
-
+    [ ! ] tweak inital zoom for smal datasets
     [ ! ] rulers text night mode + animation
     [ ! ] move "folorwers" to gl +   text night mode + animation
     [ ! ] checkbox + animations + divider width
@@ -196,6 +189,7 @@ public class ChartViewGL extends TextureView {
     public ChartViewGL(Context context, ColumnData[] c, Dimen dimen, ColorSet currentColorsSet) {
         super(context);
         this.init_colors = currentColorsSet;
+        currentColors = currentColorsSet;
         this.dimen = dimen;
         this.data = c;
         dimen_v_padding8 = dimen.dpi(8);
@@ -275,6 +269,7 @@ public class ChartViewGL extends TextureView {
         private GLScrollbarOverlayProgram overlay;
         private GLRulersProgram ruler;
         private long prevMax;
+        private Tooltip tooltip;
 
 
         public Render(ColumnData[] column) {
@@ -551,7 +546,12 @@ public class ChartViewGL extends TextureView {
         }
 
         private boolean drawChart(boolean invalidated, long t) {
-//            chart[0].shader.u
+            int tooltipIndex = chart[0].getTooltipIndex();
+            if (tooltipIndex != -1 ) {
+                if (this.tooltip == null) {
+                    this.tooltip = new Tooltip(new Tooltip.Shader(), dimen, w, currentColors);
+                }
+            }
             for (GLChartProgram chartProgram : chart) {
                 boolean it_invalid = chartProgram.animateionTick(t);
                 invalidated = invalidated || it_invalid;
@@ -560,6 +560,12 @@ public class ChartViewGL extends TextureView {
             for (GLChartProgram chartProgram : chart) {
                 chartProgram.step1(PROJ);
             }
+            if (tooltipIndex != -1) {
+                this.tooltip.animationTick(t);
+                this.tooltip.draw(PROJ, chart[0].MVP, tooltipIndex);
+            }
+
+
             MyGL.checkGlError2();
             for (GLChartProgram chartProgram : chart) {
                 chartProgram.shader.use();//todo use only once!
@@ -952,6 +958,10 @@ public class ChartViewGL extends TextureView {
 
                 r.updateLeftRight(left, right, scale);
 
+                        for (GLChartProgram glChartProgram : r.chart) {
+                            glChartProgram.setTooltipIndex(-1);
+                        }
+
             }
         });
     }
@@ -972,15 +982,23 @@ public class ChartViewGL extends TextureView {
         return max;
     }
 
+    private ColorSet currentColors;
+
     public void animateToColors(final ColorSet colors) {
         r.actionQueue.add(new Runnable() {
+
+
             @Override
             public void run() {
+                currentColors = colors;
                 bgAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, bgColor, colors.lightBackground);
                 r.ruler.animate(colors.ruler);
                 r.overlay.animate(colors.scrollbarBorder, colors.scrollbarOverlay);
                 for (GLChartProgram glChartProgram : r.chart) {
                     glChartProgram.animateColors(colors);
+                }
+                if (r.tooltip != null) {
+                    r.tooltip.animateTo(colors);
                 }
             }
         });
