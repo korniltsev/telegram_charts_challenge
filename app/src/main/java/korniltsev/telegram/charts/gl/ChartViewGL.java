@@ -25,6 +25,7 @@ import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
 import korniltsev.telegram.charts.MainActivity;
+import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
@@ -89,19 +90,22 @@ import static android.opengl.GLES10.glClearColor;
     ---------------------------------------- 21 march
 
     [ ! ] toooltip by touching + fix touch
-        - render tooltip as view to canvas
-        - upload as texture
-        - draw texture
+        - fbo
+        - rect
+        - text
+        - no shadows and round corners
 
     [ ! ] implement empty chart
     [ ! ] horizontal lables + animations
     [ ! ] alpha animation blending - render to fbo
 
+    [ ! ] shader warmup
 
     MUST HAVE
     -------------
     NICE TO HAVE
 
+    - tooltip round corners and shadows
     look for aliased line
 
     [ ! ] tweak inital zoom for smal datasets
@@ -130,6 +134,7 @@ import static android.opengl.GLES10.glClearColor;
     https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
     calculating normal in vertex shader
     https://github.com/learnopengles/Learn-OpenGLES-Tutorials/blob/641fcc25158dc30f45a7b2faaab165ec61ebb54b/android/AndroidOpenGLESLessonsCpp/app/src/main/assets/vertex/per_pixel_vertex_shader_tex_and_light.glsl#L22
+    render to msa fbo https://stackoverflow.com/a/8338881/1321940
 
 
 
@@ -182,7 +187,7 @@ public class ChartViewGL extends TextureView {
     private final int touchSlop;
     private final int rulerColor;
     private final ColorSet init_colors;
-    private final ColumnData[] data;
+    private final ChartData data;
     public int bgColor;
     public MyAnimation.Color bgAnim = null;
     private int chartBottom;
@@ -191,7 +196,7 @@ public class ChartViewGL extends TextureView {
 //    private long currentMax;
 //    private ColorSet currentColorsSet;
 
-    public ChartViewGL(Context context, ColumnData[] c, Dimen dimen, ColorSet currentColorsSet) {
+    public ChartViewGL(Context context, ChartData c, Dimen dimen, ColorSet currentColorsSet) {
         super(context);
         this.init_colors = currentColorsSet;
         currentColors = currentColorsSet;
@@ -258,7 +263,7 @@ public class ChartViewGL extends TextureView {
 
 
         private final float[] PROJ = new float[16];
-        private final ColumnData[] data;
+        private final ChartData data;
         private EGL10 mEgl;
         private EGLDisplay mEglDisplay;
         private EGLConfig mEglConfig;
@@ -277,7 +282,7 @@ public class ChartViewGL extends TextureView {
         private Tooltip tooltip;
 
 
-        public Render(ColumnData[] column) {
+        public Render(ChartData column) {
             this.data = column;
 
 
@@ -302,6 +307,7 @@ public class ChartViewGL extends TextureView {
         }
 
         private void initPrograms() {
+            ColumnData[] data = this.data.data;
             scrollbar = new GLChartProgram[data.length - 1];
             long max = -1;
             long min = Long.MAX_VALUE;
@@ -554,7 +560,7 @@ public class ChartViewGL extends TextureView {
             int tooltipIndex = chart[0].getTooltipIndex();
             if (tooltipIndex != -1 ) {
                 if (this.tooltip == null) {
-                    this.tooltip = new Tooltip(new Tooltip.Shader(), dimen, w, currentColors);
+                    this.tooltip = new Tooltip(new Tooltip.Shader(), dimen, w, currentColors, data);
                 }
             }
             for (GLChartProgram chartProgram : chart) {
@@ -928,7 +934,7 @@ public class ChartViewGL extends TextureView {
         } else {
             float swindow = (x - scrollbar.left) / scrollbar.width();
              float sdataset = r.overlay.left + swindow * (r.overlay.right - r.overlay.left);
-            int n = r.data[0].values.length;
+            int n = r.data.data[0].values.length;
             int i = (int) (n * sdataset);
             if (i < 0) {
                 i = 0;

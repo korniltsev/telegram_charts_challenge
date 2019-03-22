@@ -1,0 +1,51 @@
+package korniltsev.telegram.charts.gl;
+
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.opengl.GLES20;
+import android.opengl.GLUtils;
+import android.text.Layout;
+import android.text.StaticLayout;
+import android.text.TextPaint;
+
+public class TextTex {
+    final String text;
+    final int[] tex = new int[1];
+    final int w;
+    final int h;
+
+    public int x;
+    public int y;
+    private final TextPaint p;
+
+    TextTex(String text, TextPaint p) {
+        this.text = text;
+        this.p = p;
+
+        w = (int) Math.ceil(p.measureText(text));
+        StaticLayout staticLayout = new StaticLayout(text, 0, text.length(), p, w, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+        h = staticLayout.getHeight();
+        Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(b);
+        staticLayout.draw(c);
+
+
+//            int[] textures = new int[1];
+        GLES20.glGenTextures(1, tex, 0);
+//            tex = textures[0];
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
+
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
+
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, b, 0);
+        b.recycle();
+    }
+
+    public final void release() {
+        GLES20.glDeleteTextures(1, tex, 0);
+    }
+}

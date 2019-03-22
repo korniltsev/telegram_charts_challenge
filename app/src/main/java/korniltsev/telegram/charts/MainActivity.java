@@ -153,7 +153,7 @@ public class MainActivity extends Activity {
 
 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-        chart_ = new ChartViewGL(this, datum.data, dimen, currentColorSet);
+        chart_ = new ChartViewGL(this, datum, dimen, currentColorSet);
         chart_.setLayoutParams(lp);
 
 
