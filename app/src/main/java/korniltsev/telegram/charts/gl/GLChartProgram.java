@@ -19,34 +19,17 @@ public final class GLChartProgram {
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
     private static final int POSITION_DATA_SIZE = 2;
 
-    final String vertexShader =
-            "uniform mat4 u_MVPMatrix;      \n"
-                    + "attribute vec2 a_Position;     \n"
-                    + "void main()                    \n"
-                    + "{                              \n"
-                    + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
-                    + "}                              \n";
 
-    final String fragmentShader =
-            "precision mediump float;       \n"
-                    + "uniform vec4 u_color;       \n"
-                    + "void main()                    \n"
-                    + "{                              \n"
-                    + "   gl_FragColor = u_color;     \n"
-//                    + "   gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);     \n"
-                    + "}                              \n";
-    private final int MVPHandle;
-    private final int positionHandle;
-    private final int program;
+
     private final int vbo;
     private final float[] vertices;
     private final FloatBuffer buf1;
     public final ColumnData column;
-    private final int colorHandle;
-    private final MyCircles lineJoining;
+    public final MyCircles lineJoining;
+    public final Shader shader;
     public float zoom = 1f;//1 -- all, 0.2 - partial
     public float left = 0;
-    public int tooltipIndex = -1;
+    private int tooltipIndex = -1;
 
     private float[] MVP = new float[16];
 
@@ -63,11 +46,47 @@ public final class GLChartProgram {
     final ChartViewGL root;
 
     final boolean scrollbar;
-    private MyCircles goodCircle;
+    public MyCircles goodCircle;
     private int goodCircleIndex;
     private MyAnimation.Color tooltipFillColorAnim;
 
-    public GLChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, int toolttipFillColor) {
+    public static final class Shader {
+        static final String vertexShader =
+                "uniform mat4 u_MVPMatrix;      \n"
+                        + "attribute vec2 a_Position;     \n"
+                        + "void main()                    \n"
+                        + "{                              \n"
+                        + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
+                        + "}                              \n";
+
+        static final String fragmentShader =
+                "precision mediump float;       \n"
+                        + "uniform vec4 u_color;       \n"
+                        + "void main()                    \n"
+                        + "{                              \n"
+                        + "   gl_FragColor = u_color;     \n"
+//                    + "   gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);     \n"
+                        + "}                              \n";
+        private final int MVPHandle;
+        private final int positionHandle;
+        private final int program;
+        private final int colorHandle;
+
+        public Shader() {
+            program = MyGL.createProgram(vertexShader, fragmentShader);
+            MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
+            positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
+            colorHandle = GLES20.glGetUniformLocation(program, "u_color");
+        }
+
+        public void use(){
+            GLES20.glUseProgram(program);
+            MyGL.checkGlError2();
+        }
+    }
+
+
+    public GLChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, int toolttipFillColor, Shader shader) {
         this.tooltipFillColor = toolttipFillColor;
         this.w = w;
         this.h = h;
@@ -90,10 +109,7 @@ public final class GLChartProgram {
         buf1.position(0);
 
 
-        program = MyGL.createProgram(vertexShader, fragmentShader);
-        MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
-        positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
-        colorHandle = GLES20.glGetUniformLocation(program, "u_color");
+        this.shader = shader;
 
 
         int[] vbos = new int[1];
@@ -151,26 +167,8 @@ public final class GLChartProgram {
         return invalidate;
 
     }
-    public final void draw() {
-        GLES20.glUseProgram(program);
-        MyGL.checkGlError2();
 
-
-
-
-        { //todo try to do only once
-            colors[0] = Color.red(column.color) / 255f;
-            colors[1] = Color.green(column.color) / 255f;
-            colors[2] = Color.blue(column.color) / 255f;
-            colors[3] = alpha;
-        };
-        GLES20.glUniform4fv(colorHandle, 1, colors, 0);
-
-
-        GLES20.glEnableVertexAttribArray(positionHandle);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-        GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
-
+    public void step1(float []pxMat){
         float hpadding = dimen.dpf(16);
         float minx = vertices[0];
         float maxx = vertices[vertices.length - 2];
@@ -178,17 +176,9 @@ public final class GLChartProgram {
         float scaley = 2.0f / h;
 
 
-        Matrix.setIdentityM(MVP, 0);
-
-        Matrix.translateM(MVP, 0, -1.0f, -1.0f, 0);
-        Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
+        System.arraycopy(pxMat, 0, MVP, 0, 16);
 
 
-        float r_ndc = scalex * dimen.dpf(scrollbar ? 0.5f : 1f);
-//        radius_px[0] = rpx;
-//        radius_px[1] = 0;
-//        radius_px[2] = 0;
-//        radius_px[3] = 0;
 //        Matrix.multiplyMV(radius_ndc, 0, MVP, 0, radius_px, 0);
         //todo learn matrixes ¯\_(ツ)_/¯
         if (scrollbar) {
@@ -203,12 +193,6 @@ public final class GLChartProgram {
             float dy = -yscale * minValue * minValueAnim;
             Matrix.translateM(MVP, 0, 0, dy, 0);
             Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), yscale, 1.0f);
-            GLES20.glLineWidth(dimen.dpf(1f));
-            GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
-            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
-
-
-            lineJoining.draw(MVP, colors, r_ndc);
         } else {
             int ypx = dimen.dpi(80);
             Matrix.translateM(MVP, 0, hpadding, ypx, 0);
@@ -221,24 +205,18 @@ public final class GLChartProgram {
 
             Matrix.scaleM(MVP, 0, ws, hs, 1.0f);
             Matrix.translateM(MVP, 0, -left * xdiff , 0f, 0f);
-//            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), h  /  (float)(maxValue ), 1.0f);
-            GLES20.glLineWidth(dimen.dpf(2f));
-            GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
-            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+        }
 
-            lineJoining.draw(MVP, colors, r_ndc * 2);
+    }
 
-            if (tooltipIndex != -1) {
-                if (goodCircle == null || goodCircleIndex != tooltipIndex) {
-                    if (goodCircle != null) {
-                        //todo
-                        goodCircle.release();
-                    }
-                    long[] vs = new long[]{column.values[tooltipIndex]};
-                    goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 20);
-                    goodCircleIndex = tooltipIndex;
-                }
-                float r = (float)this.h / this.w * hs/ws;
+    public void step4() {
+
+        float scalex = 2.0f / w;
+        //todo learn matrixes ¯\_(ツ)_/¯
+        if (scrollbar) {
+        } else {
+
+            if (goodCircle != null) {
                 goodCircle.draw(MVP, colors, 0, 1, dimen.dpf(5) * scalex);
                 white[0] = Color.red(tooltipFillColor) / 255f;
                 white[1] = Color.green(tooltipFillColor) / 255f;
@@ -248,6 +226,98 @@ public final class GLChartProgram {
             }
         }
 
+    }
+
+    public void step2() {
+
+        { //todo try to do only once
+            colors[0] = Color.red(column.color) / 255f;
+            colors[1] = Color.green(column.color) / 255f;
+            colors[2] = Color.blue(column.color) / 255f;
+            colors[3] = alpha;
+        };
+        GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
+
+
+        GLES20.glEnableVertexAttribArray(shader.positionHandle);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
+        GLES20.glVertexAttribPointer(shader.positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
+
+        float scalex = 2.0f / w;
+
+
+
+        float r_ndc = scalex * dimen.dpf(scrollbar ? 0.5f : 1f);
+        //todo learn matrixes ¯\_(ツ)_/¯
+        if (scrollbar) {
+            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
+            GLES20.glLineWidth(dimen.dpf(1f));
+            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+
+
+//            lineJoining.draw(MVP, colors, r_ndc);
+        } else {
+
+            GLES20.glLineWidth(dimen.dpf(2f));
+            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
+            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+
+//            lineJoining.draw(MVP, colors, r_ndc * 2);
+
+        }
+
+    }
+
+
+    public final void draw(float[] pxMat) {
+
+//        shader.use();
+
+        step1(pxMat);
+        step2();
+        step3();
+        step4();
+
+
+    }
+
+    public void step3() {
+
+//        { //todo try to do only once
+//            colors[0] = Color.red(column.color) / 255f;
+//            colors[1] = Color.green(column.color) / 255f;
+//            colors[2] = Color.blue(column.color) / 255f;
+//            colors[3] = alpha;
+//        };
+//        GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
+
+
+//        GLES20.glEnableVertexAttribArray(shader.positionHandle);
+//        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
+//        GLES20.glVertexAttribPointer(shader.positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
+
+        float scalex = 2.0f / w;
+
+
+
+        float r_ndc = scalex * dimen.dpf(scrollbar ? 0.5f : 1f);
+        //todo learn matrixes ¯\_(ツ)_/¯
+        if (scrollbar) {
+//            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
+//            GLES20.glLineWidth(dimen.dpf(1f));
+//            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+
+
+            lineJoining.draw(MVP, colors, r_ndc);
+        } else {
+
+//            GLES20.glLineWidth(dimen.dpf(2f));
+//            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
+//            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+
+            lineJoining.draw(MVP, colors, r_ndc * 2);
+
+        }
 
     }
 
@@ -292,5 +362,19 @@ public final class GLChartProgram {
 
     public void animateColors(ColorSet colors) {
         tooltipFillColorAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, tooltipFillColor, colors.lightBackground);
+    }
+
+    public void setTooltipIndex(int tooltipIndex) {
+
+        if (goodCircle == null || goodCircleIndex != tooltipIndex) {
+            if (goodCircle != null) {
+                //todo
+                goodCircle.release();
+            }
+            long[] vs = new long[]{column.values[tooltipIndex]};
+            goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 20);
+            goodCircleIndex = tooltipIndex;
+        }
+        this.tooltipIndex = tooltipIndex;
     }
 }

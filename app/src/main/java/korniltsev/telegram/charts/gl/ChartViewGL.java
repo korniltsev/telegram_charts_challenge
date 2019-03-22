@@ -6,13 +6,13 @@ import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
+import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.ViewConfiguration;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -82,7 +82,7 @@ import static android.opengl.GLES10.glClearColor;
 
     Circles
         + wrong touch calc
-        - draw over lines
+        + draw over lines
         - seems oval
 
 
@@ -246,6 +246,7 @@ public class ChartViewGL extends TextureView {
     class Render extends Thread implements TextureView.SurfaceTextureListener {
 
 
+        private final float[] pxMat = new float[16];
         private final ColumnData[] data;
         private EGL10 mEgl;
         private EGLDisplay mEglDisplay;
@@ -292,9 +293,10 @@ public class ChartViewGL extends TextureView {
             scrollbar = new GLChartProgram[data.length - 1];
             long max = -1;
             long min = Long.MAX_VALUE;
+            GLChartProgram.Shader chartShader = new GLChartProgram.Shader();
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 ColumnData datum = data[i];
-                scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground);
+                scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, chartShader);
                 max = Math.max(max, datum.maxValue);
                 min = Math.min(min, datum.minValue);
             }
@@ -305,7 +307,7 @@ public class ChartViewGL extends TextureView {
 
             chart = new GLChartProgram[data.length - 1];
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
-                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground);
+                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground, chartShader);
             }
 //            for (GLChartProgram it : chart) {
 //                it.maxValue = max;
@@ -315,6 +317,13 @@ public class ChartViewGL extends TextureView {
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay);
             ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, rulerColor);
+
+
+            float scalex = 2.0f / w;
+            float scaley = 2.0f / h;
+            Matrix.setIdentityM(pxMat, 0);
+            Matrix.translateM(pxMat, 0, -1.0f, -1.0f, 0);
+            Matrix.scaleM(pxMat, 0, scalex, scaley, 1.0f);
         }
 
 
@@ -512,20 +521,47 @@ public class ChartViewGL extends TextureView {
                 boolean it_invalid = chartProgram.animateionTick(t);
                 invalidated = invalidated || it_invalid;
             }
-            for (GLChartProgram c : scrollbar) {
-                c.draw();
+            for (GLChartProgram chartProgram : scrollbar) {
+                chartProgram.step1(pxMat);
             }
+            MyGL.checkGlError2();
+            for (GLChartProgram chartProgram : scrollbar) {
+                chartProgram.shader.use();//todo use only once!
+                chartProgram.step2();
+
+                chartProgram.lineJoining.shader.use();
+                chartProgram.step3();
+            }
+            MyGL.checkGlError2();
             return invalidated;
         }
 
         private boolean drawChart(boolean invalidated, long t) {
+//            chart[0].shader.u
             for (GLChartProgram chartProgram : chart) {
                 boolean it_invalid = chartProgram.animateionTick(t);
                 invalidated = invalidated || it_invalid;
             }
+
             for (GLChartProgram chartProgram : chart) {
-                chartProgram.draw();
+                chartProgram.step1(pxMat);
             }
+            MyGL.checkGlError2();
+            for (GLChartProgram chartProgram : chart) {
+                chartProgram.shader.use();//todo use only once!
+                chartProgram.step2();
+
+                chartProgram.lineJoining.shader.use();
+                chartProgram.step3();
+            }
+            MyGL.checkGlError2();
+            if (chart[0].goodCircle != null) {
+                chart[0].goodCircle.shader.use();
+                for (GLChartProgram chartProgram : chart) {
+                    chartProgram.step4();
+                }
+            }
+            MyGL.checkGlError2();
             return invalidated;
         }
 
@@ -880,7 +916,7 @@ public class ChartViewGL extends TextureView {
                 @Override
                 public void run() {
                     for (GLChartProgram glChartProgram : r.chart) {
-                        glChartProgram.tooltipIndex = finali;
+                        glChartProgram.setTooltipIndex(finali);
                     }
                 }
             });
