@@ -96,11 +96,12 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
         + text
         + text ugly bug
         + scroll bug
-        - design
-        - no shadows and round corners
+        + design
+        + no shadows and round corners
 
 
     [ ! ] implement empty chart
+
     [ ! ] horizontal lables + animations
     [ ! ] alpha animation blending - render to fbo
 
