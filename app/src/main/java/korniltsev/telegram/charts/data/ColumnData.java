@@ -10,12 +10,18 @@ public class ColumnData {
     public final int color;
 
 
-    public ColumnData(String id, String name, long[] values, long maxValue, long minValue, String type, int color) {
+    public ColumnData(String id, String name, long[] values, String type, int color) {
         this.id = id;
         this.name = name;
         this.values = values;
-        this.maxValue = maxValue;
-        this.minValue = minValue;
+        long min = values[0];
+        long max = values[0];
+        for (long value : values) {
+            min = Math.min(min, value);
+            max = Math.max(max, value);
+        }
+        this.maxValue = max;
+        this.minValue = min;
         this.type = type;
         this.color = color;
     }

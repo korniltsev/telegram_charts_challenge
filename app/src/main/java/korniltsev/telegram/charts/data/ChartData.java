@@ -55,7 +55,7 @@ public class ChartData {
                     color = Color.parseColor(strcolor);
                 }
 
-                jcolumn[i] = new ColumnData(id, name, vs, maxValue, minValue, type, color);
+                jcolumn[i] = new ColumnData(id, name, vs, type, color);
             }
             ret[c] = new ChartData(jcolumn);
         }

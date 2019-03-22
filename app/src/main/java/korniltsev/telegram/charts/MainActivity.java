@@ -86,7 +86,12 @@ public class MainActivity extends Activity {
         ChartData[] data = readData();
 //        if (LOGGING) Log.d(TAG, "data len " + data.length);
 
-        ChartData datum = data[DATASET];
+//        ChartData datum = data[DATASET];
+        ChartData datum = new ChartData(new ColumnData[]{
+                new ColumnData("x", "x", new long[]{1,2,3}, "line",  Color.RED),
+                new ColumnData("Y1", "Y1", new long[]{5, 10, 5}, "line",  Color.RED),
+                new ColumnData("Y2", "Y2", new long[]{2, 20, 2}, "line",  Color.GREEN),
+        });
         if (DEBUG) {
 //            ColumnData vs = datum.data[datum.data.length - 1];
 //            vs.minValue = 0;

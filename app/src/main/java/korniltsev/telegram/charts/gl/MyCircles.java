@@ -47,25 +47,28 @@ public class MyCircles {
         private final int attributeNoHandle;
         private final int anglesHandle;
         private final int u_radiusHandle;
+        private final int u_radtioHandle;
 
-        final String vertexShader = "precision highp float;\n" +
+        final String vertexShader = "\n" +
                 "const int triangle_count = %d;\n" +
-                "uniform highp vec2 u_angles[triangle_count];\n" +
-                "uniform highp mat4 u_MVPMatrix;\n" +
-                "uniform highp float u_radius;\n" +
-                "attribute highp vec2 a_Position;\n" +
+                "uniform vec2 u_angles[triangle_count];\n" +
+                "uniform mat4 u_MVPMatrix;\n" +
+                "uniform float u_radius;\n" +
+                "uniform float u_ratio;\n" +
+                "attribute vec2 a_Position;\n" +
                 "attribute float a_no;\n" +
                 "void main()\n" +
                 "{\n" +
                 "   highp int index = int(a_no);\n" +
-                "   vec2 delta;\n" +
+                "   vec4 delta;\n" +
                 "   if (index == -1) {\n" +
-                "       delta = vec2(0.0, 0.0);\n" +
+                "       delta = vec4(0.0, 0.0, 0.0, 0.0);\n" +
                 "   } else {\n" +
-                "       delta = u_angles[index];\n" +
+                "       vec2 a = u_angles[index];\n" +
+                "       delta = vec4(a.x, a.y*u_ratio, 0.0, 0.0);\n" +
                 "   }\n" +
-                "   float fixmeplease = 1.054;\n" +
-                "   gl_Position =  u_radius * vec4(delta.x, fixmeplease * delta.y, 0.0, 0.0) + u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0) ;\n" +
+                "   float fixmeplease = 1.0;\n" +
+                "   gl_Position =  u_radius * delta + u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0) ;\n" +
                 "}\n";
 
         final String fragmentShader =
@@ -87,6 +90,7 @@ public class MyCircles {
             colorHandle = GLES20.glGetUniformLocation(program, "u_color");
             anglesHandle = GLES20.glGetUniformLocation(program, "u_angles");
             u_radiusHandle = GLES20.glGetUniformLocation(program, "u_radius");
+            u_radtioHandle = GLES20.glGetUniformLocation(program, "u_ratio");
             attributeNoHandle = GLES20.glGetAttribLocation(program, "a_no");
 
         }
@@ -121,10 +125,10 @@ public class MyCircles {
             Matrix.setIdentityM(V, 0);
             Matrix.rotateM(V, 0, angle * i, 0, 0, 1.0f);
             Matrix.multiplyMV(tmpres, 0, V, 0, one, 0);
-            double l = Matrix.length(tmpres[0], tmpres[1], 0f);
-            double x = tmpres[0];
+//            double l = Matrix.length(tmpres[0], tmpres[1], 0f);
+//            double x = tmpres[0];
 //            x = x / l;
-            double y = tmpres[1];
+//            double y = tmpres[1];
 //            y = y / l;
             angles[i * 2] = tmpres[0];
             angles[i * 2 + 1] = tmpres[1];
@@ -173,16 +177,17 @@ public class MyCircles {
         }
     }
 
-    public final void draw(float[] MVP, float[] colors, float radius) {
-        draw(MVP, colors, 0, count, radius);
+    public final void draw(float[] MVP, float[] colors, float radiusx, float ratio) {
+        draw(MVP, colors, 0, count, radiusx, ratio);
     }
 
 
-    public final void draw(float[] MVP, float[] colors, int from, int to, float radius) {
+    public final void draw(float[] MVP, float[] colors, int from, int to, float radiusx, float ratio) {
 
 //        GLES20.glUseProgram(shader.program);
         GLES20.glUniform2fv(shader.anglesHandle, triangle_count, angles, 0);
-        GLES20.glUniform1f(shader.u_radiusHandle, radius);
+        GLES20.glUniform1f(shader.u_radiusHandle, radiusx);
+        GLES20.glUniform1f(shader.u_radtioHandle, 1/ratio);
         GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
 
         GLES20.glEnableVertexAttribArray(shader.positionHandle);

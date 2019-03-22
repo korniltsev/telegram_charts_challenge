@@ -225,12 +225,12 @@ public final class GLChartProgram {
         } else {
             if (alpha != 0f) {
                 if (goodCircle != null) {
-                    goodCircle.draw(MVP, colors, 0, 1, dimen.dpf(5) * scalex);
+                    goodCircle.draw(MVP, colors, 0, 1,  dimen.dpf(5) * scalex, (float) h /w);
                     white[0] = Color.red(tooltipFillColor) / 255f;
                     white[1] = Color.green(tooltipFillColor) / 255f;
                     white[2] = Color.blue(tooltipFillColor) / 255f;
                     white[3] = alpha;
-                    goodCircle.draw(MVP, white, 0, 1, dimen.dpf(3) * scalex);
+                    goodCircle.draw(MVP, white, 0, 1,  dimen.dpf(3) * scalex, (float) h / w);
                 }
             }
         }
@@ -264,14 +264,12 @@ public final class GLChartProgram {
             GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
 
 
-//            lineJoining.draw(MVP, colors, r_ndc);
         } else {
 
             GLES20.glLineWidth(dimen.dpf(2f));
             GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
             GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
 
-//            lineJoining.draw(MVP, colors, r_ndc * 2);
 
         }
 
@@ -312,19 +310,10 @@ public final class GLChartProgram {
         float r_ndc = scalex * dimen.dpf(scrollbar ? 0.5f : 1f);
         //todo learn matrixes ¯\_(ツ)_/¯
         if (scrollbar) {
-//            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
-//            GLES20.glLineWidth(dimen.dpf(1f));
-//            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
-
-
-            lineJoining.draw(MVP, colors, r_ndc);
+            lineJoining.draw(MVP, colors, r_ndc, (float) h /w);
         } else {
 
-//            GLES20.glLineWidth(dimen.dpf(2f));
-//            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
-//            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
-
-            lineJoining.draw(MVP, colors, r_ndc * 2);
+            lineJoining.draw(MVP, colors, r_ndc , (float) h / w);
 
         }
 
@@ -381,7 +370,7 @@ public final class GLChartProgram {
                 goodCircle.release();
             }
             long[] vs = new long[]{column.values[tooltipIndex]};
-            goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 20);
+            goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 24);
             goodCircleIndex = tooltipIndex;
         }
         this.tooltipIndex = tooltipIndex;
