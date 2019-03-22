@@ -2,6 +2,7 @@ package korniltsev.telegram.charts.gl;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -45,6 +46,7 @@ public class Tooltip {
     private int lineColor;
     private MyAnimation.Color lineANim;
     private int fbindex;
+    private float ndcx;
 //    private TexShader texShader;
 
     public Tooltip(Shader shader, Dimen dimen, int w, int h, ColorSet colors, ChartData data) {
@@ -157,18 +159,28 @@ public class Tooltip {
 //    }
 
     public void drawTooltip(float[] proj) {
-        // ----------------
-        // tooltip        todo draw over chart
-        // ----------------
-        //
-
+        // ndcx
+//        float
+//        Log.d("FUCK", " " + ndcx);
+        float dip16 = dimen.dpf(16);
+        float xpos;
+        if (framebuffer.w <= w - 2 * dip16) {
+            xpos = ndcx * w - dip16;
+            if (xpos < dip16) {
+                xpos = dip16;
+            } else if (xpos + framebuffer.w > w - dip16) {
+                xpos = w - framebuffer.w - dip16;
+            }
+        } else {
+            xpos = w / 2f - framebuffer.w / 2f;
+        }
         framebuffer.drawTooltip();
         GLES20.glViewport(0, 0, w, h);
 
         Matrix.setIdentityM(VIEW, 0);
         int texw = framebuffer.w;
         int texh = framebuffer.h;
-        Matrix.translateM(VIEW, 0, 0, dimen.dpf(80 + 290 - TooltipFramebuffer.HEIGHT), 0f);
+        Matrix.translateM(VIEW, 0, xpos, dimen.dpf(80 + 290 - TooltipFramebuffer.HEIGHT), 0f);
         Matrix.scaleM(VIEW, 0, texw, texh, 1f);
 
         Matrix.multiplyMM(MVP, 0, proj, 0, VIEW, 0);
@@ -197,7 +209,7 @@ public class Tooltip {
         vec1[0] = index;
         vec1[3] = 1;
         Matrix.multiplyMV(vec2, 0, chartMVP, 0, vec1, 0);
-        float ndcx = (vec2[0] + 1f) / 2f;
+        ndcx = (vec2[0] + 1f) / 2f;
 
         // draw wline
         Matrix.setIdentityM(VIEW, 0);
