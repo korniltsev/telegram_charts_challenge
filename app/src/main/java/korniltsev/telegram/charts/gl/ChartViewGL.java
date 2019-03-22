@@ -87,7 +87,12 @@ import static android.opengl.GLES10.glClearColor;
 
 
     ---------------------------------------- 21 march
+
     [ ! ] toooltip by touching + fix touch
+        - render tooltip as view to canvas
+        - upload as texture
+        - draw texture
+
     [ ! ] implement empty chart
     [ ! ] horizontal lables + animations
     [ ! ] alpha animation blending - render to fbo
@@ -104,7 +109,7 @@ import static android.opengl.GLES10.glClearColor;
     [ ! ] move "folorwers" to gl +   text night mode + animation
     [ ! ] checkbox + animations + divider width
 
-
+    [?] tooltip alpha nimation
     [?] optimize minmax animation, introduce step?, do not cancel animations or try to continue?
     [?] why DIRTY slow?
     [?] replace actionQueue.add with something better?
