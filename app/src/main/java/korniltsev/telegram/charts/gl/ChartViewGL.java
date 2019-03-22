@@ -90,12 +90,12 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
     ---------------------------------------- 21 march
 
-    [ ! ] toooltip by touching + fix touch
+    [ ! ] toooltip by touching
         + fbo
         + rect
         + text
         + text ugly bug
-        - scroll bug
+        + scroll bug
         - design
         - no shadows and round corners
 
@@ -104,12 +104,16 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     [ ! ] horizontal lables + animations
     [ ! ] alpha animation blending - render to fbo
 
-    [ ! ] shader warmup
+
+    [ ! ] char selector screen
+    [ ! ] teardown
 
     MUST HAVE
     -------------
     NICE TO HAVE
 
+    [ ! ] shader warmup
+    + fix touch (laggy, hard to select)
     - tooltip round corners and shadows
     look for aliased line
 

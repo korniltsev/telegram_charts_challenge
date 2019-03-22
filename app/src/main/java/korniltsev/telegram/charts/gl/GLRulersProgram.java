@@ -121,7 +121,7 @@ public final class GLRulersProgram {
     public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int initialColor) {
 
 
-        texShader = new TexShader(true);
+        texShader = new TexShader(true, false);//todo mask color
         this.canvasW = canvasW;
         this.canvasH = canvasH;
         this.dimen = dimen;

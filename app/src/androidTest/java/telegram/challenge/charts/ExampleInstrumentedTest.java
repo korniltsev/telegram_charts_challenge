@@ -9,7 +9,10 @@ import android.util.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.Locale;
 
 import static org.junit.Assert.*;
 
@@ -64,5 +67,12 @@ public class ExampleInstrumentedTest {
         Log.d("EVAL", Arrays.toString(res));
 
 
+    }
+
+    @Test
+    public void date() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E, MMM d", Locale.US);
+        String format = simpleDateFormat.format(new Date());
+        Log.d("DateFormat", "f " + format);
     }
 }

@@ -1,15 +1,13 @@
 package korniltsev.telegram.charts.gl;
 
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
-import android.text.TextPaint;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.ui.ColorSet;
@@ -17,16 +15,13 @@ import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyColor;
 
-import static android.opengl.GLES10.GL_COLOR_BUFFER_BIT;
-import static android.opengl.GLES10.GL_DEPTH_BUFFER_BIT;
-import static android.opengl.GLES10.glClear;
-import static android.opengl.GLES10.glClearColor;
-
 //import static android.opengl.GLES20.GL_FRAMEBUFFER;
 //import static android.opengl.GLES20.GL_TEXTURE_2D;
 
 // vertical line & label with values
 public class Tooltip {
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("E, MMM d", Locale.US);
+
     private final float[] colorParts= new float[4];
     public final Shader shader;
     final Dimen dimen;
@@ -42,16 +37,19 @@ public class Tooltip {
     private final TexShader texShaderFlip;
     private final TexShader texShaderNoflip
             ;
-    private MyTex framebuffer;
+    private final ColorSet colorsSet;
+    private TooltipFramebuffer framebuffer;
     private final ChartData data;
     //    private int fbo;
 //    private int tex;
     private int lineColor;
     private MyAnimation.Color lineANim;
+    private int fbindex;
 //    private TexShader texShader;
 
     public Tooltip(Shader shader, Dimen dimen, int w, int h, ColorSet colors, ChartData data) {
-        this.data  = data;
+        this.data = data;
+        this.colorsSet = colors;
         this.shader = shader;
         this.dimen = dimen;
         this.w = w;
@@ -75,8 +73,8 @@ public class Tooltip {
 
 //        prepareFramebuffer();
 
-        texShaderFlip = new TexShader(true);//todo reuse and cleanup
-        texShaderNoflip = new TexShader(false);//todo reuse and cleanup
+        texShaderFlip = new TexShader(true, true);//todo reuse and cleanup
+        texShaderNoflip = new TexShader(false, false);//todo reuse and cleanup
 
     }
 
@@ -138,13 +136,16 @@ public class Tooltip {
     }
 
     public void draw(float[] proj, float[] chartMVP, int index) {
-        if (framebuffer == null) {//or index change
+        if (framebuffer == null || index != fbindex) {//or index change
+            if (framebuffer != null) {
+                framebuffer.release();
+            }
+            fbindex = index;
+            framebuffer = new TooltipFramebuffer(texShaderFlip, data, index, dimen, colorsSet);
 
-
-            framebuffer = new MyTex(texShaderFlip, data, index, dimen);
-            GLES20.glViewport(0, 0, w, h);
         }
-
+        framebuffer.drawTooltip();
+        GLES20.glViewport(0, 0, w, h);
         // calc vline pos
         vec1[0] = index;
         vec1[3] = 1;
@@ -201,143 +202,5 @@ public class Tooltip {
 
 
 
-    }
-    // actual tooltip
-    private  static class MyTex {
-
-        private final int fbo;
-        private final int tex;
-
-        private final TexShader shader_;
-        private final ChartData data;
-        private final int index;
-        private final Dimen dimen;
-        public int w;
-        public int h;
-
-        public MyTex(TexShader shader, ChartData data, int index, Dimen dimen) {
-            this.shader_ = shader;
-            this.data = data;
-            this.index = index;
-            this.dimen = dimen;
-            TextTex text = prepareTextTextures();
-            w = text.w;
-            h = text.h * 2;
-            //todo delete previous
-//        glDeleteFramebuffers(1, &fbo);
-            int[] fbos = new int[1];
-            GLES20.glGenFramebuffers(1, fbos, 0);
-            fbo = fbos[0];
-            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fbo);
-            MyGL.checkGlError2();
-
-            int []textures = new int[1];
-            GLES20.glGenTextures(1, textures, 0);
-            tex = textures[0];
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex);
-
-//            TextTex t = prepareTextTextures();
-            MyGL.checkGlError2();
-//            int width = w;
-//            int h = h;
-            GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGB, w, h, 0, GLES20.GL_RGB, GLES20.GL_UNSIGNED_BYTE, null);
-
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-
-
-            GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, tex, 0);
-
-            int check = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER);
-            if(check == GLES20.GL_FRAMEBUFFER_COMPLETE) {
-                System.out.println(check);
-            }
-            drawTooltip(text);
-
-
-            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-//            if (texShader == null) {
-//                texShader = new TexShader();
-//            }
-        }
-
-        private void drawTooltip(TextTex t) {
-            GLES20.glViewport(0, 0, w, h);
-            //todo probably need glViewPort()
-            glClearColor(
-                    1f,
-                    0f,
-                    0f,
-                    1.0f
-            );
-            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-
-            float[] PROJ = new float[16];
-            Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
-            float[] VIEW = new float[16];
-            float[] MVP = new float[16];
-            Matrix.setIdentityM(VIEW, 0);
-            Matrix.scaleM(VIEW, 0, t.w, t.h,1);
-            Matrix.multiplyMM(MVP, 0, PROJ, 0, VIEW, 0);
-
-            GLES20.glUseProgram(shader_.texProgram);
-            MyGL.checkGlError2();
-            GLES20.glEnableVertexAttribArray(shader_.texPositionHandle);
-            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, shader_.texVerticesVBO);
-            GLES20.glVertexAttribPointer(shader_.texPositionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
-            GLES20.glUniformMatrix4fv(shader_.texMVPHandle, 1, false, MVP, 0);
-            GLES20.glUniform1f(shader_.texAlphaHandle, 1f);
-
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, t.tex[0]);
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, TexShader.texVertices.length / 2);
-
-
-
-
-//            float[] PROJ = new float[16];
-//            Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
-////            float[] VIEW = new float[16];
-////            float[] MVP = new float[16];
-//            Matrix.setIdentityM(VIEW, 0);
-//            Matrix.scaleM(VIEW, 0, t.w, t.h,1);
-//            Matrix.translateM(VIEW, 0, 0, t.h, 0);
-//            Matrix.multiplyMM(MVP, 0, PROJ, 0, VIEW, 0);
-//
-//            GLES20.glUseProgram(shader_.texProgram);
-//            MyGL.checkGlError2();
-//            GLES20.glEnableVertexAttribArray(shader_.texPositionHandle);
-//            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, shader_.texVerticesVBO);
-//            GLES20.glVertexAttribPointer(shader_.texPositionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
-//            GLES20.glUniformMatrix4fv(shader_.texMVPHandle, 1, false, MVP, 0);
-//            GLES20.glUniform1f(shader_.texAlphaHandle, 1f);
-//
-//            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, t.tex[0]);
-//            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, TexShader.texVertices.length / 2);
-
-
-
-
-
-            int width = w;
-            int height = h;
-            ByteBuffer buffer = ByteBuffer.allocate(width * height * 4);
-            GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer);
-            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            bitmap.copyPixelsFromBuffer(buffer);
-
-            System.out.println();
-
-        }
-
-        public TextTex prepareTextTextures() {
-            TextPaint p = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-            p.setColor(Color.BLACK);
-            p.setAntiAlias(true);
-            p.setTextSize(dimen.dpf(16f));
-            TextTex t = new TextTex("Sat, Feb 24", p);
-            return t;
-        }
     }
 }
