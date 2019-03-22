@@ -43,16 +43,20 @@ public class MyAnimation {
         final long startTime = SystemClock.uptimeMillis();
         final int from;
         final int to;
-        private final long duration;
+//        private final long duration;
 
         long endTime;
         public boolean ended = false;
 
-        public Color(long duration, int from, int to) {
-            this.duration = duration;
-            endTime = startTime + duration;
+        public Color(int from, int to) {
+            endTime = startTime + ANIM_DRATION;
             this.from = from;
             this.to = to;
+        }
+
+        public Color(long duration, int from, int to) {
+//            this.duration = duration;
+            this(from, to);
         }
 
         public final int tick(long t) {
@@ -60,11 +64,11 @@ public class MyAnimation {
                 ended = true;
                 return to;
             } else {
-                float v = (float) (t - startTime) / duration;
+                float v = (float) (t - startTime) / ANIM_DRATION;
 //                float interpolated = INTERPOLATOR.getInterpolation(v);
                 float interpolated = v;
                 int res = ArgbEvaluator.sInstance.evaluate(v, from, to);
-                Log.d("MyColorAnim", "v " + v  + " " + Integer.toHexString(res));
+//                Log.d("MyColorAnim", "v " + v  + " " + Integer.toHexString(res));
                 return res;
             }
         }

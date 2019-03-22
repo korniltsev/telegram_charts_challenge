@@ -37,7 +37,7 @@ public class Tooltip {
     private final TexShader texShaderFlip;
     private final TexShader texShaderNoflip
             ;
-    private final ColorSet colorsSet;
+    private ColorSet colorsSet;
     private TooltipFramebuffer framebuffer;
     private final ChartData data;
     //    private int fbo;
@@ -80,7 +80,11 @@ public class Tooltip {
 
 
     public void animateTo(ColorSet colors) {
+        this.colorsSet = colors;
         lineANim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, lineColor, colors.tooltipVerticalLine);
+        if (framebuffer != null) {
+            framebuffer.animateToColors(colors);
+        }
     }
 
     public static class Shader {
@@ -132,18 +136,22 @@ public class Tooltip {
                 invalidate = true;
             }
         }
+        if (framebuffer != null) {
+            framebuffer.animtionTick(time);
+        }
         return invalidate;
     }
 
-    public void draw(float[] proj, float[] chartMVP, int index) {
+    public void draw(float[] proj, float[] chartMVP, int index, boolean[] checked, long t) {
+
         if (framebuffer == null || index != fbindex) {//or index change
             if (framebuffer != null) {
                 framebuffer.release();
             }
             fbindex = index;
-            framebuffer = new TooltipFramebuffer(texShaderFlip, data, index, dimen, colorsSet);
-
+            framebuffer = new TooltipFramebuffer(texShaderFlip, data, index, dimen, colorsSet, checked);
         }
+        animationTick(t);
         framebuffer.drawTooltip();
         GLES20.glViewport(0, 0, w, h);
         // calc vline pos

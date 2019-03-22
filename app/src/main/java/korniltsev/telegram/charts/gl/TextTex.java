@@ -14,14 +14,12 @@ public class TextTex {
     final int w;
     final int h;
 
-    public int x;
-    public int y;
+    int color;
     private final TextPaint p;
 
     TextTex(String text, TextPaint p) {
         this.text = text;
         this.p = p;
-
         w = (int) Math.ceil(p.measureText(text));
         StaticLayout staticLayout = new StaticLayout(text, 0, text.length(), p, w, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
         h = staticLayout.getHeight();

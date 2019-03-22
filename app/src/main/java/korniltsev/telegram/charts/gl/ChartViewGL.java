@@ -290,6 +290,7 @@ public class ChartViewGL extends TextureView {
         private long prevMax;
         private Tooltip tooltip;
         private boolean rulerInitDone;
+        private boolean[] checked;
 
 
         public Render(ChartData column) {
@@ -334,8 +335,10 @@ public class ChartViewGL extends TextureView {
             }
 
             chart = new GLChartProgram[data.length - 1];
+            checked = new boolean[data.length - 1];
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground, chartShader);
+                checked[i - 1] = true;
             }
 //            for (GLChartProgram it : chart) {
 //                it.maxValue = max;
@@ -390,8 +393,10 @@ public class ChartViewGL extends TextureView {
                     long max = -1;
                     long min = Long.MAX_VALUE;
                     int checkedCount = 0;
-                    for (GLChartProgram c : scrollbar) {
+                    for (int i = 0; i < scrollbar.length; i++) {
+                        GLChartProgram c = scrollbar[i];
                         if (c.column.id.equals(id)) {
+                            checked[i] = isChecked;
                             found = c;
                             c.animateAlpha(isChecked);
                         }
@@ -582,8 +587,8 @@ public class ChartViewGL extends TextureView {
                 chartProgram.step1(PROJ);
             }
             if (tooltipIndex != -1) {
-                this.tooltip.animationTick(t);
-                this.tooltip.draw(PROJ, chart[0].MVP, tooltipIndex);
+
+                this.tooltip.draw(PROJ, chart[0].MVP, tooltipIndex, checked, t);
             }
 
 
