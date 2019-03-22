@@ -13,6 +13,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
 import android.graphics.drawable.StateListDrawable;
+import android.opengl.Matrix;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
@@ -70,6 +71,7 @@ public class MainActivity extends Activity {
 //todo first animation is SLOW!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     private Dimen dimen;
+
     private LinearLayout toolbar;
     private MyColorDrawable bgToolbar;
     private TextView title;

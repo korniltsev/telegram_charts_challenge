@@ -31,6 +31,8 @@ public final class GLChartProgram {
     public float left = 0;
     private int tooltipIndex = -1;
 
+//    private float[] M = new float[16];
+    private float[] V = new float[16];
     private float[] MVP = new float[16];
 
     public final int w;
@@ -169,34 +171,37 @@ public final class GLChartProgram {
 
     }
 
-    public void step1(float []pxMat){
+    public void step1(float []PROJ){
         float hpadding = dimen.dpf(16);
         float minx = vertices[0];
         float maxx = vertices[vertices.length - 2];
         float scalex = 2.0f / w;
         float scaley = 2.0f / h;
 
-
-        System.arraycopy(pxMat, 0, MVP, 0, 16);
+//        Matrix.setIdentityM(M, 0);
+        Matrix.setIdentityM(V, 0);
+//        System.arraycopy(pxMat, 0, MVP, 0, 16);
 
 
 //        Matrix.multiplyMV(radius_ndc, 0, MVP, 0, radius_px, 0);
         //todo learn matrixes ¯\_(ツ)_/¯
         if (scrollbar) {
             final float dip2 = dimen.dpf(2);
-            Matrix.translateM(MVP, 0, hpadding, root.dimen_v_padding8 + dip2, 0);
+            Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + dip2, 0);
             float w = this.w - 2 * hpadding;
             float h = root.dimen_scrollbar_height - 2 * dip2;
             float ydiff = maxValueAnim * maxValue - minValueAnim * minValue;
 //            float xx = ydiff / minValue ;
-            Matrix.translateM(MVP, 0, 0, 0, 0f);
+            Matrix.translateM(V, 0, 0, 0, 0f);
             float yscale = h / ydiff;
             float dy = -yscale * minValue * minValueAnim;
-            Matrix.translateM(MVP, 0, 0, dy, 0);
-            Matrix.scaleM(MVP, 0, w / ((maxx - minx) ), yscale, 1.0f);
+            Matrix.translateM(V, 0, 0, dy, 0);
+            Matrix.scaleM(V, 0, w / ((maxx - minx)), yscale, 1.0f);
+
+            Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
         } else {
             int ypx = dimen.dpi(80);
-            Matrix.translateM(MVP, 0, hpadding, ypx, 0);
+            Matrix.translateM(V, 0, hpadding, ypx, 0);
             float w = this.w - 2 * hpadding;
 //            int h = root.dimen_chart_height;
             int h = dimen.dpi(280);
@@ -204,8 +209,10 @@ public final class GLChartProgram {
             float ws = w / xdiff / zoom;
             float hs = h / (float) (maxValue * maxValueAnim);
 
-            Matrix.scaleM(MVP, 0, ws, hs, 1.0f);
-            Matrix.translateM(MVP, 0, -left * xdiff , 0f, 0f);
+            Matrix.scaleM(V, 0, ws, hs, 1.0f);
+            Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
+
+            Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
         }
 
     }

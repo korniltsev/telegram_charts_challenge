@@ -258,7 +258,7 @@ public class ChartViewGL extends TextureView {
     class Render extends Thread implements TextureView.SurfaceTextureListener {
 
 
-        private final float[] pxMat = new float[16];
+        private final float[] PROJ = new float[16];
         private final ColumnData[] data;
         private EGL10 mEgl;
         private EGLDisplay mEglDisplay;
@@ -331,11 +331,13 @@ public class ChartViewGL extends TextureView {
             ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, rulerColor);
 
 
-            float scalex = 2.0f / w;
-            float scaley = 2.0f / h;
-            Matrix.setIdentityM(pxMat, 0);
-            Matrix.translateM(pxMat, 0, -1.0f, -1.0f, 0);
-            Matrix.scaleM(pxMat, 0, scalex, scaley, 1.0f);
+            Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
+
+//            float scalex = 2.0f / w;
+//            float scaley = 2.0f / h;
+//            Matrix.setIdentityM(pxMat, 0);
+//            Matrix.translateM(pxMat, 0, -1.0f, -1.0f, 0);
+//            Matrix.scaleM(pxMat, 0, scalex, scaley, 1.0f);
         }
 
 
@@ -534,7 +536,7 @@ public class ChartViewGL extends TextureView {
                 invalidated = invalidated || it_invalid;
             }
             for (GLChartProgram chartProgram : scrollbar) {
-                chartProgram.step1(pxMat);
+                chartProgram.step1(PROJ);
             }
             MyGL.checkGlError2();
             for (GLChartProgram chartProgram : scrollbar) {
@@ -556,7 +558,7 @@ public class ChartViewGL extends TextureView {
             }
 
             for (GLChartProgram chartProgram : chart) {
-                chartProgram.step1(pxMat);
+                chartProgram.step1(PROJ);
             }
             MyGL.checkGlError2();
             for (GLChartProgram chartProgram : chart) {
