@@ -586,11 +586,11 @@ public class ChartViewGL extends TextureView {
             for (GLChartProgram chartProgram : chart) {
                 chartProgram.step1(PROJ);
             }
+
             if (tooltipIndex != -1) {
-
-                this.tooltip.draw(PROJ, chart[0].MVP, tooltipIndex, checked, t);
+                this.tooltip.animationTick(t, tooltipIndex, checked);
+                this.tooltip.drawVLine(PROJ, chart[0].MVP, tooltipIndex);
             }
-
 
             MyGL.checkGlError2();
             for (GLChartProgram chartProgram : chart) {
@@ -608,6 +608,11 @@ public class ChartViewGL extends TextureView {
                 }
             }
             MyGL.checkGlError2();
+
+
+            if (tooltipIndex != -1) {
+                this.tooltip.drawTooltip(PROJ);
+            }
             return invalidated;
         }
 

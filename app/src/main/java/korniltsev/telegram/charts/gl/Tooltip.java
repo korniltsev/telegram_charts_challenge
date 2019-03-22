@@ -126,7 +126,7 @@ public class Tooltip {
     final float vec2[] = new float[4];
     final float []VIEW = new float[16];
     final float []MVP = new float[16];
-    public boolean animationTick(long time) {
+    public boolean animationTick(long time, int index, boolean[]checked) {
         boolean invalidate = false;
         if (lineANim != null) {
             lineColor = lineANim.tick(time);
@@ -139,10 +139,6 @@ public class Tooltip {
         if (framebuffer != null) {
             framebuffer.animtionTick(time);
         }
-        return invalidate;
-    }
-
-    public void draw(float[] proj, float[] chartMVP, int index, boolean[] checked, long t) {
 
         if (framebuffer == null || index != fbindex) {//or index change
             if (framebuffer != null) {
@@ -151,9 +147,52 @@ public class Tooltip {
             fbindex = index;
             framebuffer = new TooltipFramebuffer(texShaderFlip, data, index, dimen, colorsSet, checked);
         }
-        animationTick(t);
+
+        return invalidate;
+    }
+
+//    public void draw(float[] proj, float[] chartMVP, int index) {
+//        drawVLine(proj, chartMVP, index);
+//        drawTooltip(proj);
+//    }
+
+    public void drawTooltip(float[] proj) {
+        // ----------------
+        // tooltip        todo draw over chart
+        // ----------------
+        //
+
         framebuffer.drawTooltip();
         GLES20.glViewport(0, 0, w, h);
+
+        Matrix.setIdentityM(VIEW, 0);
+        int texw = framebuffer.w;
+        int texh = framebuffer.h;
+        Matrix.translateM(VIEW, 0, 0, dimen.dpf(80 + 290 - TooltipFramebuffer.HEIGHT), 0f);
+        Matrix.scaleM(VIEW, 0, texw, texh, 1f);
+
+        Matrix.multiplyMM(MVP, 0, proj, 0, VIEW, 0);
+
+
+//        float[] VIEW = new float[16];
+//        float[] MVP = new float[16];
+//        Matrix.setIdentityM(VIEW, 0);
+//        Matrix.scaleM(VIEW, 0, t.w, t.h,1);
+//        Matrix.multiplyMM(MVP, 0, PROJ, 0, VIEW, 0);
+
+        GLES20.glUseProgram(texShaderNoflip.texProgram);
+        MyGL.checkGlError2();
+        GLES20.glEnableVertexAttribArray(texShaderNoflip.texPositionHandle);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, texShaderNoflip.texVerticesVBO);
+        GLES20.glVertexAttribPointer(texShaderNoflip.texPositionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
+        GLES20.glUniformMatrix4fv(texShaderNoflip.texMVPHandle, 1, false, MVP, 0);
+        GLES20.glUniform1f(texShaderNoflip.texAlphaHandle, 1f);
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, framebuffer.tex);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, TexShader.texVertices.length / 2);
+    }
+
+    public void drawVLine(float[] proj, float[] chartMVP, int index) {
         // calc vline pos
         vec1[0] = index;
         vec1[3] = 1;
@@ -176,39 +215,5 @@ public class Tooltip {
         GLES20.glLineWidth(dimen.dpf(1f));
         GLES20.glUniformMatrix4fv(shader.lineMVPHandle, 1, false, MVP, 0);
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, lineVertices.length / 2);
-
-        // ----------------
-        // tooltip        todo draw over chart
-        // ----------------
-        //
-
-
-        Matrix.setIdentityM(VIEW, 0);
-        int texw = framebuffer.w;
-        int texh = framebuffer.h;
-        Matrix.scaleM(VIEW, 0, texw, texh, 1f);
-        Matrix.multiplyMM(MVP, 0, proj, 0, VIEW, 0);
-
-
-//        float[] VIEW = new float[16];
-//        float[] MVP = new float[16];
-//        Matrix.setIdentityM(VIEW, 0);
-//        Matrix.scaleM(VIEW, 0, t.w, t.h,1);
-//        Matrix.multiplyMM(MVP, 0, PROJ, 0, VIEW, 0);
-
-        GLES20.glUseProgram(texShaderNoflip.texProgram);
-        MyGL.checkGlError2();
-        GLES20.glEnableVertexAttribArray(texShaderNoflip.texPositionHandle);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, texShaderNoflip.texVerticesVBO);
-        GLES20.glVertexAttribPointer(texShaderNoflip.texPositionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
-        GLES20.glUniformMatrix4fv(texShaderNoflip.texMVPHandle, 1, false, MVP, 0);
-        GLES20.glUniform1f(texShaderNoflip.texAlphaHandle, 1f);
-
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, framebuffer.tex);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, TexShader.texVertices.length / 2);
-
-
-
-
     }
 }
