@@ -109,17 +109,19 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
             + remove tooltip when animating
 
 
+    [ ! ] chart selector screen
+
     [ ! ] horizontal lables + animations
-    [ ! ] alpha animation blending - render to fbo
 
 
-    [ ! ] char selector screen
+
+
     [ ! ] teardown
 
     MUST HAVE
     -------------
     NICE TO HAVE
-
+    [ ! ] alpha animation blending - render to fbo
     [ ! ] shader warmup
     + fix touch (laggy, hard to select)
     - tooltip round corners and shadows
