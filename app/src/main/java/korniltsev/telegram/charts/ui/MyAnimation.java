@@ -4,8 +4,9 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
+//todo create more user friendly api
 public class MyAnimation {
-    public static final int ANIM_DRATION = 1600;
+    public static final int ANIM_DRATION = 160;
 
 
     public static final AccelerateDecelerateInterpolator INTERPOLATOR = new AccelerateDecelerateInterpolator();
