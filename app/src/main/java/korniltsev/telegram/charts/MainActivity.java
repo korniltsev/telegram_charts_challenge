@@ -21,6 +21,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowInsets;
 import android.widget.CheckBox;
@@ -164,10 +165,43 @@ public class MainActivity extends Activity {
         list.addView(legend);
         list.addView(chart_);
 
-        ScrollView scrollView = new ScrollView(this);
+        ScrollView scrollView = new ScrollView(this) ;
+//        {
+//            @Override
+//            public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+//                Log.d("ScrollBug", "requestDisallowInterceptTouchEvent");
+//
+//                super.requestDisallowInterceptTouchEvent(disallowIntercept);
+//                getParent().requestDisallowInterceptTouchEvent(disallowIntercept);
+////                System.out.println();
+//            }
+//
+//            @Override
+//            public boolean onInterceptTouchEvent(MotionEvent ev) {
+//                boolean res = super.onInterceptTouchEvent(ev);
+//                Log.d("ScrollBug", "onInterceptTouchEvent " + MotionEvent.actionToString(ev.getActionMasked()) + " " + res);
+//                return res;
+//            }
+//
+//            @Override
+//            public boolean onTouchEvent(MotionEvent ev) {
+//                boolean re = super.onTouchEvent(ev);
+//                Log.d("ScrollBug", "onTouchEvent " + MotionEvent.actionToString(ev.getActionMasked()) + " " + re);
+//
+//                return re;
+//            }
+//
+//            @Override
+//            public boolean dispatchTouchEvent(MotionEvent ev) {
+//                boolean e = super.dispatchTouchEvent(ev);
+//                Log.d("ScrollBug", "dispatchTouchEvent " + MotionEvent.actionToString(ev.getActionMasked()) + " " + e);
+//
+//                return e;
+//            }
+//        };
         scrollView.addView(list);
 
-        LinearLayout.LayoutParams frameLP = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, 1f);
+        LinearLayout.LayoutParams frameLP = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         FrameLayout contentFrame = new FrameLayout(this);
         contentFrame.setLayoutParams(frameLP);
 //        contentFrame.addView(scrollView, MATCH_PARENT, dimen.dpi(400));

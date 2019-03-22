@@ -37,6 +37,7 @@ import static android.opengl.GLES10.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES10.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES10.glClear;
 import static android.opengl.GLES10.glClearColor;
+import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
 /*
     + scrollbar overlay
@@ -93,9 +94,12 @@ import static android.opengl.GLES10.glClearColor;
         + fbo
         + rect
         + text
+        + text ugly bug
+        - scroll bug
         - design
         - no shadows and round corners
-    scroll bug
+
+
     [ ! ] implement empty chart
     [ ! ] horizontal lables + animations
     [ ! ] alpha animation blending - render to fbo
@@ -510,7 +514,7 @@ public class ChartViewGL extends TextureView {
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                     throw new RuntimeException("Cannot swap buffers");
                 }
-                if (MainActivity.LOGGING) {
+                if (LOGGING) {
 
                     long t7 = SystemClock.uptimeMillis();
 //                frameCount++;
@@ -599,7 +603,7 @@ public class ChartViewGL extends TextureView {
         }
 
         private void log_trace(String name, long t5, long t4) {
-            if (MainActivity.LOGGING) Log.d(MainActivity.TAG, "trace " + name + " " + (t5 - t4));
+            if (LOGGING) Log.d(MainActivity.TAG, "trace " + name + " " + (t5 - t4));
         }
 
 
@@ -620,6 +624,7 @@ public class ChartViewGL extends TextureView {
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+            //todo
             return false;
         }
 
@@ -708,7 +713,7 @@ public class ChartViewGL extends TextureView {
                 String eglErrorString = GLUtils.getEGLErrorString(mEgl.eglGetError());
 //                throw new IllegalArgumentException("eglChooseConfig failed" +
 //                        eglErrorString);
-                if (MainActivity.LOGGING) {
+                if (LOGGING) {
                     Log.e(MainActivity.TAG, "err" + eglErrorString);
                 }
             }
@@ -825,8 +830,8 @@ public class ChartViewGL extends TextureView {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getActionMasked();
+//        if (LOGGING) Log.d("tg.chart", "ScrollBug touchevent " + event);
 //        if (action != MotionEvent.ACTION_MOVE) {
-//            if (LOGGING) Log.d("tg.chart", "touchevent " + event);
 //        }
         float x = event.getX();
         float y = event.getY();
@@ -835,32 +840,32 @@ public class ChartViewGL extends TextureView {
                 boolean scrollbar = y >= this.scrollbar.top && y <= this.scrollbar.bottom;
                 if (scrollbar) {
                     if (Math.abs(x - scroller_left) <= resize_touch_area2) {
-                        if (MainActivity.LOGGING) Log.d("tg.chart", "touchevent DOWN resize left");
+                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize left");
                         last_x = x;
                         down_target = DOWN_RESIZE_LEFT;
 //                        resze_scroller_right = scroller_left + scroller_width;
                         return true;
                     } else if (Math.abs(x - (scroller__right)) < resize_touch_area2) {
-                        if (MainActivity.LOGGING) Log.d("tg.chart", "touchevent DOWN resize right");
+                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize right");
                         last_x = x;
                         down_target = DOWN_RESIZE_RIGHT;
                         return true;
                     } else if (x >= scroller_left && x <= scroller__right) {
-                        if (MainActivity.LOGGING) Log.d("tg.chart", "touchevent DOWN inside scrollbar");
+                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN inside scrollbar");
                         last_x = x;
                         scroller_move_down_x = (int) (x - scroller_left);
                         scroller_move_down_width = scroller__right - scroller_left;
                         down_target = DOWN_MOVE;
                         return true;
                     } else {
-                        if (MainActivity.LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
+                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
                     }
                 } else {
                     boolean chart = y >= this.chartTop && y <= this.chartBottom;
                     if (chart) {
                         dispatchTouchDownChart(x);
                     } else {
-                        if (MainActivity.LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
+                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
                     }
                 }
                 break;
@@ -915,6 +920,9 @@ public class ChartViewGL extends TextureView {
                     } else {
                         float move = x - last_x;
                         if (Math.abs(move) > touchSlop) {
+//                            disall
+//                            Log.d("ScrollBug", "request disasllow ");
+                            getParent().getParent().requestDisallowInterceptTouchEvent(true);
                             dragging = true;
                             last_x = x;
                             return true;
@@ -923,6 +931,8 @@ public class ChartViewGL extends TextureView {
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
+            case MotionEvent.ACTION_UP:
+                if (LOGGING) Log.d("tg.chart", "dragging = false " );
                 last_x = -1;
                 dragging = false;
                 break;
@@ -934,7 +944,7 @@ public class ChartViewGL extends TextureView {
 
     private void dispatchTouchDownChart(float x) {
         if (x < scrollbar.left || x > scrollbar.right) {
-            if (MainActivity.LOGGING) Log.d(MainActivity.TAG, "chart down miss");
+            if (LOGGING) Log.d(MainActivity.TAG, "chart down miss");
         } else {
             float swindow = (x - scrollbar.left) / scrollbar.width();
              float sdataset = r.overlay.left + swindow * (r.overlay.right - r.overlay.left);
@@ -956,7 +966,7 @@ public class ChartViewGL extends TextureView {
                 }
             });
 
-            if (MainActivity.LOGGING) Log.d(MainActivity.TAG, "chart touch down");
+            if (LOGGING) Log.d(MainActivity.TAG, "chart touch down");
         }
     }
 
