@@ -129,6 +129,8 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     [ ! ] move "folorwers" to gl +   text night mode + animation
     [ ! ] checkbox + animations + divider width
 
+    tooltip touchdown - replace with touchup
+
     [?] tooltip alpha nimation
     [?] optimize minmax animation, introduce step?, do not cancel animations or try to continue?
     [?] why DIRTY slow?
