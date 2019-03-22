@@ -30,7 +30,9 @@ class TooltipFramebuffer {
     public static final int LEFT_RIGHT_PADDING = 10;
     public static final float FONT_SIZE_16 = 12f;
     public static final float FONT_SIZE22 = 16f;
+    int[] fbos = new int[1];
     private final int fbo;
+    int[] textures = new int[1];
     public final int tex;
 
     private final TexShader shader_;
@@ -56,13 +58,13 @@ class TooltipFramebuffer {
 
         //todo delete previous
 //        glDeleteFramebuffers(1, &fbo);
-        int[] fbos = new int[1];
+
         GLES20.glGenFramebuffers(1, fbos, 0);
         fbo = fbos[0];
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fbo);
         MyGL.checkGlError2();
 
-        int[] textures = new int[1];
+
         GLES20.glGenTextures(1, textures, 0);
         tex = textures[0];
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex);
@@ -215,6 +217,8 @@ class TooltipFramebuffer {
         for (TextTex value : values) {
             value.release();
         }
+        GLES20.glDeleteFramebuffers(1, fbos, 0);
+        GLES20.glDeleteTextures(1, textures, 0);
 
         //todo delete framebuffer & tex
     }

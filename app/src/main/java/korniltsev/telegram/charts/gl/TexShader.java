@@ -68,6 +68,8 @@ public class TexShader {
     private final boolean masked;
     public final int u_color;
 
+    int[] vbos = new int[1];
+
     public TexShader(boolean flip, boolean masked) {
         this.flip = flip;
         this.masked = masked;
@@ -91,7 +93,7 @@ public class TexShader {
         buf2.put(texVertices);
         buf2.position(0);
 
-        int[] vbos = new int[1];
+
         GLES20.glGenBuffers(1, vbos, 0);
 //        lineVerticesVBO = vbos[0];
         texVerticesVBO = vbos[0];
@@ -104,6 +106,7 @@ public class TexShader {
     }
 
     public void release() {
-        //todo
+        GLES20.glDeleteProgram(texProgram);
+        GLES20.glDeleteBuffers(1, vbos, 0);
     }
 }
