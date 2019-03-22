@@ -125,6 +125,7 @@ public final class GLChartProgram {
 
     float[] colors = new float[4];
 
+//    float tooltipFillColorAlpha = 1f;
     int tooltipFillColor;
     float[] white = new float[4];
 
@@ -215,14 +216,15 @@ public final class GLChartProgram {
         //todo learn matrixes ¯\_(ツ)_/¯
         if (scrollbar) {
         } else {
-
-            if (goodCircle != null) {
-                goodCircle.draw(MVP, colors, 0, 1, dimen.dpf(5) * scalex);
-                white[0] = Color.red(tooltipFillColor) / 255f;
-                white[1] = Color.green(tooltipFillColor) / 255f;
-                white[2] = Color.blue(tooltipFillColor) / 255f;
-                white[3] = 1f;
-                goodCircle.draw(MVP, white, 0, 1, dimen.dpf(3) * scalex);
+            if (alpha != 0f) {
+                if (goodCircle != null) {
+                    goodCircle.draw(MVP, colors, 0, 1, dimen.dpf(5) * scalex);
+                    white[0] = Color.red(tooltipFillColor) / 255f;
+                    white[1] = Color.green(tooltipFillColor) / 255f;
+                    white[2] = Color.blue(tooltipFillColor) / 255f;
+                    white[3] = alpha;
+                    goodCircle.draw(MVP, white, 0, 1, dimen.dpf(3) * scalex);
+                }
             }
         }
 

@@ -86,18 +86,31 @@ import static android.opengl.GLES10.glClearColor;
         - seems oval
 
 
-    [ ! ] status bar lollipop does not work
+
     [ ! ] horizontal lables + animations
 
     [ ! ] toooltip by touching
 
 
     ---------------------------------------- 21 march
+
+
     [ ! ] implement empty chart
+
+    [ ! ] alpha animation blending
+
+
+    MUST HAVE
+    -------------
+    NICE TO HAVE
+
+
+
+
     [ ! ] rulers text night mode + animation
     [ ! ] move "folorwers" to gl +   text night mode + animation
     [ ! ] checkbox + animations + divider width
-    [ ! ] alpha animation blending
+
 
     [?] optimize minmax animation, introduce step?, do not cancel animations or try to continue?
     [?] why DIRTY slow?
@@ -142,7 +155,6 @@ import static android.opengl.GLES10.glClearColor;
 
 // todo nice to have
 //     checkbox animations
-//     nice app icon
 //      https://github.com/facebook/redex
 //      try to iptimize bytecode, check for accessor methods etc
 
