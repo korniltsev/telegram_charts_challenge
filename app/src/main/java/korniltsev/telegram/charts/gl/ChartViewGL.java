@@ -144,6 +144,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     NICE TO HAVE
     try to draw only every 16 ms, not faster, try to use handler thread, maybe it is faster
     [ ! ] optimization
+        - try to create render thread before view
         - shader warmup https://stackoverflow.com/questions/11726650/egl-can-context-be-shared-between-threads
         - data swap
         - destory on destroy
@@ -154,10 +155,8 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     [ ! ] alpha animation blending - render to fbo
     + fix touch (laggy, hard to select)
 
-    look for aliased line
 
     [ ! ] tweak inital zoom for smal datasets
-    [ ! ] rulers text night mode + animation
     [ ! ] move "folorwers" to gl +   text night mode + animation
     [ ! ] checkbox + animations + divider width
 
@@ -167,11 +166,6 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     [?] why DIRTY slow?
     [?] replace actionQueue.add with something better?(handler?)
     [?] try to play with thread priority?
-
-
-    [?] mb scale linewidth when drawing 365 points
-
-
 
 
 
