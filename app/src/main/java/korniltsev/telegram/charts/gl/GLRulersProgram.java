@@ -59,6 +59,8 @@ public final class GLRulersProgram {
     private final TexShader texShader;
     private final TextTex zero;
     private final SimpleShader simpleShader;
+    private final float wpx;
+    private final float hpadding;
     private ColorSet colors;
     private ColumnData xColumn;
 
@@ -90,6 +92,8 @@ public final class GLRulersProgram {
     private float[] colorParts = new float[4];
     private MyAnimation.Color textColorAnim;
     private float left;
+    private float strideChangeLabelWidth
+            ;
 
 
     public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, ColorSet colors, SimpleShader s, ColumnData xColumn) {
@@ -132,6 +136,9 @@ public final class GLRulersProgram {
         paint.setTextSize(dimen.dpf(12));
 
         zero = new TextTex("0", paint);
+
+        hpadding = dimen.dpf(16);
+        wpx = canvasW - 2 * hpadding;
     }
 
     public void init(long max) {
@@ -169,7 +176,6 @@ public final class GLRulersProgram {
     public final void draw(long t) {
         animationTick(t);
 
-        final float hpadding = dimen.dpf(16);
 
 
         float vpaddingTextOverPadding = dimen.dpf(4);
@@ -200,24 +206,24 @@ public final class GLRulersProgram {
     List<XValueLable> xValues = new ArrayList<>();
     List<XValueLable> animatingOut = new ArrayList<>();
     public void drawX(long t){
-        final float hpadding = dimen.dpf(16);
-        final float pxw = canvasW - 2 * hpadding;
+
+
 //        if (xValues.size() == 0) {
 //            TextPaint p = new TextPaint();
 //            p.setTextSize(dimen.dpf(12));
 //            xValues.add(new TextTex("Feb 28", p));
 //        }
         for (XValueLable xValueLable : animatingOut) {
-            drawXValue(hpadding, pxw, xValueLable);
+            drawXValue( xValueLable);
         }
         for (XValueLable xValue : xValues) {
-            drawXValue(hpadding, pxw, xValue);
+            drawXValue(xValue);
         }
 
 
     }
 
-    private void drawXValue(float hpadding, float pxw, XValueLable xValue) {
+    private void drawXValue(XValueLable xValue) {
         if (xValue.alpha == 0f) {
             return;
         }
@@ -228,8 +234,8 @@ public final class GLRulersProgram {
         Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
 
         int index = xValue.index;
-        final float scaledWidth = pxw / zoom;
-        final float npos = (float) index / xColumn.values.length;
+        final float scaledWidth = wpx / zoom;
+        final float npos = (float) index / (xColumn.values.length-1);
         final float pos =  npos * scaledWidth - scaledWidth * left;
         if (xValue.tex == null) {
             long v = xColumn.values[xValue.index];
@@ -428,31 +434,72 @@ public final class GLRulersProgram {
         }
     }
 
-    float lastn6 = 0;
-    public static final int SPLIt = 4;
+    float stride = 0;//draw xlabel every n points
+    public static final int WANT_LABELS = 4;
+    public static final int WANT_LABELS_MAX = 5;
+    public static final int WANT_LABELS_MIN = 3;
     float zoom;
 
     public void setLeftRight(float left, float right, float scale) {
 //        float prevzoom = zoom;
         this.left = left;
         this.zoom = scale;
-        int ir = (int) (right * (xColumn.values.length - 1));
-        if (ir >= xColumn.values.length) {
-            ir = xColumn.values.length - 1;
+        float ir = (right * (xColumn.values.length - 1));
+//        if (ir >= xColumn.values.length) {
+//            ir = xColumn.values.length - 1;
+//        }
+        float il = (left * (xColumn.values.length - 1));
+//        if (il < 0) {
+//            il = 0;
+//        } else if (il >= ir) {
+//            il = ir - 1;
+//        }
+//        boolean change;
+
+        float n = Math.round(ir - il);// points between left and right
+        float newStride = -1f;
+        if (stride == 0) {
+//            change = true;
+            newStride = Math.round(n / WANT_LABELS);
+        } else {
+
+
+//            change = true;
+
+//            float labelWidth = n * approxLabelWidth;
+//            labelWidth
+//            strideChangeLabelWidth
+//            n/
+            float labelsCount = n / stride;//todo need rounding fix here
+            if (labelsCount > WANT_LABELS_MAX || labelsCount < WANT_LABELS_MIN) {
+//                change = true;
+                newStride = Math.round(n / WANT_LABELS);
+            } else {
+//                change = false;
+            }
         }
-        int il = (int) (left * (xColumn.values.length - 1));
-        if (il < 0) {
-            il = 0;
-        } else if (il >= ir) {
-            il = ir - 1;
-        }
-        int n = ir - il;
-        float n6 = (float)n / SPLIt;
+
+
+//        float n6 = (float)n / SPLIt;
+//        wpx / SPLIt;
 //        float zoomDiff = Math.abs(prevzoom - zoom);
-        float diff = Math.abs(lastn6 - n6);
-        if (diff > 2.5f) {
-            Log.d("FUCK", "n " + n + " " + n6 + " diff " + diff);
-            lastn6 =  n6;
+
+//        wpx / approxLabelWidth;
+//        n *
+//        float diff = Math.abs(lastn6 - n6);
+        if (newStride != -1) {
+//            Log.d("FUCK", String.format("prev_stride %3f new_stride %3f n %3f left %3f right %3f ", stride, newStride, n, left, right));
+
+//            float approxLabelWidth = dimen.dpf(40);
+//            wpx / ;
+            int prevStdie = (int) stride;
+            int inewStride = (int) newStride;
+            if (prevStdie != 0 && inewStride == prevStdie) {
+                return;
+            }
+            stride = n/WANT_LABELS;
+//            Log.d("FUCK", "n " + n + " " + n6 + " diff " + diff);
+//            lastn6 =  n6;
 //            float zoomDiff = Math.abs(prevzoom - zoom);
 //            Log.d("FUCK", "n " + n + " " + n6 + " zoom " + zoomDiff);
             for (int i = 0, xValuesSize = xValues.size(); i < xValuesSize; i++) {
@@ -462,7 +509,8 @@ public final class GLRulersProgram {
             animatingOut.addAll(xValues);
             xValues.clear();
             int i = xColumn.values.length - 1;
-            for (; i >= 0; i -= n6) {
+//            int istrid = (int) this.stride;
+            for (; i >= 0; i = i - inewStride) {
                 long v = xColumn.values[i];
                 XValueLable e = new XValueLable(i, null);
                 e.alpha = 0f;
