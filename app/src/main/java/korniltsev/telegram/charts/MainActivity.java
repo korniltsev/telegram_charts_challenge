@@ -663,33 +663,6 @@ public class MainActivity extends Activity {
             }
         }
     }
-//
-//    private static class MyTextView extends TextView {
-//        private int color;
-//        private MyAnimation.Color colorAnim;
-//
-//        public MyTextView(Context ctx, ColorSet currentColorSet) {
-//            super(ctx);
-//            setTextColor(currentColorSet.textColor);
-//            color = currentColorSet.textColor;
-//        }
-//
-//        public void animate(ColorSet cs) {
-//            colorAnim = new MyAnimation.Color(color, cs.textColor);
-//            invalidate();
-//        }
-//
-//        @Override
-//        protected void onDraw(Canvas canvas) {
-//            super.onDraw(canvas);
-//            if (colorAnim != null) {
-//                color = colorAnim.tick(SystemClock.uptimeMillis());
-//                setTextColor(color);
-//                if (colorAnim.ended) {
-//                    colorAnim = null;
-//                }
-//            }
-//        }
-//    }
+
 
 }
