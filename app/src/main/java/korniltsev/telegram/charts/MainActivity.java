@@ -61,8 +61,7 @@ public class MainActivity extends Activity {
     public static final boolean TRACE = BuildConfig.DEBUG && false;
     public static final boolean USE_RIPPLE = true;
     public static final boolean LOGGING = DEBUG;
-    public static final int DATASET = 4;
-    public static final boolean DIRTY_CHECK = true;
+    public static final boolean DIRTY_CHECK = !BuildConfig.DEBUG;
     public static final boolean LOG_FPS = true;
 
     //    private MyColorDrawable bgRoot;
@@ -98,24 +97,9 @@ public class MainActivity extends Activity {
         textColor = currentColorSet.textColor;
         dimen = new Dimen(this);
 
-//        long t1 = SystemClock.elapsedRealtimeNanos();
-        data = readData();//todo make async
-//        long t2 = SystemClock.elapsedRealtimeNanos();
-//        Log.d(TAG, "reading " + (t2 - t1)/1000000f);
-
-        ChartData datum = data[DATASET];
-//        ChartData datum = new ChartData(new ColumnData[]{
-//                new ColumnData("x", "x", new long[]{1,2,3}, "line",  MyColor.red),
-//                new ColumnData("Y1", "Y1", new long[]{5, 10, 5}, "line",  MyColor.red),
-//                new ColumnData("Y2", "Y2", new long[]{2, 20, 2}, "line",  MyColor.green),
-//        });
-
-
+        data = readData();
         prepareRootView();
-
         createChartList();
-//        createChart(datum);
-
 
     }
 
@@ -269,6 +253,7 @@ public class MainActivity extends Activity {
         shadow.setBackgroundResource(R.drawable.header_shadow);
         list.addView(checkboxlist, MATCH_PARENT, WRAP_CONTENT);
         list.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
+        list.setPadding(0, 0, 0, dimen.dpi(8));
         scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         mySetContentVie(scrollView);
     }
@@ -353,11 +338,11 @@ public class MainActivity extends Activity {
         } else {
             currentColorSet = ColorSet.DAY;
         }
-        if (Build.VERSION.SDK_INT >= 21) {
-            root.animateColors(currentColorSet.statusbar, currentColorSet.darkBackground);
+        root.animateColors(currentColorSet.statusbar, currentColorSet.darkBackground);
+//        if (Build.VERSION.SDK_INT >= 21) {
             //todo replace with insets and color animatione
 //            getWindow().setStatusBarColor(currentColorSet.statusbar);
-        }
+//        }
         bgToolbar.animate(currentColorSet.toolbar);
         for (MyColorDrawable d : ds) {
             d.animate(currentColorSet.lightBackground);
