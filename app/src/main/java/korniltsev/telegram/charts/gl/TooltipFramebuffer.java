@@ -50,7 +50,7 @@ class TooltipFramebuffer {
     private int dateColor;
     private MyAnimation.Color bgAnim;
     private MyAnimation.Color titleColorAnim;
-    private final GLScrollbarOverlayProgram.SimpleShader simple;
+    private final SimpleShader simple;
 
     static final float shadowSimulatorLines[] = {
             0, 0,
@@ -63,7 +63,7 @@ class TooltipFramebuffer {
     private int fakeShadowColor;
     private MyAnimation.Color fakeShadowColorAnim;
 
-    public TooltipFramebuffer(TexShader shader, ChartData data, int index, Dimen dimen, ColorSet set, boolean[] checked, GLScrollbarOverlayProgram.SimpleShader simple) {
+    public TooltipFramebuffer(TexShader shader, ChartData data, int index, Dimen dimen, ColorSet set, boolean[] checked, SimpleShader simple) {
         this.dateColor = set.tooltipTitleColor;
         this.bgColor = set.tooltipBGColor;
         this.shader_ = shader;

@@ -53,7 +53,7 @@ public final class GLRulersProgram {
 //    private final int texVerticesVBO;
     private final TexShader texShader;
     private final TextTex zero;
-    private final GLScrollbarOverlayProgram.SimpleShader simpleShader;
+    private final SimpleShader simpleShader;
     private ColorSet colors;
 
 
@@ -84,7 +84,7 @@ public final class GLRulersProgram {
     private float[] colorParts = new float[4];
     private MyAnimation.Color textColorAnim;
 
-    public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, ColorSet colors, GLScrollbarOverlayProgram.SimpleShader s) {
+    public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, ColorSet colors, SimpleShader s) {
         this.colors = colors;
 
         texShader = new TexShader(true, true);

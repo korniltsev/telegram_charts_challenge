@@ -23,7 +23,7 @@ public class Tooltip {
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("E, MMM d", Locale.US);
 
     private final float[] colorParts= new float[4];
-    public final GLScrollbarOverlayProgram.SimpleShader shader;
+    public final SimpleShader shader;
     final Dimen dimen;
     private final int vbo;
 
@@ -43,13 +43,13 @@ public class Tooltip {
     //    private int fbo;
 //    private int tex;
     private int lineColor;
-    private GLScrollbarOverlayProgram.SimpleShader simple;
+    private SimpleShader simple;
     private MyAnimation.Color lineANim;
     private int fbindex;
     private float ndcx;
 //    private TexShader texShader;
 
-    public Tooltip(Dimen dimen, int w, int h, ColorSet colors, ChartData data, GLScrollbarOverlayProgram.SimpleShader simple) {
+    public Tooltip(Dimen dimen, int w, int h, ColorSet colors, ChartData data, SimpleShader simple) {
         this.data = data;
         this.colorsSet = colors;
         this.shader = simple;

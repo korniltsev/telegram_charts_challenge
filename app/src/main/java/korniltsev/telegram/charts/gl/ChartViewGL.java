@@ -309,7 +309,7 @@ public class ChartViewGL extends TextureView {
         private Tooltip tooltip;
         private boolean rulerInitDone;
         private boolean[] checked;
-        private GLScrollbarOverlayProgram.SimpleShader simple;
+        private SimpleShader simple;
 
 
         public Render(ChartData column) {
@@ -346,7 +346,7 @@ public class ChartViewGL extends TextureView {
 //            long t1 = SystemClock.elapsedRealtimeNanos();
             GLChartProgram.Shader chartShader = new GLChartProgram.Shader();
             MyCircles.Shader joiningShader = new MyCircles.Shader(6);
-            simple = new GLScrollbarOverlayProgram.SimpleShader();
+            simple = new SimpleShader();
 //            long t2 = SystemClock.elapsedRealtimeNanos();
 //            if (LOGGING) Log.d(MainActivity.TAG, "shader init " + " " + (t2 - t1));
 
