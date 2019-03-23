@@ -110,15 +110,14 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
 
 
-    - tooltip draw line over tooltop
-    [ ! ] cleanup - stop thread, destroy shaders, surface
+    + tooltip draw line over tooltop
+    [ ! ] checkboxes
+
 
     [ ! ] horizontal lables + animations
 
 
-    [ ! ] checkboxes
-
-
+    [ ! ] cleanup - stop thread, destroy shaders, surface
 
     MUST HAVE
     -------------
