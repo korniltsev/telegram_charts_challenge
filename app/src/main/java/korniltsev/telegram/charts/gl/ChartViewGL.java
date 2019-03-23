@@ -214,7 +214,7 @@ public class ChartViewGL extends TextureView {
 //    private final int rulerColor;
     private final ColorSet init_colors;
     private final ChartData data;
-    private final long initTime;
+//    private final long initTime;
     public int bgColor;
     public MyAnimation.Color bgAnim = null;
     private int chartBottom;
@@ -225,7 +225,7 @@ public class ChartViewGL extends TextureView {
 
     public ChartViewGL(Context context, ChartData c, Dimen dimen, ColorSet currentColorsSet) {
         super(context);
-        initTime = SystemClock.elapsedRealtimeNanos();
+//        initTime = SystemClock.elapsedRealtimeNanos();
         this.init_colors = currentColorsSet;
         currentColors = currentColorsSet;
         this.dimen = dimen;

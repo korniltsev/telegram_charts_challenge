@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -36,7 +37,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -170,9 +170,9 @@ public class MainActivity extends Activity {
             container.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
 
 
-
             ScrollView scrollView = new ScrollView(this);
             scrollView.addView(container);
+            scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
             chartList = scrollView;
         }
         mySetContentVie(chartList);
@@ -212,16 +212,37 @@ public class MainActivity extends Activity {
         scrollView.addView(list);
 
         ColumnData[] data1 = datum.data;
+        LinearLayout checkboxlist = new LinearLayout(this);
+        checkboxlist.setOrientation(LinearLayout.VERTICAL);
+        MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground);
+        ds.add(d);
+        checkboxlist.setBackgroundDrawable(d);
         for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
             final ColumnData c = data1[i];
             if (c.id.equals(ChartData.COLUMN_ID_X)) {
                 continue;
             }
-            CheckBox cb = new CheckBox(this);
+            CheckBox cb = new MyCheckBox(this, dimen);
+            cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
+            if (Build.VERSION.SDK_INT >= 21) {
+                cb.setButtonTintList(new ColorStateList(new int[][]{
+                                new int[]{android.R.attr.state_checked},
+                                new int[]{},
+                        }, new int[]{
+                                c.color,
+                                c.color,
+                        })
+                );
+            } else {
+                //todo
+            }
+            int dip18 = dimen.dpi(18);
+            cb.setPadding(dip18, 0, dip18, 0);
+//            cb.setComp
             cb.setTextColor(textColor);
-            MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground);
-            ds.add(d);
-            cb.setBackgroundDrawable(d);
+//            MyColorDrawable d = ;
+//            ds.add(d);
+//            cb.setBackgroundDrawable(d);
             cb.setText(c.name);
             cb.setChecked(true);
             cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -231,10 +252,10 @@ public class MainActivity extends Activity {
                 }
             });
             LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(50));
-            cblp.bottomMargin = i == 0 ? 0 : dimen.dpi(1);//todo this is wrong, it is not full width
+            cblp.leftMargin = dip18;
             cb.setLayoutParams(cblp);
 
-            list.addView(cb);
+            checkboxlist.addView(cb);
 
             checkboxes.add(cb);
 
@@ -242,7 +263,9 @@ public class MainActivity extends Activity {
 
         View shadow = new View(this);
         shadow.setBackgroundResource(R.drawable.header_shadow);
-        list.addView(shadow);
+        list.addView(checkboxlist, MATCH_PARENT, WRAP_CONTENT);
+        list.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
+        scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         mySetContentVie(scrollView);
     }
 
@@ -346,20 +369,19 @@ public class MainActivity extends Activity {
                 for (TextView button : buttons) {
                     button.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, false));
                 }
-            }
-        }, 300);
-
-        if (Build.VERSION.SDK_INT >= 21) {
-            title.postDelayed(new Runnable() {
-                @Override
-                public void run() {
+                for (CheckBox cb : checkboxes) {
+                    cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
+                }
+                if (Build.VERSION.SDK_INT >= 21) {
                     ActivityManager.TaskDescription d = new ActivityManager.TaskDescription("Statistics", null, currentColorSet.toolbar);
                     setTaskDescription(d);
                 }
-            }, 300);
-        }
+            }
+        }, 300);
+
+
         textColorAnim = new MyAnimation.Color(textColor, currentColorSet.textColor);
-        Runnable r = new Runnable(){
+        Runnable r = new Runnable() {
             @Override
             public void run() {
                 long t = SystemClock.uptimeMillis();
@@ -430,14 +452,13 @@ public class MainActivity extends Activity {
     }
 
 
-
     public final Drawable createButtonBackground(int pressedColor, boolean borderless) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !USE_RIPPLE) {
             StateListDrawable stateListDrawable = new StateListDrawable();
             stateListDrawable.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(pressedColor));
             return stateListDrawable;
         } else {
-            ColorDrawable maskDrawable = borderless? null:new ColorDrawable(Color.RED);
+            ColorDrawable maskDrawable = borderless ? null : new ColorDrawable(Color.RED);
             return new RippleDrawable(ColorStateList.valueOf(pressedColor), null, maskDrawable);
         }
     }
@@ -552,6 +573,70 @@ public class MainActivity extends Activity {
                 canvas.drawRect(0, top, getWidth(), getHeight(), paintBg);
             } else {
                 canvas.drawRect(0, 0, getWidth(), getHeight(), paintBg);
+            }
+        }
+    }
+
+    private static class MyCheckBox extends CheckBox {
+        private  final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Dimen dimen;
+        private final float l;
+        private final float t;
+        private final float b;
+        private final float r;
+        private float myalpha;
+        private MyAnimation.Float alphaanim;
+        private final Handler h = new Handler(Looper.getMainLooper());
+        private MyAnimationTick action;
+
+        public MyCheckBox(Context c, Dimen dimen) {
+            super(c);
+            this.dimen = dimen;
+            p.setColor(Color.WHITE);
+            l = dimen.dpf(8);
+            t = dimen.dpf(18);
+            b = t + dimen.dpf(14);
+            r = l + dimen.dpf(16);
+            myalpha = 1f;
+        }
+
+        @Override
+        public void setChecked(boolean checked) {
+            super.setChecked(checked);
+            if (action != null) {
+                action.canceled = true;
+            }
+            alphaanim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, myalpha, checked ? 1f : 0f);
+            action = new MyAnimationTick();
+            postOnAnimation(action);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            if (Build.VERSION.SDK_INT >= 21) {
+                canvas.drawRect(l, t, r, b, p);
+            }
+            super.onDraw(canvas);
+        }
+
+        private class MyAnimationTick implements Runnable {
+            boolean canceled = false;
+            @Override
+            public void run() {
+                if (canceled) {
+                    return;
+                }
+                if (alphaanim != null) {
+                    myalpha = alphaanim.tick(SystemClock.uptimeMillis());
+                    p.setAlpha((int) (myalpha * 255));
+                    invalidate();
+                    if (alphaanim.ended) {
+                        alphaanim = null;
+                    } else {
+
+                        postOnAnimation(this);
+                    }
+                }
             }
         }
     }

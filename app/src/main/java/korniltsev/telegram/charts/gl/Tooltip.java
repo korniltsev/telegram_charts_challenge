@@ -146,9 +146,12 @@ public class Tooltip {
         if (framebuffer == null || index != fbindex) {//or index change
             if (framebuffer != null) {
                 framebuffer.release();
+                framebuffer = null;
             }
             fbindex = index;
-            framebuffer = new TooltipFramebuffer(texShaderFlip, data, index, dimen, colorsSet, checked, simple);
+            if (index != -1) {
+                framebuffer = new TooltipFramebuffer(texShaderFlip, data, index, dimen, colorsSet, checked, simple);
+            }
         }
 
         return invalidate;
