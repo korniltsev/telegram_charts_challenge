@@ -1,6 +1,5 @@
 package korniltsev.telegram.charts.gl;
 
-import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
@@ -9,12 +8,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 
 import korniltsev.telegram.charts.MainActivity;
-import korniltsev.telegram.charts.ui.Dimen;
 
 public class MyCircles {
 //    private final float[] MVP = new float[16];
@@ -39,7 +35,7 @@ public class MyCircles {
 
     private final int count;
 
-    class Shader {
+    public static class Shader {
         final int triangleCount;
         private final int program;
         private final int MVPHandle;
@@ -83,7 +79,7 @@ public class MyCircles {
         public Shader(int triangleCount) {
 
             this.triangleCount = triangleCount;
-            String vertexShaderFormatted = String.format(Locale.US, vertexShader, triangle_count);
+            String vertexShaderFormatted = String.format(Locale.US, vertexShader, triangleCount);
             program = MyGL.createProgram(vertexShaderFormatted, fragmentShader);
             MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
 //        VHandle = GLES20.glGetUniformLocation(program, "u_VMatrix");
@@ -102,14 +98,14 @@ public class MyCircles {
     }
 
 
-    public MyCircles(int canvasw, int canvash, int xOffset, long []yValues, int trianglesCount) {
+    public MyCircles(int canvasw, int canvash, int xOffset, long[] yValues, int trianglesCount, Shader shader) {
         this.canvasw = canvasw;
         this.canvash = canvash;
         this.count = yValues.length;
 
         triangle_count = trianglesCount;
 
-        shader = new Shader(trianglesCount);
+        this.shader = shader;
 //        if (anglesHandle == -1 || attributeNoHandle == -1) {
 //            throw new AssertionError();
 //        }

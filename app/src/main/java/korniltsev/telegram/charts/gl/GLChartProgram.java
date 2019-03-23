@@ -1,6 +1,5 @@
 package korniltsev.telegram.charts.gl;
 
-import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
@@ -89,7 +88,7 @@ public final class GLChartProgram {
     }
 
 
-    public GLChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, int toolttipFillColor, Shader shader) {
+    public GLChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, int toolttipFillColor, Shader shader, MyCircles.Shader joiningShader) {
         this.tooltipFillColor = toolttipFillColor;
         this.w = w;
         this.h = h;
@@ -122,7 +121,7 @@ public final class GLChartProgram {
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * BYTES_PER_FLOAT, buf1, GLES20.GL_STATIC_DRAW);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
-        lineJoining = new MyCircles(w, h, 0, column.values, 6);
+        lineJoining = new MyCircles(w, h, 0, column.values, 6, joiningShader);
 
     }
 
@@ -327,7 +326,7 @@ public final class GLChartProgram {
             }
             if (tooltipIndex != -1) {
                 long[] vs = new long[]{column.values[tooltipIndex]};
-                goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 24);
+                goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 24, new MyCircles.Shader(24));
             }
         }
         this.tooltipIndex = tooltipIndex;

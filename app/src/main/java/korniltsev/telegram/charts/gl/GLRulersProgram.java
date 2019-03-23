@@ -24,35 +24,36 @@ public final class GLRulersProgram {
     private static final int POSITION_DATA_SIZE = 2;
 //    public static final int BORDER_COLOR = 0x334b87b4;
 
-    static final String vertexShader =
-            "uniform mat4 u_MVPMatrix;      \n"
-                    + "attribute vec2 a_Position;     \n"
-                    + "void main()                    \n"
-                    + "{                              \n"
-                    + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
-                    + "}                              \n";
+//    static final String vertexShader =
+//            "uniform mat4 u_MVPMatrix;      \n"
+//                    + "attribute vec2 a_Position;     \n"
+//                    + "void main()                    \n"
+//                    + "{                              \n"
+//                    + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
+//                    + "}                              \n";
+//
+//    static final String fragmentShader =
+//            "precision mediump float;       \n"
+//                    + "uniform vec4 u_color;       \n"
+//                    + "void main()                    \n"
+//                    + "{                              \n"
+//                    + "   gl_FragColor = u_color;     \n"
+//                    + "}                              \n";
 
-    static final String fragmentShader =
-            "precision mediump float;       \n"
-                    + "uniform vec4 u_color;       \n"
-                    + "void main()                    \n"
-                    + "{                              \n"
-                    + "   gl_FragColor = u_color;     \n"
-                    + "}                              \n";
 
 
-
-    private final int lineMVPHandle;
-    private final int linePositionHandle;
-    private final int lineProgram;
+//    private final int lineMVPHandle;
+//    private final int linePositionHandle;
+//    private final int lineProgram;
     private final int lineVerticesVBO;
-    private final int lineColorHandle;
+//    private final int lineColorHandle;
     private final TextPaint paint;
 //    private final TextTex textZero;
 
 //    private final int texVerticesVBO;
     private final TexShader texShader;
     private final TextTex zero;
+    private final GLScrollbarOverlayProgram.SimpleShader simpleShader;
     private ColorSet colors;
 
 
@@ -83,7 +84,7 @@ public final class GLRulersProgram {
     private float[] colorParts = new float[4];
     private MyAnimation.Color textColorAnim;
 
-    public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, ColorSet colors) {
+    public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, ColorSet colors, GLScrollbarOverlayProgram.SimpleShader s) {
         this.colors = colors;
 
         texShader = new TexShader(true, true);
@@ -93,10 +94,11 @@ public final class GLRulersProgram {
         this.root = root;
         this.lineColor = colors.ruler;
         this.textColor = colors.rulerLabelColor;
-        lineProgram = MyGL.createProgram(vertexShader, fragmentShader);
-        lineMVPHandle = GLES20.glGetUniformLocation(lineProgram, "u_MVPMatrix");
-        linePositionHandle = GLES20.glGetAttribLocation(lineProgram, "a_Position");
-        lineColorHandle = GLES20.glGetUniformLocation(lineProgram, "u_color");
+        this.simpleShader = s;
+//        lineProgram = MyGL.createProgram(vertexShader, fragmentShader);
+//        lineMVPHandle = GLES20.glGetUniformLocation(lineProgram, "u_MVPMatrix");
+//        linePositionHandle = GLES20.glGetAttribLocation(lineProgram, "a_Position");
+//        lineColorHandle = GLES20.glGetUniformLocation(lineProgram, "u_color");
 
 
         FloatBuffer buf1 = ByteBuffer.allocateDirect(lineVertices.length * BYTES_PER_FLOAT)
@@ -264,17 +266,17 @@ public final class GLRulersProgram {
 
 
     public void drawLine(float x, float y, float w, float alpha) {
-        GLES20.glUseProgram(lineProgram);
+        GLES20.glUseProgram(simpleShader.program);
         MyGL.checkGlError2();
         LINE_COLOR_PARTS[0] = MyColor.red(lineColor) / 255f;
         LINE_COLOR_PARTS[1] = MyColor.green(lineColor) / 255f;
         LINE_COLOR_PARTS[2] = MyColor.blue(lineColor) / 255f;
         LINE_COLOR_PARTS[3] = alpha;
-        GLES20.glUniform4fv(lineColorHandle, 1, LINE_COLOR_PARTS, 0);//todo try to bind only once
+        GLES20.glUniform4fv(simpleShader.colorHandle, 1, LINE_COLOR_PARTS, 0);//todo try to bind only once
 
-        GLES20.glEnableVertexAttribArray(linePositionHandle);
+        GLES20.glEnableVertexAttribArray(simpleShader.positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, lineVerticesVBO);
-        GLES20.glVertexAttribPointer(linePositionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
+        GLES20.glVertexAttribPointer(simpleShader.positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
 
 
         final float scalex = 2.0f / canvasW;
@@ -287,7 +289,7 @@ public final class GLRulersProgram {
         Matrix.scaleM(MVP, 0, w, 1.0f, 1.0f);
 
         GLES20.glLineWidth(dimen.dpf(2.0f / 3.0f));
-        GLES20.glUniformMatrix4fv(lineMVPHandle, 1, false, MVP, 0);
+        GLES20.glUniformMatrix4fv(simpleShader.MVPHandle, 1, false, MVP, 0);
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, lineVertices.length / 2);
 
     }

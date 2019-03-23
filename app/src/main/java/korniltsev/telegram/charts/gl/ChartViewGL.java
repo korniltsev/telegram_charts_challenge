@@ -1,7 +1,6 @@
 package korniltsev.telegram.charts.gl;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
@@ -13,8 +12,6 @@ import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.ViewConfiguration;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -213,16 +210,18 @@ public class ChartViewGL extends TextureView {
 //    private final int rulerColor;
     private final ColorSet init_colors;
     private final ChartData data;
+    private final long initTime;
     public int bgColor;
     public MyAnimation.Color bgAnim = null;
     private int chartBottom;
     private int chartTop;
     private int hpadding;
-//    private long currentMax;
+    //    private long currentMax;
 //    private ColorSet currentColorsSet;
 
     public ChartViewGL(Context context, ChartData c, Dimen dimen, ColorSet currentColorsSet) {
         super(context);
+        initTime = SystemClock.elapsedRealtimeNanos();
         this.init_colors = currentColorsSet;
         currentColors = currentColorsSet;
         this.dimen = dimen;
@@ -247,6 +246,8 @@ public class ChartViewGL extends TextureView {
         initial_scroller_dith = dimen.dpi(86);
         resize_touch_area2 = dimen.dpi(20);
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+
+
     }
 
     @Override
@@ -326,22 +327,37 @@ public class ChartViewGL extends TextureView {
 //            if (MainActivity.TRACE) {
 //                Debug.startMethodTracing(trace.getAbsolutePath(), 1024  * 1024 * 10);
 //            }
+//            long t2 = SystemClock.elapsedRealtimeNanos();
 
             initGL(surface);
+//            long t3 = SystemClock.elapsedRealtimeNanos();
             initPrograms();
+//            long t5 = SystemClock.elapsedRealtimeNanos();
+            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t2 - initTime));
+            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t3 - t2));
+            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t5 - t3));
             loop();
 
         }
 
         private void initPrograms() {
+//            long t1 = SystemClock.elapsedRealtimeNanos();
+            GLChartProgram.Shader chartShader = new GLChartProgram.Shader();
+            MyCircles.Shader joiningShader = new MyCircles.Shader(6);
+            GLScrollbarOverlayProgram.SimpleShader simple = new GLScrollbarOverlayProgram.SimpleShader();
+//            long t2 = SystemClock.elapsedRealtimeNanos();
+//            if (LOGGING) Log.d(MainActivity.TAG, "shader init " + " " + (t2 - t1));
+
+
             ColumnData[] data = this.data.data;
             scrollbar = new GLChartProgram[data.length - 1];
             long max = -1;
             long min = Long.MAX_VALUE;
-            GLChartProgram.Shader chartShader = new GLChartProgram.Shader();
+
+
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 ColumnData datum = data[i];
-                scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, chartShader);
+                scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, chartShader, joiningShader);
                 max = Math.max(max, datum.maxValue);
                 min = Math.min(min, datum.minValue);
             }
@@ -353,7 +369,7 @@ public class ChartViewGL extends TextureView {
             chart = new GLChartProgram[data.length - 1];
             checked = new boolean[data.length - 1];
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
-                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground, chartShader);
+                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground, chartShader, joiningShader);
                 checked[i - 1] = true;
             }
 //            for (GLChartProgram it : chart) {
@@ -362,8 +378,9 @@ public class ChartViewGL extends TextureView {
 //            }
 //            prevMax = max;
 
-            overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay);
-            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors);
+
+            overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay, simple);
+            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors, simple);
 
 
             Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
@@ -648,6 +665,8 @@ public class ChartViewGL extends TextureView {
 
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+
+
             synchronized (lock) {
                 this.w = width;
                 this.h = height;

@@ -1,6 +1,5 @@
 package korniltsev.telegram.charts.gl;
 
-import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
@@ -20,27 +19,11 @@ public final class GLScrollbarOverlayProgram {
 //    public static final int OVERLAY_COLOR = 0xbff1f5f7;
     public static final int BORDER_COLOR = 0x334b87b4;
 
-    final String vertexShader =
-            "uniform mat4 u_MVPMatrix;      \n"
-                    + "attribute vec2 a_Position;     \n"
-                    + "void main()                    \n"
-                    + "{                              \n"
-                    + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
-                    + "}                              \n";
 
-    final String fragmentShader =
-            "precision mediump float;       \n"
-                    + "uniform vec4 u_color;       \n"
-                    + "void main()                    \n"
-                    + "{                              \n"
-                    + "   gl_FragColor = u_color;     \n"
-                    + "}                              \n";
-    private final int MVPHandle;
-    private final int positionHandle;
-    private final int program;
+
     private final int vbo;
     private final FloatBuffer buf1;
-    private final int colorHandle;
+    private final SimpleShader shader;
     private int color_overlay;
     private int color_border;
 
@@ -69,13 +52,43 @@ public final class GLScrollbarOverlayProgram {
     private MyAnimation.Color borderAnim;
     private MyAnimation.Color overlayAnim;
 
-    public GLScrollbarOverlayProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int colorBorder, int coloroVerlay) {
+    public static final class SimpleShader {
+        final String vertexShader =
+                "uniform mat4 u_MVPMatrix;      \n"
+                        + "attribute vec2 a_Position;     \n"
+                        + "void main()                    \n"
+                        + "{                              \n"
+                        + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
+                        + "}                              \n";
+
+        final String fragmentShader =
+                "precision mediump float;       \n"
+                        + "uniform vec4 u_color;       \n"
+                        + "void main()                    \n"
+                        + "{                              \n"
+                        + "   gl_FragColor = u_color;     \n"
+                        + "}                              \n";
+        public final int MVPHandle;
+        public final int positionHandle;
+        public final int program;
+        public final int colorHandle;
+        public SimpleShader() {
+
+            program = MyGL.createProgram(vertexShader, fragmentShader);
+            MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
+            positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
+            colorHandle = GLES20.glGetUniformLocation(program, "u_color");
+        }
+    }
+
+    public GLScrollbarOverlayProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int colorBorder, int coloroVerlay, SimpleShader shader) {
         this.color_overlay = coloroVerlay;
         this.color_border = colorBorder;
         this.canvasW = canvasW;
         this.canvasH = canvasH;
         this.dimen = dimen;
         this.root = root;
+        this.shader = shader;
 
         buf1 = ByteBuffer.allocateDirect(vertices.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
@@ -84,10 +97,7 @@ public final class GLScrollbarOverlayProgram {
         buf1.position(0);
 
 
-        program = MyGL.createProgram(vertexShader, fragmentShader);
-        MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
-        positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
-        colorHandle = GLES20.glGetUniformLocation(program, "u_color");
+
 
 
         int[] vbos = new int[1];
@@ -121,12 +131,12 @@ public final class GLScrollbarOverlayProgram {
                 overlayAnim = null;
             }
         }
-        GLES20.glUseProgram(program);
+        GLES20.glUseProgram(shader.program);
         MyGL.checkGlError2();
 
-        GLES20.glEnableVertexAttribArray(positionHandle);
+        GLES20.glEnableVertexAttribArray(shader.positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-        GLES20.glVertexAttribPointer(positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
+        GLES20.glVertexAttribPointer(shader.positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
 
 
         final float hpadding = dimen.dpf(16);
@@ -136,7 +146,7 @@ public final class GLScrollbarOverlayProgram {
 
 
         MyColor.set(color_parts, color_overlay);
-        GLES20.glUniform4fv(colorHandle, 1, color_parts, 0);
+        GLES20.glUniform4fv(shader.colorHandle, 1, color_parts, 0);
         if (left != 0.0f) {
             drawRect(hpadding, root.dimen_v_padding8, left*scrollerW, root.dimen_scrollbar_height);
         }
@@ -145,7 +155,7 @@ public final class GLScrollbarOverlayProgram {
         }
 
         MyColor.set(color_parts, color_border);
-        GLES20.glUniform4fv(colorHandle, 1, color_parts, 0);
+        GLES20.glUniform4fv(shader.colorHandle, 1, color_parts, 0);
         drawRect(hpadding + scrollerW * left, root.dimen_v_padding8, vline1w, root.dimen_scrollbar_height);
         drawRect(hpadding + scrollerW * right - vline1w, root.dimen_v_padding8, vline1w, root.dimen_scrollbar_height);
         float l = hpadding + scrollerW * left + vline1w;
@@ -166,7 +176,7 @@ public final class GLScrollbarOverlayProgram {
         Matrix.translateM(MVP, 0, x, y, 0);
         Matrix.scaleM(MVP, 0, w, h, 1.0f);
 
-        GLES20.glUniformMatrix4fv(MVPHandle, 1, false, MVP, 0);
+        GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.length / 2);
 
     }
