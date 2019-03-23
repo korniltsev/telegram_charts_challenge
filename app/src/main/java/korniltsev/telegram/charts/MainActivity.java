@@ -158,6 +158,7 @@ public class MainActivity extends Activity {
             ScrollView scrollView = new ScrollView(this);
             scrollView.addView(container);
             scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+
             chartList = scrollView;
         }
         mySetContentVie(chartList);
@@ -255,6 +256,7 @@ public class MainActivity extends Activity {
         list.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
         list.setPadding(0, 0, 0, dimen.dpi(8));
         scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        scrollView.setVerticalScrollBarEnabled(false);
         mySetContentVie(scrollView);
     }
 
