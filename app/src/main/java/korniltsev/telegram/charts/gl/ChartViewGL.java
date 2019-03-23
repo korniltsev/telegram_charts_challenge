@@ -333,9 +333,9 @@ public class ChartViewGL extends TextureView {
 //            long t3 = SystemClock.elapsedRealtimeNanos();
             initPrograms();
 //            long t5 = SystemClock.elapsedRealtimeNanos();
-            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t2 - initTime));
-            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t3 - t2));
-            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t5 - t3));
+//            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t2 - initTime));
+//            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t3 - t2));
+//            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t5 - t3));
             loop();
 
         }
