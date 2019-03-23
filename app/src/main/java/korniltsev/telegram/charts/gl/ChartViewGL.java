@@ -114,11 +114,14 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     + day/nigh animation bug
 
     [ ! ] horizontal lables + animations
+        - why last value is not aligned??
+        - dont show the most left value if it is center is off screen ?
 
     !!! The app should show 4 charts on one screen,
 
 
     [ ! ] cleanup - stop thread, destroy shaders, surface
+    onStop/onStart - touch gl thread and invalidate
 
     MUST HAVE
     --------------------------
@@ -206,7 +209,8 @@ public class ChartViewGL extends TextureView {
 //    private final int rulerColor;
     private final ColorSet init_colors;
     private final ChartData data;
-//    private final long initTime;
+    private final ColumnData xColumn;
+    //    private final long initTime;
     public int bgColor;
     public MyAnimation.Color bgAnim = null;
     private int chartBottom;
@@ -217,6 +221,7 @@ public class ChartViewGL extends TextureView {
 
     public ChartViewGL(Context context, ChartData c, Dimen dimen, ColorSet currentColorsSet) {
         super(context);
+        xColumn = c.data[0];
 //        initTime = SystemClock.elapsedRealtimeNanos();
         this.init_colors = currentColorsSet;
         currentColors = currentColorsSet;
@@ -377,7 +382,7 @@ public class ChartViewGL extends TextureView {
 
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay, simple);
-            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors, simple);
+            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors, simple, xColumn);
 
 
             Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
@@ -842,6 +847,7 @@ public class ChartViewGL extends TextureView {
                     glChartProgram.animateMinMax(0, scaledMax, !firstLeftRightUpdate);
                 }
             }
+            ruler.setLeftRight(left, right, scale);
             firstLeftRightUpdate = false;
 
 
@@ -1008,7 +1014,7 @@ public class ChartViewGL extends TextureView {
             float swindow = (x - scrollbar.left) / scrollbar.width();
              float sdataset = r.overlay.left + swindow * (r.overlay.right - r.overlay.left);
             int n = r.data.data[0].values.length;
-            int i = (int) (n * sdataset);
+            int i = (int) ((n-1) * sdataset);
             if (i < 0) {
                 i = 0;
             }
