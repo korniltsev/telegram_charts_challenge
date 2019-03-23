@@ -120,7 +120,7 @@ public final class GLRulersProgram {
 
         paint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(Color.BLUE);
-        paint.setTextSize(dimen.dpi(12));
+        paint.setTextSize(dimen.dpf(12));
 
         zero = new TextTex("0", paint);
     }
@@ -174,18 +174,64 @@ public final class GLRulersProgram {
             Ruler r = rs.get(ruler_i);
 
             float dy = dip50;
-
+            float vpaddingTextOverPadding = dimen.dpf(4);
             for (int i = 1; i < 6; ++i) {
                 //todo draw lines first, then text, so we can minimize program switch
 
                 drawLine(hpadding, zero + dy * r.scale, canvasW - 2 * hpadding, r.alpha);
-                drawText(r.values.get(i-1), hpadding, zero + dy * r.scale, r.alpha);
+
+                drawText(r.values.get(i-1), hpadding, zero + dy * r.scale + vpaddingTextOverPadding, r.alpha);
 
                 dy += dip50;
             }
 //            drawLine(hpadding, zero + root.dimen_chart_height-10, (canvasW - 2 * hpadding)/2, 1.0f);
         }
+
+        drawX(t);
     }
+
+    List<TextTex> xValues = new ArrayList<>();
+    public void drawX(long t){
+        final float hpadding = dimen.dpf(16);
+        final float pxw = canvasW - 2 * hpadding;
+        if (xValues.size() == 0) {
+            TextPaint p = new TextPaint();
+            p.setTextSize(dimen.dpf(12));
+            xValues.add(new TextTex("Feb 28", p));
+        }
+        for (TextTex xValue : xValues) {
+
+            final float scalex = 2.0f / canvasW;
+            final float scaley = 2.0f / canvasH;
+            Matrix.setIdentityM(MVP, 0);
+            Matrix.translateM(MVP, 0, -1.0f, -1.0f, 0);
+            Matrix.scaleM(MVP, 0, scalex, scaley, 1.0f);
+
+//            float x = dimen.dpf(80);
+            Matrix.translateM(MVP, 0, 0, dimen.dpf(80-18), 0);
+            Matrix.scaleM(MVP, 0, xValue.w, xValue.h, 1f);
+
+
+
+            float alpha = 1f;
+
+            GLES20.glUseProgram(texShader.texProgram);
+            MyGL.checkGlError2();
+            GLES20.glEnableVertexAttribArray(texShader.texPositionHandle);
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, texShader.texVerticesVBO);
+            GLES20.glVertexAttribPointer(texShader.texPositionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
+            GLES20.glUniformMatrix4fv(texShader.texMVPHandle, 1, false, MVP, 0);
+
+            GLES20.glUniform1f(texShader.texAlphaHandle, alpha);
+
+            MyColor.set(colorParts, textColor);
+            GLES20.glUniform4fv(texShader.u_color, 1, colorParts, 0);
+
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, xValue.tex[0]);
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, TexShader.texVertices.length / 2);
+        }
+
+    };
 
     private void animationTick(long t) {
         //todo invalidate

@@ -109,12 +109,13 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     ---------------------------------------- 22 march
 
 
-
     + tooltip draw line over tooltop
     + [ ! ] checkboxes
     + day/nigh animation bug
 
     [ ! ] horizontal lables + animations
+
+    !!! The app should show 4 charts on one screen,
 
 
     [ ! ] cleanup - stop thread, destroy shaders, surface
