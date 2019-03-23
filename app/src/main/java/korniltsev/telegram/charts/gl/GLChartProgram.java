@@ -179,6 +179,7 @@ public final class GLChartProgram {
 
         Matrix.setIdentityM(V, 0);
         if (scrollbar) {
+            hpadding += dimen.dpf(1);
             final float dip2 = dimen.dpf(2);
             Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + dip2, 0);
             float w = this.w - 2 * hpadding;
