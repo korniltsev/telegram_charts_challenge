@@ -83,6 +83,7 @@ public class MainActivity extends Activity {
 
     private View chartList;
     private ArrayList<MyTextView> buttons;
+    private boolean chartVisible;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,7 +172,8 @@ public class MainActivity extends Activity {
     }
 
     private void showChart(int finalI) {
-
+        chartVisible = true;
+        createChart(data[finalI]);
     }
 
     private void createChart(ChartData datum) {
@@ -417,6 +419,16 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (chart_ != null && chartVisible) {
+            chartVisible = false;
+            mySetContentVie(chartList);
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
