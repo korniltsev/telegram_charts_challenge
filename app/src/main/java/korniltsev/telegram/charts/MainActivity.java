@@ -38,6 +38,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,12 +90,16 @@ public class MainActivity extends Activity {
     private int textColor;
     private MyAnimation.Color textColorAnim;
     private List<CheckBox> checkboxes = new ArrayList<>();
+    private int dividerColor;
+    private MyAnimation.Color dividerAnim;
+    private List<View> dividers = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         currentColorSet = ColorSet.DAY;
         textColor = currentColorSet.textColor;
+        dividerColor = currentColorSet.ruler;
         dimen = new Dimen(this);
 
         data = readData();
@@ -208,6 +213,14 @@ public class MainActivity extends Activity {
             if (c.id.equals(ChartData.COLUMN_ID_X)) {
                 continue;
             }
+            if (i != 1) {
+                View divider = new View(this);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(1));
+                lp.leftMargin = dimen.dpi(59);
+                divider.setBackgroundColor(currentColorSet.ruler);
+                checkboxlist.addView(divider, lp);
+                dividers.add(divider);
+            }
             CheckBox cb = new MyCheckBox(this, dimen);
 //            cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
             if (Build.VERSION.SDK_INT >= 21) {
@@ -225,8 +238,8 @@ public class MainActivity extends Activity {
                 cb.setButtonDrawable(iccb);
 //                cb.setCompoundDrawablesWithIntrinsicBounds(iccb, null, null, null);
             }
-            int dip18 = dimen.dpi(18);
-            cb.setPadding(dip18, 0, dip18, 0);
+            int dip14 = dimen.dpi(14);
+            cb.setPadding(dip14, 0, dip14, 0);
 //            cb.setComp
             cb.setTextColor(textColor);
 //            MyColorDrawable d = ;
@@ -241,7 +254,7 @@ public class MainActivity extends Activity {
                 }
             });
             LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(50));
-            cblp.leftMargin = dip18;
+            cblp.leftMargin = dip14;
             cb.setLayoutParams(cblp);
 
             checkboxlist.addView(cb);
@@ -372,22 +385,41 @@ public class MainActivity extends Activity {
 
 
         textColorAnim = new MyAnimation.Color(textColor, currentColorSet.textColor);
+        dividerAnim = new MyAnimation.Color(dividerColor, currentColorSet.ruler);
         Runnable r = new Runnable() {
             @Override
             public void run() {
                 long t = SystemClock.uptimeMillis();
+                boolean post = false;
                 if (textColorAnim != null) {
                     textColor = textColorAnim.tick(t);
                     if (textColorAnim.ended) {
                         textColorAnim = null;
                     } else {
-                        root.postOnAnimation(this);
+                        post = true;
                     }
                 }
-                for (TextView button : buttons) {
+                if (dividerAnim != null) {
+                    dividerColor = dividerAnim.tick(t);
+                    if (dividerAnim.ended) {
+                        dividerAnim = null;
+                    } else {
+                        post = true;
+                    }
+                }
+                if (post) {
+                    root.postOnAnimation(this);
+                }
+                for (int i = 0, dividersSize = dividers.size(); i < dividersSize; i++) {
+                    View divider = dividers.get(i);
+                    divider.setBackgroundColor(dividerColor);
+                }
+                for (int i = 0, buttonsSize = buttons.size(); i < buttonsSize; i++) {
+                    TextView button = buttons.get(i);
                     button.setTextColor(textColor);
                 }
-                for (TextView button : checkboxes) {
+                for (int i = 0, checkboxesSize = checkboxes.size(); i < checkboxesSize; i++) {
+                    TextView button = checkboxes.get(i);
                     button.setTextColor(textColor);
                 }
             }
