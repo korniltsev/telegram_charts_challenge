@@ -36,7 +36,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.List;
 
 import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.data.ColumnData;
@@ -65,7 +67,7 @@ public class MainActivity extends Activity {
     //    private MyColorDrawable bgRoot;
     private ArrayList<MyColorDrawable> ds = new ArrayList<>();
 
-    ColorSet currentColorSet = ColorSet.DAY;
+    ColorSet currentColorSet;
 
 
     private Dimen dimen;
@@ -82,12 +84,17 @@ public class MainActivity extends Activity {
     private ChartData[] data;
 
     private View chartList;
-    private ArrayList<MyTextView> buttons;
+    private ArrayList<TextView> buttons;
     private boolean chartVisible;
+    private int textColor;
+    private MyAnimation.Color textColorAnim;
+    private List<CheckBox> checkboxes = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        currentColorSet = ColorSet.DAY;
+        textColor = currentColorSet.textColor;
         dimen = new Dimen(this);
 
 //        long t1 = SystemClock.elapsedRealtimeNanos();
@@ -128,7 +135,8 @@ public class MainActivity extends Activity {
             buttons = new ArrayList<>();
             for (int i = 0; i < 5; i++) {
 
-                MyTextView v = new MyTextView(this, currentColorSet);
+                TextView v = new TextView(this);
+                v.setTextColor(textColor);
                 v.setText("Chart " + (i + 1));
                 v.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
                 v.setPadding(dimen.dpi(16), 0, 0, 0);
@@ -210,6 +218,7 @@ public class MainActivity extends Activity {
                 continue;
             }
             CheckBox cb = new CheckBox(this);
+            cb.setTextColor(textColor);
             MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground);
             ds.add(d);
             cb.setBackgroundDrawable(d);
@@ -227,8 +236,13 @@ public class MainActivity extends Activity {
 
             list.addView(cb);
 
+            checkboxes.add(cb);
+
         }
 
+        View shadow = new View(this);
+        shadow.setBackgroundResource(R.drawable.header_shadow);
+        list.addView(shadow);
         mySetContentVie(scrollView);
     }
 
@@ -329,7 +343,7 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton, true));
-                for (MyTextView button : buttons) {
+                for (TextView button : buttons) {
                     button.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, false));
                 }
             }
@@ -344,10 +358,28 @@ public class MainActivity extends Activity {
                 }
             }, 300);
         }
-        for (MyTextView button : buttons) {
-            button.animate(currentColorSet);
-        }
-        //todo animate titlebar
+        textColorAnim = new MyAnimation.Color(textColor, currentColorSet.textColor);
+        Runnable r = new Runnable(){
+            @Override
+            public void run() {
+                long t = SystemClock.uptimeMillis();
+                if (textColorAnim != null) {
+                    textColor = textColorAnim.tick(t);
+                    if (textColorAnim.ended) {
+                        textColorAnim = null;
+                    } else {
+                        root.postOnAnimation(this);
+                    }
+                }
+                for (TextView button : buttons) {
+                    button.setTextColor(textColor);
+                }
+                for (TextView button : checkboxes) {
+                    button.setTextColor(textColor);
+                }
+            }
+        };
+        root.postOnAnimation(r);
     }
 
     private void trace(int delayMillis) {
@@ -523,33 +555,33 @@ public class MainActivity extends Activity {
             }
         }
     }
-
-    private static class MyTextView extends TextView {
-        private int color;
-        private MyAnimation.Color colorAnim;
-
-        public MyTextView(Context ctx, ColorSet currentColorSet) {
-            super(ctx);
-            setTextColor(currentColorSet.textColor);
-            color = currentColorSet.textColor;
-        }
-
-        public void animate(ColorSet cs) {
-            colorAnim = new MyAnimation.Color(color, cs.textColor);
-            invalidate();
-        }
-
-        @Override
-        protected void onDraw(Canvas canvas) {
-            super.onDraw(canvas);
-            if (colorAnim != null) {
-                color = colorAnim.tick(SystemClock.uptimeMillis());
-                setTextColor(color);
-                if (colorAnim.ended) {
-                    colorAnim = null;
-                }
-            }
-        }
-    }
+//
+//    private static class MyTextView extends TextView {
+//        private int color;
+//        private MyAnimation.Color colorAnim;
+//
+//        public MyTextView(Context ctx, ColorSet currentColorSet) {
+//            super(ctx);
+//            setTextColor(currentColorSet.textColor);
+//            color = currentColorSet.textColor;
+//        }
+//
+//        public void animate(ColorSet cs) {
+//            colorAnim = new MyAnimation.Color(color, cs.textColor);
+//            invalidate();
+//        }
+//
+//        @Override
+//        protected void onDraw(Canvas canvas) {
+//            super.onDraw(canvas);
+//            if (colorAnim != null) {
+//                color = colorAnim.tick(SystemClock.uptimeMillis());
+//                setTextColor(color);
+//                if (colorAnim.ended) {
+//                    colorAnim = null;
+//                }
+//            }
+//        }
+//    }
 
 }
