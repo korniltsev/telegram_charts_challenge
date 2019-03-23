@@ -112,8 +112,8 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
     + tooltip draw line over tooltop
     + [ ! ] checkboxes
+    + day/nigh animation bug
 
-    night
     [ ! ] horizontal lables + animations
 
 
