@@ -6,6 +6,9 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.text.TextPaint;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +33,7 @@ class TooltipFramebuffer {
     public static final int LEFT_RIGHT_PADDING = 10;
     public static final float FONT_SIZE_16 = 12f;
     public static final float FONT_SIZE22 = 16f;
+    private final int fakeShadowSimulatorLine;
     int[] fbos = new int[1];
     private final int fbo;
     int[] textures = new int[1];
@@ -48,6 +52,17 @@ class TooltipFramebuffer {
     private MyAnimation.Color titleColorAnim;
     private final GLScrollbarOverlayProgram.SimpleShader simple;
 
+    static final float shadowSimulatorLines[] = {
+            0, 0,
+            0, 1,
+            1, 1,
+            1, 0,
+            0, 0,
+    };
+    int[] vbos = new int[1];
+    private int fakeShadowColor;
+    private MyAnimation.Color fakeShadowColorAnim;
+
     public TooltipFramebuffer(TexShader shader, ChartData data, int index, Dimen dimen, ColorSet set, boolean[] checked, GLScrollbarOverlayProgram.SimpleShader simple) {
         this.dateColor = set.tooltipTitleColor;
         this.bgColor = set.tooltipBGColor;
@@ -56,6 +71,25 @@ class TooltipFramebuffer {
         this.index = index;
         this.dimen = dimen;
         this.simple = simple;
+        fakeShadowColor = set.tooltipFakeSHadowColor;
+
+        FloatBuffer buf2 = ByteBuffer.allocateDirect(shadowSimulatorLines.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        buf2.put(shadowSimulatorLines);
+        buf2.position(0);
+
+
+        GLES20.glGenBuffers(1, vbos, 0);
+//        lineVerticesVBO = vbos[0];
+        fakeShadowSimulatorLine = vbos[0];
+
+//        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, lineVerticesVBO);
+//        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, lineVertices.length * BYTES_PER_FLOAT, buf1, GLES20.GL_STATIC_DRAW);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, fakeShadowSimulatorLine);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, shadowSimulatorLines.length * 4, buf2, GLES20.GL_STATIC_DRAW);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+
         prepareTextTexturesAndMeasure(checked);
 
         //todo delete previous
@@ -95,6 +129,7 @@ class TooltipFramebuffer {
 //            if (texShader == null) {
 //                texShader = new TexShader();
 //            }
+
     }
 
     public final void drawTooltip() {
@@ -132,6 +167,27 @@ class TooltipFramebuffer {
 //        bitmap.copyPixelsFromBuffer(buffer);
 
 //        System.out.println();
+
+
+
+
+
+        Matrix.setIdentityM(VIEW, 0);
+//        Matrix.translateM(VIEW, 0, 0, dimen.dpf(80f), 0f);
+        Matrix.scaleM(VIEW, 0, w, h, 1f);
+//        Matrix.translateM(VIEW, 0, ndcx, 0f, 0f);
+        Matrix.multiplyMM(MVP, 0, PROJ, 0, VIEW, 0);
+
+        GLES20.glUseProgram(simple.program);
+        MyColor.set(colorParts, fakeShadowColor);
+        GLES20.glUniform4fv(simple.colorHandle, 1, colorParts, 0);
+        GLES20.glEnableVertexAttribArray(simple.positionHandle);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, fakeShadowSimulatorLine);
+        GLES20.glVertexAttribPointer(simple.positionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
+        GLES20.glLineWidth(dimen.dpf(8f));
+        GLES20.glUniformMatrix4fv(simple.MVPHandle, 1, false, MVP, 0);
+        GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, shadowSimulatorLines.length / 2);
+
 
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
 
@@ -239,10 +295,17 @@ class TooltipFramebuffer {
                 titleColorAnim = null;
             }
         }
+        if (fakeShadowColorAnim != null) {
+            fakeShadowColor = fakeShadowColorAnim.tick(time);
+            if (fakeShadowColorAnim.ended) {
+                fakeShadowColorAnim = null;
+            }
+        }
     }
 
     public void animateToColors(ColorSet c) {
         bgAnim = new MyAnimation.Color(bgColor, c.tooltipBGColor);
         titleColorAnim = new MyAnimation.Color(dateColor, c.tooltipTitleColor);
+        fakeShadowColorAnim  = new MyAnimation.Color(fakeShadowColor, c.tooltipFakeSHadowColor);
     }
 }
