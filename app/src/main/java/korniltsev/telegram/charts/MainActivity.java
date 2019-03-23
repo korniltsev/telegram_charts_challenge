@@ -7,21 +7,18 @@ import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
 import android.graphics.drawable.StateListDrawable;
-import android.opengl.Matrix;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowInsets;
 import android.widget.CheckBox;
@@ -59,6 +56,7 @@ public class MainActivity extends Activity {
     public static final String TAG = "tg.ch";
     public static final boolean DEBUG = BuildConfig.DEBUG;
     public static final boolean TRACE = BuildConfig.DEBUG && false;
+    public static final boolean USE_RIPPLE = true;
     public static final boolean LOGGING = DEBUG;
     public static final int DATASET = 4;
     public static final boolean DIRTY_CHECK = true;
@@ -82,6 +80,9 @@ public class MainActivity extends Activity {
     private View sgadow;
     private View currentView;
     private ChartData[] data;
+
+    private View chartList;
+    private ArrayList<MyTextView> buttons;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,24 +111,66 @@ public class MainActivity extends Activity {
     }
 
     private void createChartList() {
-        ScrollView.LayoutParams listLP = new ScrollView.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-        LinearLayout list = new LinearLayout(this);
-        list.setOrientation(LinearLayout.VERTICAL);
-        list.setLayoutParams(listLP);
-        list.setPadding(0, dimen.dpi(8), 0, dimen.dpi(8));
-        for (int i = 0; i < 5; i++) {
-            TextView v = new TextView(this);
-            v.setText("Chart " + (i + 1));
-            v.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
-            v.setPadding(dimen.dpi(16), 0, 0, 0);
-            list.addView(v, MATCH_PARENT, dimen.dpi(50));
-        }
+        if (chartList == null) {
+
+            ScrollView.LayoutParams listLP = new ScrollView.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+            LinearLayout list = new LinearLayout(this);
+            list.setOrientation(LinearLayout.VERTICAL);
+            list.setLayoutParams(listLP);
+            list.setPadding(0, dimen.dpi(8), 0, dimen.dpi(8));
+            MyColorDrawable background = new MyColorDrawable(currentColorSet.lightBackground);
+            ds.add(background);
+            list.setBackgroundDrawable(background);
+            TypedValue outValue = new TypedValue();
+            getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+
+            buttons = new ArrayList<>();
+            for (int i = 0; i < 5; i++) {
+
+                MyTextView v = new MyTextView(this, currentColorSet);
+                v.setText("Chart " + (i + 1));
+                v.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
+                v.setPadding(dimen.dpi(16), 0, 0, 0);
+                v.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, false));
+                v.setClickable(true);
+//                v.setClip
+//                v.set
+
+//                v.setBackgroundResource(outValue.resourceId);
+                final int finalI = i;
+                v.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showChart(finalI);
+
+                    }
+                });
+                list.addView(v, MATCH_PARENT, dimen.dpi(50));
+                buttons.add(v);
+            }
+
+            View shadow = new View(this);
+            shadow.setBackgroundResource(R.drawable.header_shadow);
+//            list.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
 //        list.addView(legend);
 //        list.addView(chart_);
 
-        ScrollView scrollView = new ScrollView(this);
-        scrollView.addView(list);
-        mySetContentVie(scrollView);
+            LinearLayout container = new LinearLayout(this);
+            container.setOrientation(LinearLayout.VERTICAL);
+            container.addView(list, MATCH_PARENT, WRAP_CONTENT);
+            container.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
+
+
+
+            ScrollView scrollView = new ScrollView(this);
+            scrollView.addView(container);
+            chartList = scrollView;
+        }
+        mySetContentVie(chartList);
+
+    }
+
+    private void showChart(int finalI) {
 
     }
 
@@ -139,7 +182,7 @@ public class MainActivity extends Activity {
         legend.setTextColor(currentColorSet.legendTitle);
         legend.setText("Followers");
         legend.setLayoutParams(legendLP);
-        MyColorDrawable d1 = new MyColorDrawable(currentColorSet.lightBackground, false);
+        MyColorDrawable d1 = new MyColorDrawable(currentColorSet.lightBackground);
         ds.add(d1);
         legend.setBackgroundDrawable(d1);
 
@@ -165,7 +208,7 @@ public class MainActivity extends Activity {
                 continue;
             }
             CheckBox cb = new CheckBox(this);
-            MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground, i == 1);
+            MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground);
             ds.add(d);
             cb.setBackgroundDrawable(d);
             cb.setText(c.name);
@@ -216,7 +259,7 @@ public class MainActivity extends Activity {
         imageButton.setScaleType(ImageView.ScaleType.CENTER);
         imageButton.setLayoutParams(buttonLP);
         imageButton.setClickable(true);
-        imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton));
+        imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton, true));
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -226,7 +269,7 @@ public class MainActivity extends Activity {
 
 
         LinearLayout.LayoutParams toolbarLP = new LinearLayout.LayoutParams(MATCH_PARENT, toolbar_size);
-        bgToolbar = new MyColorDrawable(currentColorSet.toolbar, false);
+        bgToolbar = new MyColorDrawable(currentColorSet.toolbar);
         toolbar = new LinearLayout(this);
         toolbar.setOrientation(LinearLayout.HORIZONTAL);
         toolbar.setBackgroundDrawable(bgToolbar);
@@ -283,7 +326,10 @@ public class MainActivity extends Activity {
         h.postDelayed(new Runnable() {
             @Override
             public void run() {
-                imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton));
+                imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton, true));
+                for (MyTextView button : buttons) {
+                    button.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, false));
+                }
             }
         }, 300);
 
@@ -295,6 +341,9 @@ public class MainActivity extends Activity {
                     setTaskDescription(d);
                 }
             }, 300);
+        }
+        for (MyTextView button : buttons) {
+            button.animate(currentColorSet);
         }
         //todo animate titlebar
     }
@@ -346,19 +395,35 @@ public class MainActivity extends Activity {
         return baos.toByteArray();
     }
 
-    public static final boolean USE_RIPPLE = true;
 
-    public final Drawable createButtonBackground(int pressedColor) {
+
+    public final Drawable createButtonBackground(int pressedColor, boolean borderless) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !USE_RIPPLE) {
             StateListDrawable stateListDrawable = new StateListDrawable();
             stateListDrawable.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(pressedColor));
             return stateListDrawable;
         } else {
-            ColorDrawable maskDrawable = null;
+            ColorDrawable maskDrawable = borderless? null:new ColorDrawable(Color.RED);
             return new RippleDrawable(ColorStateList.valueOf(pressedColor), null, maskDrawable);
         }
     }
 
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //todo stop & destroy chart
+    }
 
     public static class MyContentRoot extends LinearLayout {
         public static final boolean USE_INSETS = Build.VERSION.SDK_INT >= 21;
@@ -446,4 +511,33 @@ public class MainActivity extends Activity {
             }
         }
     }
+
+    private static class MyTextView extends TextView {
+        private int color;
+        private MyAnimation.Color colorAnim;
+
+        public MyTextView(Context ctx, ColorSet currentColorSet) {
+            super(ctx);
+            setTextColor(currentColorSet.textColor);
+            color = currentColorSet.textColor;
+        }
+
+        public void animate(ColorSet cs) {
+            colorAnim = new MyAnimation.Color(color, cs.textColor);
+            invalidate();
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            if (colorAnim != null) {
+                color = colorAnim.tick(SystemClock.uptimeMillis());
+                setTextColor(color);
+                if (colorAnim.ended) {
+                    colorAnim = null;
+                }
+            }
+        }
+    }
+
 }

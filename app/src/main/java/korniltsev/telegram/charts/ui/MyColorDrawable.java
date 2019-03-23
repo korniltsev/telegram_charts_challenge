@@ -16,11 +16,11 @@ public class MyColorDrawable extends Drawable {
     private ValueAnimator anim;
     private MyAnimation.Color bgAnim;
 
-    final boolean marker;
+//    final boolean marker;
 
-    public MyColorDrawable(int color, boolean marker) {
+    public MyColorDrawable(int color) {
         this.color = color;
-        this.marker = marker;
+//        this.marker = marker;
     }
 
     public void animate(final int to) {
