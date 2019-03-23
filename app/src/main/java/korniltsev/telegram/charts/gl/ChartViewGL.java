@@ -111,12 +111,13 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
     + [ ! ] chart selector screen
 
+
+    [ ! ] cleanup - stop thread, destroy shaders, surface
+
     [ ! ] horizontal lables + animations
 
 
-
-
-    [ ! ] cleanup - stop thread, destroy shaders
+    [ ! ] checkboxes
 
     MUST HAVE
     -------------
@@ -147,11 +148,9 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     [?] reuse shaders between objects for faster start?
     [?] don't draw if vertes is far behind the screen
 
-    [ ? ] Color-> MyColor, Matrix?
+    [ ? ] Matrix -> MyMatrix for inlining?
 
     [ * ] move left-right alot, fps goes down, do not animate-out rulers who already animating-out
-    [ * ] scrollbar animation bug when last value is zero
-    [ * ] optimize ruler rendering
 
 
     ACHTUNG
