@@ -12,7 +12,9 @@ public class ColorSet {
                 0xff426382,
                 0xffE5EBEF,
                 0xff222222, 0xffffffff,
-                0xff96A2AA);
+                0xff96A2AA,
+                0xff222222,
+                0xffdedede);
     public static final ColorSet NIGHT = new ColorSet(
             0xff212D3B,
             0xff161E27,
@@ -25,7 +27,9 @@ public class ColorSet {
             0xff131C26,
             0xffE5EFF5,
             0xff202B38,
-            0xff506372);
+            0xff506372,
+            0xffffffff,
+            0xff253242);
     public final int toolbar;
     public final int darkBackground;
     public final int lightBackground;
@@ -40,8 +44,10 @@ public class ColorSet {
     public final int tooltipTitleColor;
     public final int tooltipBGColor;
     public final int rulerLabelColor;
+    public final int textColor;
+    public final int listButtonPressedColor;
 
-    public ColorSet(int toolbar, int darkBackground, int lightBackground, int ruler, int pressedButton, int legendTitle, int scrollbarOverlay, int scrollbarBorder, int statusbar, int tooltipVerticalLine, int tooltipTitleColor, int tooltipBGColor, int rulerLabelColor) {
+    public ColorSet(int toolbar, int darkBackground, int lightBackground, int ruler, int pressedButton, int legendTitle, int scrollbarOverlay, int scrollbarBorder, int statusbar, int tooltipVerticalLine, int tooltipTitleColor, int tooltipBGColor, int rulerLabelColor, int textColor, int listButtonPressedColor) {
         this.toolbar = toolbar;
         this.darkBackground = darkBackground;
         this.lightBackground = lightBackground;
@@ -55,5 +61,7 @@ public class ColorSet {
         this.tooltipTitleColor = tooltipTitleColor;
         this.tooltipBGColor = tooltipBGColor;
         this.rulerLabelColor = rulerLabelColor;
+        this.textColor = textColor;
+        this.listButtonPressedColor = listButtonPressedColor;
     }
 }
