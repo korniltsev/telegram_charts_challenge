@@ -120,14 +120,36 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     [ ! ] cleanup - stop thread, destroy shaders, surface
 
     MUST HAVE
-    -------------
+    --------------------------
+    startup optimization(see below)
+    alpha animation on fbo
+    [?] why DIRTY slow?
+    [ ? ] Matrix -> MyMatrix for inlining?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    -------------------------- DEADLINE
     Emulator crashes on tooltip dissmiss wtf
     NICE TO HAVE
     try to draw only every 16 ms, not faster, try to use handler thread, maybe it is faster
-    [ ! ] starup optimization
+    [ ! ] optimization
         - shader warmup https://stackoverflow.com/questions/11726650/egl-can-context-be-shared-between-threads
         - data swap
         - destory on destroy
+        [?] https://github.com/facebook/redex
+        [?] reuse shaders between objects for faster start?
+        trace scrolling/caling allocations & perf
 
     [ ! ] alpha animation blending - render to fbo
     + fix touch (laggy, hard to select)
@@ -141,62 +163,36 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
     tooltip touchdown - replace with touchup
 
-    [?] tooltip alpha nimation
     [?] optimize minmax animation, introduce step?, do not cancel animations or try to continue?
     [?] why DIRTY slow?
-    [?] replace actionQueue.add with something better?
+    [?] replace actionQueue.add with something better?(handler?)
     [?] try to play with thread priority?
-    [?] enabled blending only for overlay
-    [?] reuse shaders between objects for faster start?
-    [?] don't draw if vertes is far behind the screen
-
-    [ ? ] Matrix -> MyMatrix for inlining?
-
-    [ * ] move left-right alot, fps goes down, do not animate-out rulers who already animating-out
 
 
-    ACHTUNG
-    chart line dithering
-    https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
-    calculating normal in vertex shader
-    https://github.com/learnopengles/Learn-OpenGLES-Tutorials/blob/641fcc25158dc30f45a7b2faaab165ec61ebb54b/android/AndroidOpenGLESLessonsCpp/app/src/main/assets/vertex/per_pixel_vertex_shader_tex_and_light.glsl#L22
-    render to msa fbo https://stackoverflow.com/a/8338881/1321940
+    [?] mb scale linewidth when drawing 365 points
 
 
-
-----------------------------------------------------------------------
-----------------------------------------------------------------------
-----------------------------------------------------------------------
-- tooltip round corners and shadows
-// todo
-
-//      boolean dirtyCheck = true;/
-//     implement y=0 y=x chart
-//     scrolling/caling allocations & perf
-//     initial zoom for small charts is terrible
-//    mb scale linewidth when drawing 365 points
 
 
 
 // todo design
 //    check colors & paddings with collor picker
-//    add 1dp padding to the scrollbar charts
 //    compare label fonts with design
-
-// todo nice to have
-//     checkbox animations
-//      https://github.com/facebook/redex
-//      try to iptimize bytecode, check for accessor methods etc
-
 
 //todo testing
 //     requestLayaout during drag
 //     requestLayaout during animation?
 //     test on old device                      <<<<<<
 //     monkey test   + screenshots
-//     fuzz test     + screenshots
-//     nagative values
 
+
+after contest replace GL_LINE with triangles & dithering
+ACHTUNG
+    chart line dithering
+    https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
+    calculating normal in vertex shader
+    https://github.com/learnopengles/Learn-OpenGLES-Tutorials/blob/641fcc25158dc30f45a7b2faaab165ec61ebb54b/android/AndroidOpenGLESLessonsCpp/app/src/main/assets/vertex/per_pixel_vertex_shader_tex_and_light.glsl#L22
+    render to msa fbo https://stackoverflow.com/a/8338881/1321940
 
 
 
