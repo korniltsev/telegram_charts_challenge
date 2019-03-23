@@ -115,7 +115,6 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
     [ ! ] horizontal lables + animations
         - why last value is not aligned??
-        - dont show the most left value if it is center is off screen ?
         - fix paddings & text size of x/y labels
 
     !!! The app should show 4 charts on one screen,
@@ -145,6 +144,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
 
     -------------------------- DEADLINE
+    - don't draw x lablel if the label is offscreen -
     Emulator crashes on tooltip dissmiss wtf
     NICE TO HAVE
     try to draw only every 16 ms, not faster, try to use handler thread, maybe it is faster

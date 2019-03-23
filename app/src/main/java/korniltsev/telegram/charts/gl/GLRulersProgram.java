@@ -231,15 +231,19 @@ public final class GLRulersProgram {
         final float scaledWidth = pxw / zoom;
         final float npos = (float) index / xColumn.values.length;
         final float pos =  npos * scaledWidth - scaledWidth * left;
-
         if (xValue.tex == null) {
             long v = xColumn.values[xValue.index];
             String format = dateFormat.format(v);
             TextTex lazyTex = new TextTex(format, paint);
             xValue.tex = lazyTex;
         }
+        float left = hpadding + pos - xValue.tex.w;
+        if (left > canvasW || left + xValue.tex.w < 0) {//todo lazy x labels
+            return;
+        }
 
-        Matrix.translateM(MVP, 0, hpadding + pos-xValue.tex.w, dimen.dpf(80-18), 0);
+
+        Matrix.translateM(MVP, 0, left, dimen.dpf(80-18), 0);
         Matrix.scaleM(MVP, 0, xValue.tex.w, xValue.tex.h, 1f);
 
 
