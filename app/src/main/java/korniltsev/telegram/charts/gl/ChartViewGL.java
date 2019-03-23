@@ -116,6 +116,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     [ ! ] horizontal lables + animations
         - why last value is not aligned??
         - dont show the most left value if it is center is off screen ?
+        - fix paddings & text size of x/y labels
 
     !!! The app should show 4 charts on one screen,
 
