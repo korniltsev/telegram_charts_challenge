@@ -124,7 +124,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     NICE TO HAVE
     try to draw only every 16 ms, not faster
     [ ! ] starup optimization
-        - shader warmup
+        - shader warmup https://stackoverflow.com/questions/11726650/egl-can-context-be-shared-between-threads
         - data swap
         - destory on destroy
 
