@@ -122,6 +122,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     MUST HAVE
     -------------
     NICE TO HAVE
+    try to draw only every 16 ms, not faster
     [ ! ] starup optimization
         - shader warmup
         - data swap
