@@ -2,7 +2,6 @@ package korniltsev.telegram.charts.gl;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
-import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -24,7 +23,7 @@ public class Tooltip {
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("E, MMM d", Locale.US);
 
     private final float[] colorParts= new float[4];
-    public final Shader shader;
+    public final GLScrollbarOverlayProgram.SimpleShader shader;
     final Dimen dimen;
     private final int vbo;
 
@@ -44,19 +43,21 @@ public class Tooltip {
     //    private int fbo;
 //    private int tex;
     private int lineColor;
+    private GLScrollbarOverlayProgram.SimpleShader simple;
     private MyAnimation.Color lineANim;
     private int fbindex;
     private float ndcx;
 //    private TexShader texShader;
 
-    public Tooltip(Shader shader, Dimen dimen, int w, int h, ColorSet colors, ChartData data) {
+    public Tooltip(Dimen dimen, int w, int h, ColorSet colors, ChartData data, GLScrollbarOverlayProgram.SimpleShader simple) {
         this.data = data;
         this.colorsSet = colors;
-        this.shader = shader;
+        this.shader = simple;
         this.dimen = dimen;
         this.w = w;
         this.h = h;
         this.lineColor = colors.tooltipVerticalLine;
+        this.simple = simple;
 
 
         FloatBuffer buf1 = ByteBuffer.allocateDirect(lineVertices.length * 4)
@@ -89,38 +90,38 @@ public class Tooltip {
         }
     }
 
-    public static class Shader {
-
-        static final String vertexShader =
-                "uniform mat4 u_MVPMatrix;      \n"
-                        + "attribute vec2 a_Position;     \n"
-                        + "void main()                    \n"
-                        + "{                              \n"
-                        + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
-                        + "}                              \n";
-
-        static final String fragmentShader =
-                "precision mediump float;       \n"
-                        + "uniform vec4 u_color;       \n"
-                        + "void main()                    \n"
-                        + "{                              \n"
-                        + "   gl_FragColor = u_color;     \n"
-                        + "}                              \n";
-
-        private final int lineProgram;
-        private final int lineMVPHandle;
-        private final int linePositionHandle;
-        private final int lineColorHandle;
-
-
-        public Shader() {
-            lineProgram = MyGL.createProgram(vertexShader, fragmentShader);
-            lineMVPHandle = GLES20.glGetUniformLocation(lineProgram, "u_MVPMatrix");
-            linePositionHandle = GLES20.glGetAttribLocation(lineProgram, "a_Position");
-            lineColorHandle = GLES20.glGetUniformLocation(lineProgram, "u_color");
-        }
-
-    }
+//    public static class Shader {//todo replace with simple
+//
+//        static final String vertexShader =
+//                "uniform mat4 u_MVPMatrix;      \n"
+//                        + "attribute vec2 a_Position;     \n"
+//                        + "void main()                    \n"
+//                        + "{                              \n"
+//                        + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
+//                        + "}                              \n";
+//
+//        static final String fragmentShader =
+//                "precision mediump float;       \n"
+//                        + "uniform vec4 u_color;       \n"
+//                        + "void main()                    \n"
+//                        + "{                              \n"
+//                        + "   gl_FragColor = u_color;     \n"
+//                        + "}                              \n";
+//
+//        private final int lineProgram;
+//        private final int lineMVPHandle;
+//        private final int linePositionHandle;
+//        private final int lineColorHandle;
+//
+//
+//        public Shader() {
+//            lineProgram = MyGL.createProgram(vertexShader, fragmentShader);
+//            lineMVPHandle = GLES20.glGetUniformLocation(lineProgram, "u_MVPMatrix");
+//            linePositionHandle = GLES20.glGetAttribLocation(lineProgram, "a_Position");
+//            lineColorHandle = GLES20.glGetUniformLocation(lineProgram, "u_color");
+//        }
+//
+//    }
 
 
 
@@ -147,7 +148,7 @@ public class Tooltip {
                 framebuffer.release();
             }
             fbindex = index;
-            framebuffer = new TooltipFramebuffer(texShaderFlip, data, index, dimen, colorsSet, checked);
+            framebuffer = new TooltipFramebuffer(texShaderFlip, data, index, dimen, colorsSet, checked, simple);
         }
 
         return invalidate;
@@ -218,14 +219,14 @@ public class Tooltip {
         Matrix.translateM(VIEW, 0, ndcx, 0f, 0f);
         Matrix.multiplyMM(MVP, 0, proj, 0, VIEW, 0);
 
-        GLES20.glUseProgram(shader.lineProgram);
+        GLES20.glUseProgram(shader.program);
         MyColor.set(colorParts, lineColor);
-        GLES20.glUniform4fv(shader.lineColorHandle, 1, colorParts, 0);
-        GLES20.glEnableVertexAttribArray(shader.linePositionHandle);
+        GLES20.glUniform4fv(shader.colorHandle, 1, colorParts, 0);
+        GLES20.glEnableVertexAttribArray(shader.positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-        GLES20.glVertexAttribPointer(shader.linePositionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
+        GLES20.glVertexAttribPointer(shader.positionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
         GLES20.glLineWidth(dimen.dpf(1f));
-        GLES20.glUniformMatrix4fv(shader.lineMVPHandle, 1, false, MVP, 0);
+        GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, lineVertices.length / 2);
     }
 }

@@ -105,16 +105,20 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
             + do not animate rulers when animting in-out from empty view
             + remove tooltip when animating
 
+     + [ ! ] chart selector screen
+    ---------------------------------------- 22 march
 
-    + [ ! ] chart selector screen
 
 
+    - tooltip draw line over tooltop
     [ ! ] cleanup - stop thread, destroy shaders, surface
 
     [ ! ] horizontal lables + animations
 
 
     [ ! ] checkboxes
+
+
 
     MUST HAVE
     -------------
@@ -127,7 +131,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
     [ ! ] alpha animation blending - render to fbo
     + fix touch (laggy, hard to select)
-    - tooltip round corners and shadows
+
     look for aliased line
 
     [ ! ] tweak inital zoom for smal datasets
@@ -163,6 +167,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+- tooltip round corners and shadows
 // todo
 
 //      boolean dirtyCheck = true;/
@@ -308,6 +313,7 @@ public class ChartViewGL extends TextureView {
         private Tooltip tooltip;
         private boolean rulerInitDone;
         private boolean[] checked;
+        private GLScrollbarOverlayProgram.SimpleShader simple;
 
 
         public Render(ChartData column) {
@@ -344,7 +350,7 @@ public class ChartViewGL extends TextureView {
 //            long t1 = SystemClock.elapsedRealtimeNanos();
             GLChartProgram.Shader chartShader = new GLChartProgram.Shader();
             MyCircles.Shader joiningShader = new MyCircles.Shader(6);
-            GLScrollbarOverlayProgram.SimpleShader simple = new GLScrollbarOverlayProgram.SimpleShader();
+            simple = new GLScrollbarOverlayProgram.SimpleShader();
 //            long t2 = SystemClock.elapsedRealtimeNanos();
 //            if (LOGGING) Log.d(MainActivity.TAG, "shader init " + " " + (t2 - t1));
 
@@ -617,7 +623,7 @@ public class ChartViewGL extends TextureView {
             int tooltipIndex = chart[0].getTooltipIndex();
             if (tooltipIndex != -1 ) {
                 if (this.tooltip == null) {
-                    this.tooltip = new Tooltip(new Tooltip.Shader(), dimen, w, h, currentColors, data);
+                    this.tooltip = new Tooltip(dimen, w, h, currentColors, data, simple);
                 }
             }
             for (GLChartProgram chartProgram : chart) {

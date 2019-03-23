@@ -46,14 +46,16 @@ class TooltipFramebuffer {
     private int dateColor;
     private MyAnimation.Color bgAnim;
     private MyAnimation.Color titleColorAnim;
+    private final GLScrollbarOverlayProgram.SimpleShader simple;
 
-    public TooltipFramebuffer(TexShader shader, ChartData data, int index, Dimen dimen, ColorSet set, boolean[] checked) {
+    public TooltipFramebuffer(TexShader shader, ChartData data, int index, Dimen dimen, ColorSet set, boolean[] checked, GLScrollbarOverlayProgram.SimpleShader simple) {
         this.dateColor = set.tooltipTitleColor;
         this.bgColor = set.tooltipBGColor;
         this.shader_ = shader;
         this.data = data;
         this.index = index;
         this.dimen = dimen;
+        this.simple = simple;
         prepareTextTexturesAndMeasure(checked);
 
         //todo delete previous
@@ -132,6 +134,7 @@ class TooltipFramebuffer {
 //        System.out.println();
 
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+
 
     }
     float[] PROJ = new float[16];
