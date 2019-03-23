@@ -184,7 +184,7 @@ class TooltipFramebuffer {
         GLES20.glEnableVertexAttribArray(simple.positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, fakeShadowSimulatorLine);
         GLES20.glVertexAttribPointer(simple.positionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
-        GLES20.glLineWidth(dimen.dpf(1f));
+        GLES20.glLineWidth(dimen.dpf(2f));
         GLES20.glUniformMatrix4fv(simple.MVPHandle, 1, false, MVP, 0);
         GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, shadowSimulatorLines.length / 2);
 
