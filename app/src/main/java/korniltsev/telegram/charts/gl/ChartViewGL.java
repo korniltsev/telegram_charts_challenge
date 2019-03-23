@@ -144,7 +144,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
 
     -------------------------- DEADLINE
-    - don't draw x lablel if the label is offscreen -
+    - don't draw x lablel if the label is offscreen - lazy textures are required
     Emulator crashes on tooltip dissmiss wtf
     NICE TO HAVE
     try to draw only every 16 ms, not faster, try to use handler thread, maybe it is faster
