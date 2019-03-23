@@ -121,6 +121,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
     MUST HAVE
     -------------
+    Emulator crashes on tooltip dissmiss wtf
     NICE TO HAVE
     try to draw only every 16 ms, not faster, try to use handler thread, maybe it is faster
     [ ! ] starup optimization
