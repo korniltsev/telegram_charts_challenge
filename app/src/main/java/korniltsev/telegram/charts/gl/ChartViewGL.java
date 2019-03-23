@@ -111,7 +111,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
 
     + tooltip draw line over tooltop
-    [ ! ] checkboxes
+    + [ ! ] checkboxes
 
 
     [ ! ] horizontal lables + animations
@@ -122,7 +122,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     MUST HAVE
     -------------
     NICE TO HAVE
-    try to draw only every 16 ms, not faster
+    try to draw only every 16 ms, not faster, try to use handler thread, maybe it is faster
     [ ! ] starup optimization
         - shader warmup https://stackoverflow.com/questions/11726650/egl-can-context-be-shared-between-threads
         - data swap

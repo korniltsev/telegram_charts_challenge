@@ -7,6 +7,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -223,7 +224,7 @@ public class MainActivity extends Activity {
                 continue;
             }
             CheckBox cb = new MyCheckBox(this, dimen);
-            cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
+//            cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
             if (Build.VERSION.SDK_INT >= 21) {
                 cb.setButtonTintList(new ColorStateList(new int[][]{
                                 new int[]{android.R.attr.state_checked},
@@ -234,7 +235,10 @@ public class MainActivity extends Activity {
                         })
                 );
             } else {
-                //todo
+                Drawable iccb = getResources().getDrawable(R.drawable.ic_checkbox).mutate();
+                iccb.setColorFilter(c.color, PorterDuff.Mode.SRC_IN);
+                cb.setButtonDrawable(iccb);
+//                cb.setCompoundDrawablesWithIntrinsicBounds(iccb, null, null, null);
             }
             int dip18 = dimen.dpi(18);
             cb.setPadding(dip18, 0, dip18, 0);
@@ -369,10 +373,10 @@ public class MainActivity extends Activity {
                 for (TextView button : buttons) {
                     button.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, false));
                 }
-                for (CheckBox cb : checkboxes) {
-                    cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
-                }
                 if (Build.VERSION.SDK_INT >= 21) {
+                    for (CheckBox cb : checkboxes) {
+                        cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
+                    }
                     ActivityManager.TaskDescription d = new ActivityManager.TaskDescription("Statistics", null, currentColorSet.toolbar);
                     setTaskDescription(d);
                 }
@@ -613,7 +617,7 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onDraw(Canvas canvas) {
-            if (Build.VERSION.SDK_INT >= 21) {
+            if (myalpha != 0f) {
                 canvas.drawRect(l, t, r, b, p);
             }
             super.onDraw(canvas);
