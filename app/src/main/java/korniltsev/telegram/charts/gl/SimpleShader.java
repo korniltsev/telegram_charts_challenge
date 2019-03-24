@@ -30,7 +30,7 @@ public final class SimpleShader {
         colorHandle = GLES20.glGetUniformLocation(program, "u_color");
     }
 
-    public final void bind(float[]mvp, int posVBO, float []color) {
-
+    public void release() {
+        GLES20.glDeleteProgram(program);
     }
 }

@@ -37,6 +37,7 @@ public class Tooltip {
     private final TexShader texShaderFlip;
     private final TexShader texShaderNoflip
             ;
+    private final int[] vbos;
     private ColorSet colorsSet;
     private TooltipFramebuffer framebuffer;
     private final ChartData data;
@@ -66,7 +67,7 @@ public class Tooltip {
         buf1.put(lineVertices);
         buf1.position(0);
 
-        int[] vbos = new int[1];
+        vbos = new int[1];
         GLES20.glGenBuffers(1, vbos, 0);
         vbo = vbos[0];
         lineVerticesVBO = vbos[0];
@@ -231,5 +232,15 @@ public class Tooltip {
         GLES20.glLineWidth(dimen.dpf(1f));
         GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, lineVertices.length / 2);
+    }
+
+    public void rlease() {
+        GLES20.glDeleteBuffers(1, vbos, 0);
+        texShaderFlip.release();
+        texShaderNoflip.release();
+        if (framebuffer != null) {
+            framebuffer.release();
+            framebuffer = null;
+        }
     }
 }

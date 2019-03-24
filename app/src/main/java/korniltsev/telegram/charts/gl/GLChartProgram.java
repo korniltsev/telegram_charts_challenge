@@ -51,6 +51,12 @@ public final class GLChartProgram {
     public MyCircles goodCircle;
     //    private int goodCircleIndex;
     private MyAnimation.Color tooltipFillColorAnim;
+    private final int[] vbos;
+
+    public void release() {
+        GLES20.glDeleteBuffers(1, vbos, 0);
+        lineJoining.release();
+    }
 
     public static final class Shader {
         static final String vertexShader =
@@ -85,6 +91,10 @@ public final class GLChartProgram {
             GLES20.glUseProgram(program);
             MyGL.checkGlError2();
         }
+
+        public void release() {
+            GLES20.glDeleteProgram(program);
+        }
     }
 
 
@@ -114,13 +124,14 @@ public final class GLChartProgram {
         this.shader = shader;
 
 
-        int[] vbos = new int[1];
+        vbos = new int[1];
         GLES20.glGenBuffers(1, vbos, 0);
         vbo = vbos[0];
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * BYTES_PER_FLOAT, buf1, GLES20.GL_STATIC_DRAW);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
+        //todo reuse line joining with scrollbar
         lineJoining = new MyCircles(w, h, 0, column.values, 6, joiningShader);
 
     }

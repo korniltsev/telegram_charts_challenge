@@ -288,17 +288,25 @@ public class ChartViewGL extends TextureView {
         final Object lock = new Object();//todo fuck locking
         private int w;
         private int h;
+
+        private long prevMax;
+
+        private boolean rulerInitDone;
+        private boolean[] checked;
+
+
+        Handler renderHandler;
+
+        private Tooltip tooltip;
         private GLChartProgram[] scrollbar;
         private GLChartProgram[] chart;
         private GLScrollbarOverlayProgram overlay;
         private GLRulersProgram ruler;
-        private long prevMax;
-        private Tooltip tooltip;
-        private boolean rulerInitDone;
-        private boolean[] checked;
-        private SimpleShader simple;
 
-        Handler renderHandler;
+        private SimpleShader simple;
+        private GLChartProgram.Shader chartShader;
+        private MyCircles.Shader joiningShader;
+
         public Render(ChartData column) {
             super("RenderThread", Process.getThreadPriority(Process.myTid()));
             this.data = column;
@@ -313,6 +321,40 @@ public class ChartViewGL extends TextureView {
             renderHandler.post(drawFrame_);
 
 //            renderHandler.post(drawFrame);
+        }
+
+        public void release() {
+            renderHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (released) {
+                        return;
+                    }
+                    released = true;
+                    if (tooltip != null) {
+                        tooltip.rlease();
+                    }
+                    for (GLChartProgram c : chart) {
+                        c.release();
+                    }
+                    for (GLChartProgram c : scrollbar) {
+                        c.release();
+                    }
+                    overlay.release();
+                    ruler.release();
+
+                    simple.release();
+                    joiningShader.release();
+                    chartShader.release();
+
+                    mEgl.eglDestroySurface(mEglDisplay, mEglSurface);
+                    mEgl.eglDestroyContext(mEglDisplay, mEglContext);
+
+                    surface.release();
+
+                    quit();
+                }
+            });
         }
 
         class Init implements Runnable {
@@ -355,11 +397,11 @@ public class ChartViewGL extends TextureView {
 //
 //
 //        }
-
+        private boolean released = false;
         private void initPrograms() {
 //            long t1 = SystemClock.elapsedRealtimeNanos();
-            GLChartProgram.Shader chartShader = new GLChartProgram.Shader();
-            MyCircles.Shader joiningShader = new MyCircles.Shader(6);
+            chartShader = new GLChartProgram.Shader();
+            joiningShader = new MyCircles.Shader(6);
             simple = new SimpleShader();
 //            long t2 = SystemClock.elapsedRealtimeNanos();
 //            if (LOGGING) Log.d(MainActivity.TAG, "shader init " + " " + (t2 - t1));
@@ -583,7 +625,10 @@ public class ChartViewGL extends TextureView {
 //            }
 //        }
 
-        private boolean drawAndSwap2() {
+        private void drawAndSwap2() {
+            if (released) {
+                return;
+            }
             long t = SystemClock.uptimeMillis();
             boolean invalidated = false;
             if (!rulerInitDone) {
@@ -635,7 +680,6 @@ public class ChartViewGL extends TextureView {
             if (invalidated) {
                 invalidateRender();
             }
-            return invalidated;
         }
 
         boolean rendererInvalidated = false;
@@ -751,6 +795,7 @@ public class ChartViewGL extends TextureView {
         }
 
         private void initGL(SurfaceTexture surface) {
+//            this.surface = surface;
             mEgl = (EGL10) EGLContext.getEGL();
 
             mEglDisplay = mEgl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
@@ -1175,6 +1220,11 @@ public class ChartViewGL extends TextureView {
             }
         };
         r.renderHandler.post(switchTheme);
+    }
+
+    public void release() {
+        r.release();
+
     }
 
 //    @Override

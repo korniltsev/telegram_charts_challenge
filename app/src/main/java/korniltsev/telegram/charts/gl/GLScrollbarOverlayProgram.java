@@ -25,6 +25,7 @@ public final class GLScrollbarOverlayProgram {
     private final int vbo;
     private final FloatBuffer buf1;
     private final SimpleShader shader;
+    private final int[] vbos;
     private int color_overlay;
     private int color_border;
 
@@ -72,7 +73,7 @@ public final class GLScrollbarOverlayProgram {
 
 
 
-        int[] vbos = new int[1];
+        vbos = new int[1];
         GLES20.glGenBuffers(1, vbos, 0);
         vbo = vbos[0];
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
@@ -162,5 +163,10 @@ public final class GLScrollbarOverlayProgram {
     public void animate(ColorSet colors, long duration) {
         borderAnim = new MyAnimation.Color(duration, color_border, colors.scrollbarBorder);
         overlayAnim = new MyAnimation.Color(duration, color_overlay, colors.scrollbarOverlay);
+    }
+
+    public void release() {
+        GLES20.glDeleteBuffers(1, vbos, 0);
+
     }
 }

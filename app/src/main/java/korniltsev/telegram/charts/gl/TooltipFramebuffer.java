@@ -278,8 +278,6 @@ class TooltipFramebuffer {
         }
         GLES20.glDeleteFramebuffers(1, fbos, 0);
         GLES20.glDeleteTextures(1, textures, 0);
-
-        //todo delete framebuffer & tex
     }
 
     public void animtionTick(long time) {

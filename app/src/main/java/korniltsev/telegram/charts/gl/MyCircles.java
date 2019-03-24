@@ -95,6 +95,11 @@ public class MyCircles {
         public void use() {
             GLES20.glUseProgram(program);
         }
+
+        public void release() {
+            GLES20.glDeleteProgram(program);
+
+        }
     }
 
 

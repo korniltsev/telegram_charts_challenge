@@ -551,7 +551,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //todo stop & destroy chart
+        for (ChartViewGL c : charts) {
+            c.release();
+        }
     }
 
     public static class MyContentRoot extends LinearLayout {
@@ -706,6 +708,7 @@ public class MainActivity extends Activity {
             }
         }
     }
+
 
 
 }

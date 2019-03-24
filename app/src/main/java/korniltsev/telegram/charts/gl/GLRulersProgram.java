@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import korniltsev.telegram.charts.MainActivity;
 import korniltsev.telegram.charts.data.ColumnData;
@@ -62,6 +63,7 @@ public final class GLRulersProgram {
     private final SimpleShader simpleShader;
     private final float wpx;
     private final float hpadding;
+    private final int[] vbos;
     private ColorSet colors;
     private ColumnData xColumn;
 
@@ -122,7 +124,7 @@ public final class GLRulersProgram {
         buf1.position(0);
 
 
-        int[] vbos = new int[1];
+        vbos = new int[1];
         GLES20.glGenBuffers(1, vbos, 0);
         lineVerticesVBO = vbos[0];
 //        texVerticesVBO = vbos[1];
@@ -547,6 +549,34 @@ public final class GLRulersProgram {
         }
     }
 
+    public void release() {
+        GLES20.glDeleteBuffers(1, vbos, 0);
+        zero.release();
+        for (int i1 = 0, rsSize = rs.size(); i1 < rsSize; i1++) {
+            Ruler r = rs.get(i1);
+            List<TextTex> values = r.values;
+            for (int i = 0, valuesSize = values.size(); i < valuesSize; i++) {
+                TextTex value = values.get(i);
+                value.release();
+
+            }
+            r.values.clear();
+        }
+        for (int i = 0, xValuesSize = xValues.size(); i < xValuesSize; i++) {
+            XValueLable xValue = xValues.get(i);
+            xValue.tex.release();
+            xValue.tex = null;
+        }
+        for (int i = 0, animatingOutSize = animatingOut.size(); i < animatingOutSize; i++) {
+            XValueLable xValueLable = animatingOut.get(i);
+            xValueLable.tex.release();
+            xValueLable.tex = null;
+        }
+        xValues.clear();
+        animatingOut.clear();
+
+    }
+
     public static class XValueLable {
         public final int index;
         public TextTex tex;
@@ -571,11 +601,9 @@ public final class GLRulersProgram {
         MyAnimation.Float alphaAnim;
         boolean toBeDeleted = false;
         public final List<TextTex> values = new ArrayList<>();
-        private final TextPaint p;
         public Ruler(long maxValue, float scale, TextPaint p) {
             this.maxValue = maxValue;
             this.scale = scale;
-            this.p = p;
             int dy = 50;
             int max = 280;
             for (int i = 1; i < 6; i++) {
