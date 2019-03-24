@@ -133,7 +133,9 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
         + shadow between charts
         - when scrolled down chart is not animating
 
+    checkbox paddings on 16 android
     x values second chart, wtf values in reverse order
+
     4. lollipop toolbar color wtf (one hour max)
     5. [ ? ] move "folorwers" to gl +   text night mode + animation
     6. [ ! ] alpha animation blending - render to fbo

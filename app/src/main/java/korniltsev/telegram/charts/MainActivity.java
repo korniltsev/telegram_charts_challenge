@@ -69,8 +69,6 @@ public class MainActivity extends Activity {
     public static final boolean DIRTY_CHECK = true;
     public static final boolean LOG_FPS = true;
 
-    //    private MyColorDrawable bgRoot;
-    private ArrayList<MyColorDrawable> ds = new ArrayList<>();
 
     ColorSet currentColorSet;
 
@@ -283,7 +281,7 @@ public class MainActivity extends Activity {
         toolbar = new LinearLayout(this){
             @Override
             public boolean isOpaque() {
-                return super.isOpaque();
+                return true;//a
             }
         };
         toolbar.setOrientation(LinearLayout.HORIZONTAL);
@@ -327,13 +325,17 @@ public class MainActivity extends Activity {
         }
         final boolean animateChart = true;
         final boolean animateUI = true;
+        final boolean animateDayNight = Build.VERSION.SDK_INT >= 21;
+        final int colorAnimationDuration;
+        if (animateDayNight) {
+            colorAnimationDuration = MyAnimation.ANIM_DRATION;
+        } else {
+            colorAnimationDuration = 0;
+        }
         if (animateUI) {
 
-            root.animateColors(currentColorSet.statusbar, currentColorSet.darkBackground);
-            bgToolbar.animate(currentColorSet.toolbar);
-            for (MyColorDrawable d : ds) {
-                d.animate(currentColorSet.lightBackground);
-            }
+            root.animateColors(currentColorSet.statusbar, currentColorSet.darkBackground, colorAnimationDuration);
+            bgToolbar.animate(currentColorSet.toolbar, colorAnimationDuration);
         }
         if (animateChart) {
 
@@ -344,11 +346,12 @@ public class MainActivity extends Activity {
                 if (LOGGING) Log.d("Chart", "top" + top);
                 //todo do not animate if
                 View parent = (View) root.getParent().getParent();
-                if (top > parent.getHeight()) {
-                    chart.animateToColors(currentColorSet, 0);
-                } else {
-                    chart.animateToColors(currentColorSet, MyAnimation.ANIM_DRATION);
+                boolean offscreen = top > parent.getHeight();
 
+                if (animateDayNight && !offscreen) {
+                    chart.animateToColors(currentColorSet, colorAnimationDuration);
+                } else {
+                    chart.animateToColors(currentColorSet, 0);
                 }
             }
         }
@@ -371,8 +374,8 @@ public class MainActivity extends Activity {
         }
 
         if (animateUI) {
-            textColorAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, textColor, currentColorSet.textColor);
-            dividerAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, dividerColor, currentColorSet.ruler);
+            textColorAnim = new MyAnimation.Color(colorAnimationDuration, textColor, currentColorSet.textColor);
+            dividerAnim = new MyAnimation.Color(colorAnimationDuration, dividerColor, currentColorSet.ruler);
             Runnable r = new Runnable() {
                 @Override
                 public void run() {
@@ -524,9 +527,9 @@ public class MainActivity extends Activity {
             }
         }
 
-        public void animateColors(int status, int bg) {
-            animStatus = new MyAnimation.Color(MyAnimation.ANIM_DRATION, this.colorStatusbar, status);
-            animBg = new MyAnimation.Color(MyAnimation.ANIM_DRATION, this.colorBackground, bg);
+        public void animateColors(int status, int bg, int colorAnimationDuration) {
+            animStatus = new MyAnimation.Color(colorAnimationDuration, this.colorStatusbar, status);
+            animBg = new MyAnimation.Color(colorAnimationDuration, this.colorBackground, bg);
             invalidate();
         }
 

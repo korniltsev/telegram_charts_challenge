@@ -16,39 +16,13 @@ public class MyColorDrawable extends Drawable {
     private ValueAnimator anim;
     private MyAnimation.Color bgAnim;
 
-//    final boolean marker;
 
     public MyColorDrawable(int color) {
         this.color = color;
-//        this.marker = marker;
     }
 
-    public void animate(final int to) {
-        bgAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, color, to);
-//        if (anim != null) {
-//            anim.cancel();
-//        }
-//        anim = ValueAnimator.ofInt(color, to);
-//        anim.setEvaluator(new ArgbEvaluator());
-//        anim.setInterpolator(new LinearInterpolator());
-//        anim.setDuration(1600);
-//        final int from = color;
-//
-//        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//            @Override
-//            public void onAnimationUpdate(ValueAnimator animation) {
-//                float f = animation.getAnimatedFraction();
-//
-////                int v = (int) animation.getAnimatedValue();//todo unneded allocations
-//                int v = korniltsev.telegram.charts.ui.ArgbEvaluator.sInstance.evaluate(f, from, to);
-//                if (marker) {
-//                    Log.d("MyColorDrawable", "v " + Integer.toHexString(v));
-//                }
-//                color = v;
-//                invalidateSelf();
-//            }
-//        });
-//        anim.start();
+    public void animate(final int to, int colorAnimationDuration) {
+        bgAnim = new MyAnimation.Color(colorAnimationDuration, color, to);
         invalidateSelf();
 
     }
