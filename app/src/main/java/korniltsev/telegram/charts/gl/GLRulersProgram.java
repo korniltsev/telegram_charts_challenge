@@ -147,10 +147,10 @@ public final class GLRulersProgram {
         rs.add(r);
     }
 
-    public void animate(ColorSet colors) {
+    public void animate(ColorSet colors, long duration) {
         this.colors = colors;
-        colorAnim = new MyAnimation.Color(lineColor, colors.ruler);
-        textColorAnim = new MyAnimation.Color(textColor, colors.rulerLabelColor);
+        colorAnim = new MyAnimation.Color(duration, lineColor, colors.ruler);
+        textColorAnim = new MyAnimation.Color(duration, textColor, colors.rulerLabelColor);
     }
 
 

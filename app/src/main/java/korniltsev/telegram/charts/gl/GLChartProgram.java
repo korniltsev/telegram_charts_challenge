@@ -308,8 +308,8 @@ public final class GLChartProgram {
 
     }
 
-    public void animateColors(ColorSet colors) {
-        tooltipFillColorAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, tooltipFillColor, colors.lightBackground);
+    public void animateColors(ColorSet colors, long duration) {
+        tooltipFillColorAnim = new MyAnimation.Color(duration, tooltipFillColor, colors.lightBackground);
     }
 
     public int getTooltipIndex() {

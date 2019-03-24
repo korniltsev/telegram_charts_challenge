@@ -1162,21 +1162,21 @@ public class ChartViewGL extends TextureView {
 
     private ColorSet currentColors;
 
-    public void animateToColors(final ColorSet colors) {
+    public void animateToColors(final ColorSet colors, final long duration) {
         Runnable switchTheme = new Runnable() {
 
 
             @Override
             public void run() {
                 currentColors = colors;
-                bgAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, bgColor, colors.lightBackground);
-                r.ruler.animate(colors);
-                r.overlay.animate(colors.scrollbarBorder, colors.scrollbarOverlay);
+                bgAnim = new MyAnimation.Color(duration, bgColor, colors.lightBackground);
+                r.ruler.animate(colors, duration);
+                r.overlay.animate(colors, duration);
                 for (GLChartProgram glChartProgram : r.chart) {
-                    glChartProgram.animateColors(colors);
+                    glChartProgram.animateColors(colors, duration);
                 }
                 if (r.tooltip != null) {
-                    r.tooltip.animateTo(colors);
+                    r.tooltip.animateTo(colors, duration);
                 }
 //                r.drawAndSwap();
                 r.invalidateRender();

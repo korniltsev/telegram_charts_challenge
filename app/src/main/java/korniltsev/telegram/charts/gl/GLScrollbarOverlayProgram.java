@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyColor;
@@ -158,8 +159,8 @@ public final class GLScrollbarOverlayProgram {
 //        Log.d("OVERLAY", " " + left + " " + right);
     }
 
-    public void animate(int scrollbarBorder, int scrollbarOverlay) {
-        borderAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, color_border, scrollbarBorder);
-        overlayAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, color_overlay, scrollbarOverlay);
+    public void animate(ColorSet colors, long duration) {
+        borderAnim = new MyAnimation.Color(duration, color_border, colors.scrollbarBorder);
+        overlayAnim = new MyAnimation.Color(duration, color_overlay, colors.scrollbarOverlay);
     }
 }

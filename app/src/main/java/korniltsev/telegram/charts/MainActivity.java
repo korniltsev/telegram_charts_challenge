@@ -19,6 +19,7 @@ import android.os.Debug;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Choreographer;
 import android.view.Gravity;
@@ -80,6 +81,7 @@ public class MainActivity extends Activity {
     private TextView title;
     private ImageView imageButton;
     private List<ChartViewGL> charts = new ArrayList<>();
+    private List<View> chartsRoots = new ArrayList<>();
     private MyContentRoot root;
     private FrameLayout contentFrame;
     private View sgadow;
@@ -300,6 +302,7 @@ public class MainActivity extends Activity {
 
 
 //        mySetContentVie(scrollView);
+        chartsRoots.add(list);
         return list;
     }
 
@@ -392,8 +395,13 @@ public class MainActivity extends Activity {
         for (MyColorDrawable d : ds) {
             d.animate(currentColorSet.lightBackground);
         }
-        for (ChartViewGL chart : charts) {
-            chart.animateToColors(currentColorSet);
+        for (int i = 0, chartsSize = charts.size(); i < chartsSize; i++) {
+            ChartViewGL chart = charts.get(i);
+            View root = chartsRoots.get(i);
+            int top = root.getTop();
+            if (LOGGING) Log.d("Chart", "top" + top);
+            //todo do not animate if
+            chart.animateToColors(currentColorSet, MyAnimation.ANIM_DRATION);
         }
 //        if (chart_ != null) {
 //
@@ -417,8 +425,8 @@ public class MainActivity extends Activity {
         }, 300);
 
 
-        textColorAnim = new MyAnimation.Color(textColor, currentColorSet.textColor);
-        dividerAnim = new MyAnimation.Color(dividerColor, currentColorSet.ruler);
+        textColorAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, textColor, currentColorSet.textColor);
+        dividerAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, dividerColor, currentColorSet.ruler);
         Runnable r = new Runnable() {
             @Override
             public void run() {

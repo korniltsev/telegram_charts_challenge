@@ -82,11 +82,11 @@ public class Tooltip {
     }
 
 
-    public void animateTo(ColorSet colors) {
+    public void animateTo(ColorSet colors, long duration) {
         this.colorsSet = colors;
-        lineANim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, lineColor, colors.tooltipVerticalLine);
+        lineANim = new MyAnimation.Color(duration, lineColor, colors.tooltipVerticalLine);
         if (framebuffer != null) {
-            framebuffer.animateToColors(colors);
+            framebuffer.animateToColors(colors, duration);
         }
     }
 

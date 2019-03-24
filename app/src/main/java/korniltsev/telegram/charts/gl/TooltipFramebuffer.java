@@ -303,9 +303,9 @@ class TooltipFramebuffer {
         }
     }
 
-    public void animateToColors(ColorSet c) {
-        bgAnim = new MyAnimation.Color(bgColor, c.tooltipBGColor);
-        titleColorAnim = new MyAnimation.Color(dateColor, c.tooltipTitleColor);
-        fakeShadowColorAnim  = new MyAnimation.Color(fakeShadowColor, c.tooltipFakeSHadowColor);
+    public void animateToColors(ColorSet c, long duration) {
+        bgAnim = new MyAnimation.Color(duration, bgColor, c.tooltipBGColor);
+        titleColorAnim = new MyAnimation.Color(duration, dateColor, c.tooltipTitleColor);
+        fakeShadowColorAnim  = new MyAnimation.Color(duration, fakeShadowColor, c.tooltipFakeSHadowColor);
     }
 }
