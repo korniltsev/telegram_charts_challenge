@@ -189,30 +189,30 @@ public class ChartViewGL extends TextureView {
     public static final int CHECKBOX_HEIGHT_DPI = 50;
     public static final int CHECKBOX_DIVIDER_HIEIGHT = 1;
     public static final int CHART_BOTTOM_DIP = 80;//relative to checkboxes
-    private final Dimen dimen;
+    public final Dimen dimen;
 
     public final int dimen_v_padding8;
     public final int dimen_chart_height;
     public final int dimen_scrollbar_height;
-    private final int h;
-    private final Render r;
-    private final int initial_scroller_dith;
-    private final int resize_touch_area2;
-    private final int touchSlop;
-//    private final int rulerColor;
-    private final ColorSet init_colors;
-    private final ChartData data;
-    private final ColumnData xColumn;
-    private final int legend_height;
+    public final int h;
+    public final Render r;
+    public final int initial_scroller_dith;
+    public final int resize_touch_area2;
+    public final int touchSlop;
+//    public final int rulerColor;
+    public final ColorSet init_colors;
+    public final ChartData data;
+    public final ColumnData xColumn;
+    public final int legend_height;
     public final int checkboxesHeight;
-    //    private final long initTime;
+    //    public final long initTime;
     public int bgColor;
     public MyAnimation.Color bgAnim = null;
-    private int chartBottom;
-    private int chartTop;
-    private int hpadding;
-    //    private long currentMax;
-//    private ColorSet currentColorsSet;
+    public int chartBottom;
+    public int chartTop;
+    public int hpadding;
+    //    public long currentMax;
+//    public ColorSet currentColorsSet;
 
 
     @Override
@@ -303,43 +303,43 @@ public class ChartViewGL extends TextureView {
 
     }
 
-    private static int counter;
+    public static int counter;
     class Render extends HandlerThread implements TextureView.SurfaceTextureListener {
 
-        private int id = ++counter;
-        private final float[] PROJ = new float[16];
-        private final ChartData data;
+        public int id = ++counter;
+        public final float[] PROJ = new float[16];
+        public final ChartData data;
         public volatile float initleft;
         public volatile float initRight;
         public volatile float initSacle;
-        private EGL10 mEgl;
-        private EGLDisplay mEglDisplay;
-        private EGLConfig mEglConfig;
-        private EGLContext mEglContext;
-        private EGLSurface mEglSurface;
+        public EGL10 mEgl;
+        public EGLDisplay mEglDisplay;
+        public EGLConfig mEglConfig;
+        public EGLContext mEglContext;
+        public EGLSurface mEglSurface;
 
         SurfaceTexture surface;
         final Object lock = new Object();//todo fuck locking
-        private int w;
-        private int h;
+        public int w;
+        public int h;
 
-        private long prevMax;
+        public long prevMax;
 
-        private boolean rulerInitDone;
-        private boolean[] checked;
+        public boolean rulerInitDone;
+        public boolean[] checked;
 
 
         Handler renderHandler2;
 
-        private Tooltip tooltip;
-        private GLChartProgram[] scrollbar;
-        private GLChartProgram[] chart;
-        private GLScrollbarOverlayProgram overlay;
-        private GLRulersProgram ruler;
+        public Tooltip tooltip;
+        public GLChartProgram[] scrollbar;
+        public GLChartProgram[] chart;
+        public GLScrollbarOverlayProgram overlay;
+        public GLRulersProgram ruler;
 
-        private SimpleShader simple;
-//        private GLChartProgram.Shader chartShader;
-        private MyCircles.Shader joiningShader;
+        public SimpleShader simple;
+//        public GLChartProgram.Shader chartShader;
+        public MyCircles.Shader joiningShader;
 
         public Render(ChartData column) {
             super("ChartViewGLRender", Process.getThreadPriority(Process.myTid()));
@@ -484,8 +484,8 @@ public class ChartViewGL extends TextureView {
 //
 //
 //        }
-        private boolean released = false;
-        private void initPrograms() {
+        public boolean released = false;
+        public void initPrograms() {
 //            chartShader = new GLChartProgram.Shader();
             joiningShader = new MyCircles.Shader(6);
             simple = new SimpleShader();
@@ -539,7 +539,7 @@ public class ChartViewGL extends TextureView {
         }
 
 
-        private boolean waitForSurface() {
+        public boolean waitForSurface() {
             SurfaceTexture surface = null;//todo destroying handling
             synchronized (lock) {
                 while (true) {
@@ -629,7 +629,7 @@ public class ChartViewGL extends TextureView {
             postToRender(setCheckedOnRenderThread);
         }
 
-//        private final BlockingQueue<Runnable> actionQueue = new ArrayBlockingQueue<Runnable>(100);
+//        public final BlockingQueue<Runnable> actionQueue = new ArrayBlockingQueue<Runnable>(100);
         DrawFrame drawFrame_ = new DrawFrame();
         class DrawFrame implements Runnable {
 
@@ -642,7 +642,7 @@ public class ChartViewGL extends TextureView {
             }
         }
 
-        private void drawAndSwap2() {
+        public void drawAndSwap2() {
             if (released) {
                 return;
             }
@@ -713,7 +713,7 @@ public class ChartViewGL extends TextureView {
             renderHandler2.post(drawFrame_);
         }
 
-        private boolean drawScrollbar(boolean invalidated, long t) {
+        public boolean drawScrollbar(boolean invalidated, long t) {
             for (GLChartProgram chartProgram : scrollbar) {
                 boolean it_invalid = chartProgram.animateionTick(t);
                 invalidated = invalidated || it_invalid;
@@ -733,7 +733,7 @@ public class ChartViewGL extends TextureView {
             return invalidated;
         }
 
-        private boolean drawChart(boolean invalidated, long t) {
+        public boolean drawChart(boolean invalidated, long t) {
             int tooltipIndex = chart[0].getTooltipIndex();
             if (tooltipIndex != -1 ) {
                 if (this.tooltip == null) {
@@ -779,7 +779,7 @@ public class ChartViewGL extends TextureView {
             return invalidated;
         }
 
-        private void log_trace(String name, long t5, long t4) {
+        public void log_trace(String name, long t5, long t4) {
             if (LOGGING) Log.d(MainActivity.TAG, String.format("trace %20s %10d", name, t5 - t4));
         }
 
@@ -812,7 +812,7 @@ public class ChartViewGL extends TextureView {
 
         }
 
-        private void initGL(SurfaceTexture surface) {
+        public void initGL(SurfaceTexture surface) {
 //            this.surface = surface;
             mEgl = (EGL10) EGLContext.getEGL();
 
@@ -881,7 +881,7 @@ public class ChartViewGL extends TextureView {
         }
 
 
-        private EGLConfig chooseEglConfig() {
+        public EGLConfig chooseEglConfig() {
             int[] configsCount = new int[1];
             EGLConfig[] configs = new EGLConfig[1];
 
@@ -913,7 +913,7 @@ public class ChartViewGL extends TextureView {
 //            return null;
         }
 
-        private int[] getConfig(boolean sampleBuffers) {
+        public int[] getConfig(boolean sampleBuffers) {
             if (sampleBuffers) {
 
                 return new int[]{
@@ -993,10 +993,10 @@ public class ChartViewGL extends TextureView {
         }
     }
 
-    //    private int scroller_width;//todo replace with scroller_left/right
-//    private int scroller_pos = -1;
-    private Rect scrollbar = new Rect();
-    //    private int scroller_move_down_x;
+    //    public int scroller_width;//todo replace with scroller_left/right
+//    public int scroller_pos = -1;
+    public Rect scrollbar = new Rect();
+    //    public int scroller_move_down_x;
     static final int DOWN_MOVE = 0;
     static final int DOWN_RESIZE_LEFT = 1;
     static final int DOWN_RESIZE_RIGHT = 2;
@@ -1007,11 +1007,11 @@ public class ChartViewGL extends TextureView {
     boolean dragging;
 
 
-    private int scroller__right = -1;
-    private int scroller_left = -1;
-    //    private Rect scrollbar = new Rect();
-    private int scroller_move_down_x;
-    private int scroller_move_down_width;
+    public int scroller__right = -1;
+    public int scroller_left = -1;
+    //    public Rect scrollbar = new Rect();
+    public int scroller_move_down_x;
+    public int scroller_move_down_width;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -1136,7 +1136,7 @@ public class ChartViewGL extends TextureView {
         return false;
     }
 
-    private void dispatchTouchDownChart(float x) {
+    public void dispatchTouchDownChart(float x) {
         if (x < scrollbar.left || x > scrollbar.right) {
             if (LOGGING) Log.d(MainActivity.TAG, "chart down miss");
         } else {
@@ -1176,7 +1176,7 @@ public class ChartViewGL extends TextureView {
         }
     }
 
-//    private static final BlockingQueue<MyMotionEvent> motionEvents = new ArrayBlockingQueue<MyMotionEvent>(100);
+//    public static final BlockingQueue<MyMotionEvent> motionEvents = new ArrayBlockingQueue<MyMotionEvent>(100);
 
     public final void setOverlayPos(boolean init) {
         final float left = (float) (scroller_left - scrollbar.left) / (scrollbar.right - scrollbar.left);
@@ -1198,7 +1198,7 @@ public class ChartViewGL extends TextureView {
         }
     }
 
-    private void setLeftRightImpl(float left, float right, float scale) {
+    public void setLeftRightImpl(float left, float right, float scale) {
         r.updateLeftRight(left, right, scale);
 
         for (GLChartProgram glChartProgram : r.chart) {
@@ -1224,7 +1224,7 @@ public class ChartViewGL extends TextureView {
         return max;
     }
 
-    private ColorSet currentColors;
+    public ColorSet currentColors;
 
     public void animateToColors(final ColorSet colors, final long duration) {
         Runnable switchTheme = new Runnable() {
