@@ -124,8 +124,9 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
     ---------------------------------------- 23 march
 
-    1. cleanup - stop thread, destroy shaders, surface
-//    korniltsev.telegram.charts.gl.GLChartProgram.Shader - simpleshader
+    + 1. cleanup - stop thread, destroy shaders, surface
+      korniltsev.telegram.charts.gl.GLChartProgram.Shader - simpleshader
+      initial animation bug
     2. onStop/onStart - touch gl thread and invalidate
     3. make day/night animation work
     4. lollipop toolbar color wtf (one hour max)
@@ -415,6 +416,7 @@ public class ChartViewGL extends TextureView {
             @Override
             public void run() {
                 int threadPriority = Process.getThreadPriority(Process.myTid());
+//            long t1= SystemClock.elapsedRealtimeNanos();
                 if (!waitForSurface()) {
 
                     return;
@@ -430,9 +432,9 @@ public class ChartViewGL extends TextureView {
 //            long t3 = SystemClock.elapsedRealtimeNanos();
                 initPrograms();
 //            long t5 = SystemClock.elapsedRealtimeNanos();
-//            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t2 - initTime));
-//            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t3 - t2));
-//            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t5 - t3));
+//            if (LOGGING) Log.d(MainActivity.TAG, String.format("init time1  %10d", t2 - t1));
+//            if (LOGGING) Log.d(MainActivity.TAG, String.format("init time2  %10d", t3 - t2));
+//            if (LOGGING) Log.d(MainActivity.TAG, String.format("init time3  %10d", t5 - t3));
             }
         }
 
@@ -452,12 +454,11 @@ public class ChartViewGL extends TextureView {
 //        }
         private boolean released = false;
         private void initPrograms() {
-//            long t1 = SystemClock.elapsedRealtimeNanos();
             chartShader = new GLChartProgram.Shader();
             joiningShader = new MyCircles.Shader(6);
             simple = new SimpleShader();
 //            long t2 = SystemClock.elapsedRealtimeNanos();
-//            if (LOGGING) Log.d(MainActivity.TAG, "shader init " + " " + (t2 - t1));
+
 
 
             ColumnData[] data = this.data.data;
@@ -476,6 +477,7 @@ public class ChartViewGL extends TextureView {
                 it.maxValue = max;
                 it.minValue = min;
             }
+//            long scrollbar = SystemClock.elapsedRealtimeNanos();
 
             chart = new GLChartProgram[data.length - 1];
             checked = new boolean[data.length - 1];
@@ -483,24 +485,25 @@ public class ChartViewGL extends TextureView {
                 chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground, chartShader, joiningShader);
                 checked[i - 1] = true;
             }
-//            for (GLChartProgram it : chart) {
-//                it.maxValue = max;
-//                it.minValue = 0;
-//            }
-//            prevMax = max;
+//            long chart = SystemClock.elapsedRealtimeNanos();
 
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay, simple);
+//            long overlay = SystemClock.elapsedRealtimeNanos();
             ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors, simple, xColumn);
+//            long ruler = SystemClock.elapsedRealtimeNanos();
 
 
             Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
 
-//            float scalex = 2.0f / w;
-//            float scaley = 2.0f / h;
-//            Matrix.setIdentityM(pxMat, 0);
-//            Matrix.translateM(pxMat, 0, -1.0f, -1.0f, 0);
-//            Matrix.scaleM(pxMat, 0, scalex, scaley, 1.0f);
+//            long tlast = SystemClock.elapsedRealtimeNanos();
+//            if (LOGGING) Log.d(MainActivity.TAG, String.format("-----------------------"));
+//            if (LOGGING) Log.d(MainActivity.TAG, String.format("%20s   %10d","shader init", t2 - t1));
+////            if (LOGGING) Log.d(MainActivity.TAG, String.format("program init  %10d", tlast- t2));
+//            if (LOGGING) Log.d(MainActivity.TAG, String.format("%20s   %10d"  ,"scrollbar init", scrollbar- t2));
+//            if (LOGGING) Log.d(MainActivity.TAG, String.format("%20s   %10d","chart init", chart- scrollbar));
+//            if (LOGGING) Log.d(MainActivity.TAG, String.format("%20s   %10d", "overlay init", overlay- chart));
+//            if (LOGGING) Log.d(MainActivity.TAG, String.format("%20s   %10d", "ruler init", ruler- overlay));
         }
 
 

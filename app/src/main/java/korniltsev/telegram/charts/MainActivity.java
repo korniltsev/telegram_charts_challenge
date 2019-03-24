@@ -123,7 +123,7 @@ public class MainActivity extends Activity {
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
 
-        for (int i = 0, dataLength = data.length; i < dataLength; i++) {
+        for (int i = 0, dataLength = data.length; i < 1; i++) {
             ChartData dataset = data[i];
             ChartData dataset1 = dataset;
             View chart = createChart(dataset1);
