@@ -941,6 +941,7 @@ public class ChartViewGL extends TextureView {
     static final int DOWN_MOVE = 0;
     static final int DOWN_RESIZE_LEFT = 1;
     static final int DOWN_RESIZE_RIGHT = 2;
+    static final int DOWN_TOOLTIP = 3;
     float last_x = -1f;
 //    int resze_scroller_right = -1;
     int down_target = -1;
@@ -989,7 +990,10 @@ public class ChartViewGL extends TextureView {
                 } else {
                     boolean chart = y >= this.chartTop && y <= this.chartBottom;
                     if (chart) {
-                        dispatchTouchDownChart(x);
+                        last_x = x;
+                        down_target = DOWN_TOOLTIP;
+                        return true;
+//                        dispatchTouchDownChart(x);
                     } else {
                         if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
                     }
@@ -1058,6 +1062,11 @@ public class ChartViewGL extends TextureView {
                 break;
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
+                if (action == MotionEvent.ACTION_UP && down_target == DOWN_TOOLTIP) {
+                    if (Math.abs(last_x - x) < touchSlop) {
+                        dispatchTouchDownChart(x);
+                    }
+                }
                 if (LOGGING) Log.d("tg.chart", "dragging = false " );
                 last_x = -1;
                 dragging = false;
