@@ -527,6 +527,7 @@ public final class GLRulersProgram {
             if (prevStdie != 0 && inewStride == prevStdie) {
                 return;
             }
+            boolean first = stride == 0f;
             stride = n/WANT_LABELS;
 //            Log.d("FUCK", "n " + n + " " + n6 + " diff " + diff);
 //            lastn6 =  n6;
@@ -543,8 +544,12 @@ public final class GLRulersProgram {
             for (; i >= 0; i = i - inewStride) {
                 long v = xColumn.values[i];
                 XValueLable e = new XValueLable(i, null);
-                e.alpha = 0f;
-                e.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, 0f, 1f);
+                if (first) {
+                    e.alpha = 1f;
+                } else {
+                    e.alpha = 0f;
+                    e.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, 0f, 1f);
+                }
                 xValues.add(e);
             }
         }

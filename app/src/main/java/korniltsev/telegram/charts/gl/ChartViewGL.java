@@ -764,7 +764,7 @@ public class ChartViewGL extends TextureView {
             if (Thread.currentThread() != r) {
                 throw new AssertionError();
             }
-            renderHandler2.postDelayed(drawFrame_, 16);
+            renderHandler2.post(drawFrame_);
         }
 
         private boolean drawScrollbar(boolean invalidated, long t) {

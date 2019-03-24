@@ -6,7 +6,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 
 //todo create more user friendly api
 public class MyAnimation {
-    public static final int ANIM_DRATION = 160;
+    public static final int ANIM_DRATION = 1600 *2;
 
 
     public static final AccelerateDecelerateInterpolator INTERPOLATOR = new AccelerateDecelerateInterpolator();
@@ -25,6 +25,9 @@ public class MyAnimation {
             endTime = startTime + duration;
             this.from = from;
             this.to = to;
+            if (from == to) {
+                ended = true;
+            }
         }
 
         public final float tick(long t) {
@@ -61,6 +64,9 @@ public class MyAnimation {
             endTime = startTime + duration;
             this.from = from;
             this.to = to;
+            if (from == to) {
+                ended = true;
+            }
         }
 
         public final int tick(long t) {

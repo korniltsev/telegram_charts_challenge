@@ -183,32 +183,14 @@ public class MainActivity extends Activity {
                 dividers.add(divider);
             }
             CheckBox cb = new MyCheckBox(this, dimen);
-            cb.setBackgroundDrawable(null);
-//            cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
-//            boolean b = Build.VERSION.SDK_INT >= 21;
-//            boolean b = false;// fuck ripples
-//            if (b) {
-//                cb.setButtonTintList(new ColorStateList(new int[][]{
-//                                new int[]{android.R.attr.state_checked},
-//                                new int[]{},
-//                        }, new int[]{
-//                                c.color,
-//                                c.color,
-//                        })
-//                );
-//            } else {
+            cb.setBackgroundDrawable(null);// remove ripples
+
                 Drawable iccb = getResources().getDrawable(R.drawable.ic_checkbox).mutate();
                 iccb.setColorFilter(c.color, PorterDuff.Mode.SRC_IN);
                 cb.setButtonDrawable(iccb);
-//                cb.setCompoundDrawablesWithIntrinsicBounds(iccb, null, null, null);
-//            }
             int dip14 = dimen.dpi(14);
             cb.setPadding(dip14, 0, dip14, 0);
-//            cb.setComp
             cb.setTextColor(textColor);
-//            MyColorDrawable d = ;
-//            ds.add(d);
-//            cb.setBackgroundDrawable(d);
             cb.setText(c.name);
             cb.setChecked(true);
             cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -227,14 +209,7 @@ public class MainActivity extends Activity {
 
         }
 
-        View shadow = new View(this);
-        shadow.setBackgroundResource(R.drawable.header_shadow);
         list.addView(checkboxlist, MATCH_PARENT, WRAP_CONTENT);
-        list.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
-        list.setPadding(0, 0, 0, dimen.dpi(8));
-
-
-//        mySetContentVie(scrollView);
         chartsRoots.add(list);
         return list;
     }
@@ -323,7 +298,7 @@ public class MainActivity extends Activity {
         final boolean animateUI = true;
         if (animateUI) {
 
-            root.animateColors(currentColorSet.statusbar, currentColorSet.darkBackground);
+//            root.animateColors(currentColorSet.statusbar, currentColorSet.darkBackground);
             bgToolbar.animate(currentColorSet.toolbar);
             for (MyColorDrawable d : ds) {
                 d.animate(currentColorSet.lightBackground);
