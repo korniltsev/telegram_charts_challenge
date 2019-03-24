@@ -344,7 +344,7 @@ public class MainActivity extends Activity {
                 View root = chartsRoots.get(i);
                 int top = root.getTop();
                 int bottom = root.getBottom();
-                if (LOGGING) Log.d("Chart", "top" + top);
+//                if (LOGGING) Log.d("Chart", "top" + top);
                 //todo do not animate if
                 ScrollView parent = (ScrollView) root.getParent().getParent();
                 int height = parent.getHeight();
@@ -352,10 +352,10 @@ public class MainActivity extends Activity {
                 top -= y;
                 bottom -= y;
                 if (bottom < 0 || top > height) {
-                    Log.d(TAG, "anim no op");
+//                    Log.d(TAG, "anim no op");
                     chart.animateToColors(currentColorSet, 0);
                 } else {
-                    Log.d(TAG, "anim ");
+//                    Log.d(TAG, "anim ");
                     chart.animateToColors(currentColorSet, colorAnimationDuration);
                 }
 //                boolean offscreen = top > parent.getHeight();
