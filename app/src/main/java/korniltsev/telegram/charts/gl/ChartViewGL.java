@@ -1149,9 +1149,14 @@ public class ChartViewGL extends TextureView {
             if (LOGGING) Log.d(MainActivity.TAG, "chart down miss");
         } else {
             float swindow = (x - scrollbar.left) / scrollbar.width();
-             float sdataset = r.overlay.left + swindow * (r.overlay.right - r.overlay.left);
+            if (swindow > 0.97) {
+                swindow = 1f;
+            }else  if (swindow < 0.03) {
+                swindow = 0;
+            }
+            float sdataset = r.overlay.left + swindow * (r.overlay.right - r.overlay.left);
             int n = r.data.data[0].values.length;
-            int i = (int) ((n-1) * sdataset);
+            int i = (int) (Math.round(n-1) * sdataset);
             if (i < 0) {
                 i = 0;
             }

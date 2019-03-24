@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.TimeZone;
 
 import korniltsev.telegram.charts.MainActivity;
 import korniltsev.telegram.charts.data.ColumnData;
@@ -25,6 +26,9 @@ import korniltsev.telegram.charts.ui.MyColor;
 
 public final class GLRulersProgram {
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d", Locale.US);
+    static {
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+    }
 
     private static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;

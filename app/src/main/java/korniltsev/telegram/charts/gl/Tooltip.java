@@ -8,6 +8,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.ui.ColorSet;
@@ -21,6 +22,9 @@ import korniltsev.telegram.charts.ui.MyColor;
 // vertical line & label with values
 public class Tooltip {
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("E, MMM d", Locale.US);
+    static {
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+    }
 
     private final float[] colorParts= new float[4];
     public final SimpleShader shader;
