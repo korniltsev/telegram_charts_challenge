@@ -24,6 +24,7 @@ import android.util.TypedValue;
 import android.view.Choreographer;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewParent;
 import android.view.WindowInsets;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -318,76 +319,96 @@ public class MainActivity extends Activity {
         } else {
             currentColorSet = ColorSet.DAY;
         }
-        root.animateColors(currentColorSet.statusbar, currentColorSet.darkBackground);
-        bgToolbar.animate(currentColorSet.toolbar);
-        for (MyColorDrawable d : ds) {
-            d.animate(currentColorSet.lightBackground);
+        final boolean animateChart = true;
+        final boolean animateUI = true;
+        if (animateUI) {
+
+            root.animateColors(currentColorSet.statusbar, currentColorSet.darkBackground);
+            bgToolbar.animate(currentColorSet.toolbar);
+            for (MyColorDrawable d : ds) {
+                d.animate(currentColorSet.lightBackground);
+            }
         }
-        for (int i = 0, chartsSize = charts.size(); i < chartsSize; i++) {
-            ChartViewGL chart = charts.get(i);
-            View root = chartsRoots.get(i);
-            int top = root.getTop();
-            if (LOGGING) Log.d("Chart", "top" + top);
-            //todo do not animate if
-            chart.animateToColors(currentColorSet, MyAnimation.ANIM_DRATION);
-        }
-        h.removeCallbacksAndMessages(null);
-        h.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton, true));
-                if (Build.VERSION.SDK_INT >= 21) {
-                    for (CheckBox cb : checkboxes) {
-//                        cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
-                    }
-                    ActivityManager.TaskDescription d = new ActivityManager.TaskDescription("Statistics", null, currentColorSet.toolbar);
-                    setTaskDescription(d);
+        if (animateChart) {
+
+            for (int i = 0, chartsSize = charts.size(); i < chartsSize; i++) {
+                ChartViewGL chart = charts.get(i);
+                View root = chartsRoots.get(i);
+                int top = root.getTop();
+                if (LOGGING) Log.d("Chart", "top" + top);
+                //todo do not animate if
+                View parent = (View) root.getParent().getParent();
+                if (top > parent.getHeight()) {
+                    chart.animateToColors(currentColorSet, 0);
+                } else {
+                    chart.animateToColors(currentColorSet, MyAnimation.ANIM_DRATION);
+
                 }
             }
-        }, 300);
+        }
+        if (animateUI) {
 
-
-        textColorAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, textColor, currentColorSet.textColor);
-        dividerAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, dividerColor, currentColorSet.ruler);
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                long t = SystemClock.uptimeMillis();
-                boolean post = false;
-                if (textColorAnim != null) {
-                    textColor = textColorAnim.tick(t);
-                    if (textColorAnim.ended) {
-                        textColorAnim = null;
-                    } else {
-                        post = true;
+            h.removeCallbacksAndMessages(null);
+            h.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton, true));
+                    if (Build.VERSION.SDK_INT >= 21) {
+                        for (CheckBox cb : checkboxes) {
+//                        cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
+                        }
+                        ActivityManager.TaskDescription d = new ActivityManager.TaskDescription("Statistics", null, currentColorSet.toolbar);
+                        setTaskDescription(d);
                     }
                 }
-                if (dividerAnim != null) {
-                    dividerColor = dividerAnim.tick(t);
-                    if (dividerAnim.ended) {
-                        dividerAnim = null;
-                    } else {
-                        post = true;
+            }, 300);
+        }
+
+        if (animateUI) {
+            textColorAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, textColor, currentColorSet.textColor);
+            dividerAnim = new MyAnimation.Color(MyAnimation.ANIM_DRATION, dividerColor, currentColorSet.ruler);
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    long t = SystemClock.uptimeMillis();
+                    boolean post = false;
+                    if (textColorAnim != null) {
+                        textColor = textColorAnim.tick(t);
+                        if (textColorAnim.ended) {
+                            textColorAnim = null;
+                        } else {
+                            post = true;
+                        }
                     }
-                }
-                if (post) {
-                    root.postOnAnimation(this);
-                }
-                for (int i = 0, dividersSize = dividers.size(); i < dividersSize; i++) {
-                    View divider = dividers.get(i);
-                    divider.setBackgroundColor(dividerColor);
-                }
+                    if (dividerAnim != null) {
+                        dividerColor = dividerAnim.tick(t);
+                        if (dividerAnim.ended) {
+                            dividerAnim = null;
+                        } else {
+                            post = true;
+                        }
+                    }
+                    if (post) {
+                        root.postOnAnimation(this);
+                    }
+                    for (int i = 0, dividersSize = dividers.size(); i < dividersSize; i++) {
+                        View divider = dividers.get(i);
+                        divider.setBackgroundColor(dividerColor);
+                    }
 //                for (int i = 0, buttonsSize = buttons.size(); i < buttonsSize; i++) {
 //                    TextView button = buttons.get(i);
 //                    button.setTextColor(textColor);
 //                }
-                for (int i = 0, checkboxesSize = checkboxes.size(); i < checkboxesSize; i++) {
-                    TextView button = checkboxes.get(i);
-                    button.setTextColor(textColor);
+                    for (int i = 0, checkboxesSize = checkboxes.size(); i < checkboxesSize; i++) {
+                        TextView button = checkboxes.get(i);
+                        button.setTextColor(textColor);
+                    }
                 }
-            }
-        };
-        root.postOnAnimation(r);
+            };
+            root.postOnAnimation(r);
+
+        }
+
     }
 
 
@@ -426,6 +447,7 @@ public class MainActivity extends Activity {
 
 
     public final Drawable createButtonBackground(int pressedColor, boolean borderless) {
+//        return null;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !USE_RIPPLE) {
             StateListDrawable stateListDrawable = new StateListDrawable();
             stateListDrawable.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(pressedColor));

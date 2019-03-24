@@ -285,10 +285,10 @@ public class ChartViewGL extends TextureView {
 
     }
 
-
+    private static int counter;
     class Render extends HandlerThread implements TextureView.SurfaceTextureListener {
 
-
+        private int id = ++counter;
         private final float[] PROJ = new float[16];
         private final ChartData data;
         public volatile float initleft;
@@ -617,9 +617,10 @@ public class ChartViewGL extends TextureView {
 
             @Override
             public void run() {
-
+                long t1 = SystemClock.elapsedRealtimeNanos();
                 drawAndSwap2();
-
+                long t2 = SystemClock.elapsedRealtimeNanos();
+                if (LOGGING) Log.d(MainActivity.TAG, String.format("trace [ %d ] %20s %10d ",id, "draw frame", t2 - t1));
             }
         }
 
@@ -763,7 +764,7 @@ public class ChartViewGL extends TextureView {
             if (Thread.currentThread() != r) {
                 throw new AssertionError();
             }
-            postToRender(drawFrame_);
+            renderHandler2.postDelayed(drawFrame_, 16);
         }
 
         private boolean drawScrollbar(boolean invalidated, long t) {
