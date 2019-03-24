@@ -131,29 +131,31 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     3. make day/night animation work
         + put ui over texture
         + shadow between charts
+        + 5. [ ? ] move "folorwers" to gl +   text night mode + animation
         - when scrolled down chart is not animating
 
+    4. lollipop toolbar color wtf (one hour max)
     checkbox paddings on 16 android
     x values second chart, wtf values in reverse order
 
-    4. lollipop toolbar color wtf (one hour max)
-    5. [ ? ] move "folorwers" to gl +   text night mode + animation
+
     6. [ ! ] alpha animation blending - render to fbo
 
+    Emulator crashes on tooltip dissmiss wtf
 
+
+    [ ? ] Matrix -> MyMatrix for inlining?
+
+    build release build with proguard/redex
 
     -------------------------- GG
-
-    startup optimization(see below)
-    alpha animation on fbo
-    [ ? ] Matrix -> MyMatrix for inlining?
 
 
 
 
     -------------------------- DEADLINE
     - don't draw x lablel if the label is offscreen - lazy textures are required
-    Emulator crashes on tooltip dissmiss wtf
+
     NICE TO HAVE
     try to draw only every 16 ms, not faster, try to use handler thread, maybe it is faster
     [ ! ] optimization
@@ -769,10 +771,11 @@ public class ChartViewGL extends TextureView {
                 chartProgram.step3();
             }
             MyGL.checkGlError2();
-            if (chart[0].goodCircle != null) {
-                chart[0].goodCircle.shader.use();
-                for (GLChartProgram chartProgram : chart) {
-                    chartProgram.step4();
+            for (GLChartProgram c : chart) {
+                if (c.goodCircle != null) {
+                    c.goodCircle.shader.use();
+
+                    c.step4();
                 }
             }
             MyGL.checkGlError2();
