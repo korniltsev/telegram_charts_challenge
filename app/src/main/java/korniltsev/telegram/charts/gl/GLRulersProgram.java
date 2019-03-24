@@ -535,7 +535,11 @@ public final class GLRulersProgram {
 //            Log.d("FUCK", "n " + n + " " + n6 + " zoom " + zoomDiff);
             for (int i = 0, xValuesSize = xValues.size(); i < xValuesSize; i++) {
                 XValueLable xValue = xValues.get(i);
-                xValue.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, xValue.alpha, 0f);
+                if (i == xValues.size() - 1) {
+                    xValue.alpha = 0f;
+                } else {
+                    xValue.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, xValue.alpha, 0f);
+                }
             }
             animatingOut.addAll(xValues);
             xValues.clear();
@@ -544,7 +548,7 @@ public final class GLRulersProgram {
             for (; i >= 0; i = i - inewStride) {
                 long v = xColumn.values[i];
                 XValueLable e = new XValueLable(i, null);
-                if (first) {
+                if (first || i == xColumn.values.length - 1) {
                     e.alpha = 1f;
                 } else {
                     e.alpha = 0f;

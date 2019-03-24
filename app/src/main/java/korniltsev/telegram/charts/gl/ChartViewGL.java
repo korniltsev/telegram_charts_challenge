@@ -137,30 +137,38 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     + 4. lollipop toolbar color wtf (one hour max)
 
     + checkbox paddings on 16 android
-    x values second chart, wtf values in reverse order
+    + remove square icon, leave only round
+
+
 
 
     Emulator crashes on tooltip dissmiss wtf
 
 
+    [ ? ] Matrix -> MyMatrix for inlining? test if it does something
 
 
 
 
-    remove square icon, leave only round
 
     build release build with proguard/redex
 
     -------------------------- GG
 
-    6. [ ! ] alpha animation blending - render to fbo
 
-
-    - fix touch (laggy, hard to select)
-    [ ? ] Matrix -> MyMatrix for inlining? test if it does something
+    fix touch (laggy, hard to select)
+    tooltip animation
+    alpha animation blending - render to fbo
     [?] optimize minmax animation, introduce step?, do not cancel animations or try to continue?
+
+    -------------------------- maybe
+
+
+
+
     - don't draw x lablel if the label is offscreen - lazy textures are required
 
+    couldnot reproduce + x values second chart, wtf values in reverse order
 
 
 // todo design
