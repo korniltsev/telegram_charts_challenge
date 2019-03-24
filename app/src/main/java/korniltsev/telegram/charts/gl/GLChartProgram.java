@@ -156,7 +156,7 @@ public final class GLChartProgram {
         if (scrollbar) {
             hpadding += dimen.dpf(1);
             final float dip2 = dimen.dpf(2);
-            Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + dip2, 0);
+            Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + root.checkboxesHeight + dip2, 0);
             float w = this.w - 2 * hpadding;
             float h = root.dimen_scrollbar_height - 2 * dip2;
             float ydiff = maxValueAnim * maxValue - minValueAnim * minValue;
@@ -168,7 +168,7 @@ public final class GLChartProgram {
 
             Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
         } else {
-            int ypx = dimen.dpi(80);
+            int ypx = dimen.dpi(80) + root.checkboxesHeight;
             Matrix.translateM(V, 0, hpadding, ypx, 0);
             float w = this.w - 2 * hpadding;
             int h = dimen.dpi(CHART_HEIGHT);

@@ -129,6 +129,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     +  initial animation bug
     + 2. onStop/onStart - touch gl thread and invalidate
     3. make day/night animation work
+        - put ui over texture
         - when scrolled down chart is not animating
     4. lollipop toolbar color wtf (one hour max)
     5. [ ? ] move "folorwers" to gl +   text night mode + animation
@@ -186,6 +187,9 @@ ACHTUNG
 
 */
 public class ChartViewGL extends TextureView {
+    public static final int CHECKBOX_HEIGHT_DPI = 50;
+    public static final int CHECKBOX_DIVIDER_HIEIGHT = 1;
+    public static final int CHART_BOTTOM_DIP = 80;//relative to checkboxes
     private final Dimen dimen;
 
     public final int dimen_v_padding8;
@@ -200,6 +204,8 @@ public class ChartViewGL extends TextureView {
     private final ColorSet init_colors;
     private final ChartData data;
     private final ColumnData xColumn;
+    private final int legend_height;
+    public final int checkboxesHeight;
     //    private final long initTime;
     public int bgColor;
     public MyAnimation.Color bgAnim = null;
@@ -217,6 +223,7 @@ public class ChartViewGL extends TextureView {
         currentColors = currentColorsSet;
         this.dimen = dimen;
         this.data = c;
+        legend_height = dimen.dpi(46);
         dimen_v_padding8 = dimen.dpi(8);
         dimen_chart_height = dimen.dpi(300);
         dimen_scrollbar_height = dimen.dpi(38);
@@ -227,13 +234,18 @@ public class ChartViewGL extends TextureView {
 //        r.start();
         setSurfaceTextureListener(r);
 
+        int checkboxesCount = c.data.length - 1;
+        int dividersCount = checkboxesCount - 1;
+        checkboxesHeight = checkboxesCount * dimen.dpi(CHECKBOX_HEIGHT_DPI) + dividersCount * dimen.dpi(CHECKBOX_DIVIDER_HIEIGHT);
+
         hpadding = dimen.dpi(16);
         h = dimen_v_padding8
+                + legend_height
                 + dimen_chart_height
                 + dimen_v_padding8
                 + dimen_v_padding8
                 + dimen_scrollbar_height
-                + dimen_v_padding8;
+                + dimen_v_padding8 + checkboxesHeight;
 
         initial_scroller_dith = dimen.dpi(86);
         resize_touch_area2 = dimen.dpi(20);
@@ -250,7 +262,7 @@ public class ChartViewGL extends TextureView {
 
         scrollbar.left = hpadding;
         scrollbar.right = w - hpadding;
-        scrollbar.bottom = h - dimen_v_padding8;
+        scrollbar.bottom = h - dimen_v_padding8 - checkboxesHeight;
         scrollbar.top = scrollbar.bottom - dimen_scrollbar_height;
 
         setMeasuredDimension(w, h);
@@ -266,7 +278,7 @@ public class ChartViewGL extends TextureView {
             setOverlayPos(true);
         }
 
-        chartBottom =  bottom - dimen.dpi(80);
+        chartBottom =  bottom - dimen.dpi(CHART_BOTTOM_DIP)-checkboxesHeight;
         chartTop =  chartBottom - dimen.dpi(280);
 //        chartTop = dimen.dpi(80);
     }
@@ -720,7 +732,7 @@ public class ChartViewGL extends TextureView {
             int tooltipIndex = chart[0].getTooltipIndex();
             if (tooltipIndex != -1 ) {
                 if (this.tooltip == null) {
-                    this.tooltip = new Tooltip(dimen, w, h, currentColors, data, simple);
+                    this.tooltip = new Tooltip(dimen, w, h, currentColors, data, simple, ChartViewGL.this);
                 }
             }
             for (GLChartProgram chartProgram : chart) {

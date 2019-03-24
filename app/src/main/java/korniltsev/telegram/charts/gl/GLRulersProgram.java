@@ -183,7 +183,7 @@ public final class GLRulersProgram {
 
 
         float vpaddingTextOverPadding = dimen.dpf(3);
-        final float zero = dimen.dpf(80);
+        final float zero = dimen.dpf(80) + root.checkboxesHeight;
         drawLine(hpadding, zero + 0, canvasW - 2 * hpadding, 1f);
         drawText(this.zero, hpadding, zero + vpaddingTextOverPadding, 1f);
 
@@ -256,7 +256,7 @@ public final class GLRulersProgram {
         }
 
 
-        Matrix.translateM(MVP, 0, left, dimen.dpf(80-20), 0);
+        Matrix.translateM(MVP, 0, left, dimen.dpf(80-20) + root.checkboxesHeight, 0);
         Matrix.scaleM(MVP, 0, xValue.tex.w, xValue.tex.h, 1f);
 
 

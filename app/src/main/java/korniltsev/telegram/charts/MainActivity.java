@@ -25,6 +25,7 @@ import android.view.Choreographer;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewParent;
+import android.view.ViewTreeObserver;
 import android.view.WindowInsets;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -124,7 +125,7 @@ public class MainActivity extends Activity {
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
 
-        for (int i = 0, dataLength = data.length; i < dataLength; i++) {
+        for (int i = 0, dataLength = data.length; i < 1; i++) {
             ChartData dataset = data[i];
             ChartData dataset1 = dataset;
             View chart = createChart(dataset1);
@@ -139,7 +140,7 @@ public class MainActivity extends Activity {
 
     private View createChart(ChartData datum) {
         FrameLayout.LayoutParams legendLP = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-        TextView legend = new TextView(this);
+        final TextView legend = new TextView(this);
         legend.setPadding(dimen.dpi(16), dimen.dpi(16), 0, dimen.dpi(8));
         legend.setTextSize(16f);
         legend.setTextColor(currentColorSet.legendTitle);
@@ -170,10 +171,10 @@ public class MainActivity extends Activity {
 
 
         ColumnData[] data1 = datum.data;
-//        LinearLayout checkboxlist = new LinearLayout(this);
-//        checkboxlist.setOrientation(LinearLayout.VERTICAL);
-        MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground);
-        ds.add(d);
+        LinearLayout checkboxlist = new LinearLayout(this);
+        checkboxlist.setOrientation(LinearLayout.VERTICAL);
+//        MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground);
+//        ds.add(d);
 //        checkboxlist.setBackgroundDrawable(d);
         for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
             final ColumnData c = data1[i];
@@ -182,11 +183,11 @@ public class MainActivity extends Activity {
             }
             if (i != 1) {
                 View divider = new View(this);
-                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(MATCH_PARENT, dimen.dpi(1));
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(ChartViewGL.CHECKBOX_DIVIDER_HIEIGHT));
                 lp.leftMargin = dimen.dpi(59);
                 lp.gravity = Gravity.BOTTOM;
                 divider.setBackgroundColor(currentColorSet.ruler);
-                list.addView(divider, lp);
+                checkboxlist.addView(divider, lp);
                 dividers.add(divider);
             }
             CheckBox cb = new MyCheckBox(this, dimen);
@@ -206,18 +207,20 @@ public class MainActivity extends Activity {
                     newChart.setChecked(c.id, isChecked);
                 }
             });
-            FrameLayout.LayoutParams cblp = new FrameLayout.LayoutParams(MATCH_PARENT, dimen.dpi(50));
+            LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(ChartViewGL.CHECKBOX_HEIGHT_DPI));
             cblp.gravity = Gravity.BOTTOM;
-//            cblp.leftMargin = dip14;
+            cblp.leftMargin = dip14;
             cb.setLayoutParams(cblp);
 
-            list.addView(cb);
+            checkboxlist.addView(cb);
 
             checkboxes.add(cb);
 
         }
 
-//        list.addView(checkboxlist, MATCH_PARENT, WRAP_CONTENT);
+        FrameLayout.LayoutParams cblp = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+        cblp.gravity = Gravity.BOTTOM;
+        list.addView(checkboxlist, cblp);
         chartsRoots.add(list);
         return list;
     }

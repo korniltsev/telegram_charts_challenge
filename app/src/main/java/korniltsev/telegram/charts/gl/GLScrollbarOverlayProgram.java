@@ -121,21 +121,22 @@ public final class GLScrollbarOverlayProgram {
 
         MyColor.set(color_parts, color_overlay);
         GLES20.glUniform4fv(shader.colorHandle, 1, color_parts, 0);
+        int y = root.dimen_v_padding8 + root.checkboxesHeight;
         if (left != 0.0f) {
-            drawRect(hpadding, root.dimen_v_padding8, left*scrollerW, root.dimen_scrollbar_height);
+            drawRect(hpadding, y, left*scrollerW, root.dimen_scrollbar_height);
         }
         if (right != 1.0f) {
-            drawRect(hpadding + scrollerW * right, root.dimen_v_padding8, scrollerW * (1.0f-right), root.dimen_scrollbar_height);
+            drawRect(hpadding + scrollerW * right, y, scrollerW * (1.0f-right), root.dimen_scrollbar_height);
         }
 
         MyColor.set(color_parts, color_border);
         GLES20.glUniform4fv(shader.colorHandle, 1, color_parts, 0);
-        drawRect(hpadding + scrollerW * left, root.dimen_v_padding8, vline1w, root.dimen_scrollbar_height);
-        drawRect(hpadding + scrollerW * right - vline1w, root.dimen_v_padding8, vline1w, root.dimen_scrollbar_height);
+        drawRect(hpadding + scrollerW * left, y, vline1w, root.dimen_scrollbar_height);
+        drawRect(hpadding + scrollerW * right - vline1w, y, vline1w, root.dimen_scrollbar_height);
         float l = hpadding + scrollerW * left + vline1w;
         float r = hpadding + scrollerW * right - vline1w;
-        drawRect(l, root.dimen_v_padding8, r-l, vline2h);
-        drawRect(l, root.dimen_v_padding8 + root.dimen_scrollbar_height - vline2h, r-l, vline2h);
+        drawRect(l, y, r-l, vline2h);
+        drawRect(l, y + root.dimen_scrollbar_height - vline2h, r-l, vline2h);
     }
 
 

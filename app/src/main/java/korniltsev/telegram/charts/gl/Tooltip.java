@@ -49,9 +49,10 @@ public class Tooltip {
     private int fbindex;
     private float ndcx;
     private boolean released;
+    public final ChartViewGL rot;
 //    private TexShader texShader;
 
-    public Tooltip(Dimen dimen, int w, int h, ColorSet colors, ChartData data, SimpleShader simple) {
+    public Tooltip(Dimen dimen, int w, int h, ColorSet colors, ChartData data, SimpleShader simple, ChartViewGL rot) {
         this.data = data;
         this.colorsSet = colors;
         this.shader = simple;
@@ -60,6 +61,7 @@ public class Tooltip {
         this.h = h;
         this.lineColor = colors.tooltipVerticalLine;
         this.simple = simple;
+        this.rot = rot;
 
 
         FloatBuffer buf1 = ByteBuffer.allocateDirect(lineVertices.length * 4)
@@ -186,7 +188,7 @@ public class Tooltip {
         Matrix.setIdentityM(VIEW, 0);
         int texw = framebuffer.w;
         int texh = framebuffer.h;
-        Matrix.translateM(VIEW, 0, xpos, dimen.dpf(80 + 290 - TooltipFramebuffer.HEIGHT), 0f);
+        Matrix.translateM(VIEW, 0, xpos, dimen.dpf(80 + 290 - TooltipFramebuffer.HEIGHT) + rot.checkboxesHeight, 0f);
         Matrix.scaleM(VIEW, 0, texw, texh, 1f);
 
         Matrix.multiplyMM(MVP, 0, proj, 0, VIEW, 0);
@@ -219,7 +221,7 @@ public class Tooltip {
 
         // draw wline
         Matrix.setIdentityM(VIEW, 0);
-        Matrix.translateM(VIEW, 0, 0, dimen.dpf(80f), 0f);
+        Matrix.translateM(VIEW, 0, 0, dimen.dpf(80f) + rot.checkboxesHeight, 0f);
         Matrix.scaleM(VIEW, 0, w, dimen.dpf(290), 1f);
         Matrix.translateM(VIEW, 0, ndcx, 0f, 0f);
         Matrix.multiplyMM(MVP, 0, proj, 0, VIEW, 0);
