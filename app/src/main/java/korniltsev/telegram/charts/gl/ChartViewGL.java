@@ -122,13 +122,18 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
 
     ---------------------------------------- 23 march
-    [ ! ] cleanup - stop thread, destroy shaders, surface
-    onStop/onStart - touch gl thread and invalidate
+
+    1. cleanup - stop thread, destroy shaders, surface
+    2. onStop/onStart - touch gl thread and invalidate
+    3. make day/night animation work
+    4. lollipop toolbar color wtf (one hour max)
+    5. [ ? ] move "folorwers" to gl +   text night mode + animation
+    6. [ ! ] alpha animation blending - render to fbo
 
 
     MUST HAVE
     --------------------------
-    lollipop toolbar color wtf
+
     startup optimization(see below)
     alpha animation on fbo
     [ ? ] Matrix -> MyMatrix for inlining?
@@ -146,18 +151,11 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
         [?] reuse shaders between objects for faster start?
         trace scrolling/caling allocations & perf
 
-    [ ! ] alpha animation blending - render to fbo
+
     + fix touch (laggy, hard to select)
 
 
-    [ ! ] move "folorwers" to gl +   text night mode + animation
-    [ ! ] checkbox + animations + divider width
-
-
     [?] optimize minmax animation, introduce step?, do not cancel animations or try to continue?
-    [?] why DIRTY slow?
-    [?] replace actionQueue.add with something better?(handler?)
-    [?] try to play with thread priority?
 
 
 
