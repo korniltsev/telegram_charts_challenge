@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.util.TypedValue;
+import android.view.Choreographer;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowInsets;
@@ -63,7 +64,7 @@ public class MainActivity extends Activity {
     public static final boolean TRACE = BuildConfig.DEBUG && false;
     public static final boolean USE_RIPPLE = true;
     public static final boolean LOGGING = DEBUG;
-    public static final boolean DIRTY_CHECK = false;
+    public static final boolean DIRTY_CHECK = true;
     public static final boolean LOG_FPS = true;
 
     //    private MyColorDrawable bgRoot;
@@ -98,6 +99,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
+            @Override
+            public void doFrame(long frameTimeNanos) {
+
+            }
+        });
         currentColorSet = ColorSet.DAY;
         textColor = currentColorSet.textColor;
         dividerColor = currentColorSet.ruler;

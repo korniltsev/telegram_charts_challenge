@@ -534,7 +534,7 @@ public class ChartViewGL extends TextureView {
                 invalidated = false;
 
                 long t = SystemClock.uptimeMillis();
-                long t1 = SystemClock.elapsedRealtimeNanos();
+//                long t1 = SystemClock.elapsedRealtimeNanos();
 
                 if (bgAnim != null) {
                     bgColor = bgAnim.tick(t);
@@ -554,34 +554,34 @@ public class ChartViewGL extends TextureView {
 //                for (MyRect r : debugRects) {
 //                    r.draw();
 //                }
-                long t2 = SystemClock.elapsedRealtimeNanos();
+//                long t2 = SystemClock.elapsedRealtimeNanos();
 
                 invalidated = drawScrollbar(invalidated, t);
-                long t3 = SystemClock.elapsedRealtimeNanos();
+//                long t3 = SystemClock.elapsedRealtimeNanos();
                 overlay.draw(t);
-                long t4 = SystemClock.elapsedRealtimeNanos();
+//                long t4 = SystemClock.elapsedRealtimeNanos();
                 boolean rulerInvalidated = ruler.animationTick(t);
                 invalidated = rulerInvalidated | invalidated;
                 ruler.draw(t);
-                long t5 = SystemClock.elapsedRealtimeNanos();
+//                long t5 = SystemClock.elapsedRealtimeNanos();
 //                circle.draw();
                 invalidated = drawChart(invalidated, t);
-                long t6 = SystemClock.elapsedRealtimeNanos();
+//                long t6 = SystemClock.elapsedRealtimeNanos();
 
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                     throw new RuntimeException("Cannot swap buffers");
                 }
                 if (LOGGING) {
 
-                    long t7 = SystemClock.elapsedRealtimeNanos();
+//                    long t7 = SystemClock.elapsedRealtimeNanos();
 //                frameCount++;
 
-                    log_trace("swap", t7, t6);
-                    log_trace("chart", t6, t5);
-                    log_trace("ruler", t5, t4);
-                    log_trace("overlay", t4, t3);
-                    log_trace("scrollbar", t3, t2);
-                    log_trace("f1", t2, t1);
+//                    log_trace("swap", t7, t6);
+//                    log_trace("chart", t6, t5);
+//                    log_trace("ruler", t5, t4);
+//                    log_trace("overlay", t4, t3);
+//                    log_trace("scrollbar", t3, t2);
+//                    log_trace("f1", t2, t1);
 
                     long timeSinceLastReport = t - prevReportTime;
                     if (MainActivity.LOG_FPS && timeSinceLastReport > 1000) {
