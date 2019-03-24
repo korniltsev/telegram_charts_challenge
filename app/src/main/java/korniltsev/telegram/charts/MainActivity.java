@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
     public static final boolean TRACE = BuildConfig.DEBUG && false;
     public static final boolean USE_RIPPLE = true;
     public static final boolean LOGGING = DEBUG;
-    public static final boolean DIRTY_CHECK = true;
+    public static final boolean DIRTY_CHECK = false;
     public static final boolean LOG_FPS = true;
 
     //    private MyColorDrawable bgRoot;
@@ -114,7 +114,8 @@ public class MainActivity extends Activity {
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
 
-        for (ChartData dataset : data) {
+        for (int i = 0, dataLength = data.length; i < 1; i++) {
+            ChartData dataset = data[i];
             ChartData dataset1 = dataset;
             View chart = createChart(dataset1);
             list.addView(chart, MATCH_PARENT, WRAP_CONTENT);

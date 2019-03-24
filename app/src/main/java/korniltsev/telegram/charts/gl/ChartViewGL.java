@@ -534,6 +534,7 @@ public class ChartViewGL extends TextureView {
                 invalidated = false;
 
                 long t = SystemClock.uptimeMillis();
+                long t1 = SystemClock.elapsedRealtimeNanos();
 
                 if (bgAnim != null) {
                     bgColor = bgAnim.tick(t);
@@ -553,39 +554,42 @@ public class ChartViewGL extends TextureView {
 //                for (MyRect r : debugRects) {
 //                    r.draw();
 //                }
-                long t2 = SystemClock.uptimeMillis();
+                long t2 = SystemClock.elapsedRealtimeNanos();
 
                 invalidated = drawScrollbar(invalidated, t);
-                long t3 = SystemClock.uptimeMillis();
+                long t3 = SystemClock.elapsedRealtimeNanos();
                 overlay.draw(t);
-                long t4 = SystemClock.uptimeMillis();
+                long t4 = SystemClock.elapsedRealtimeNanos();
                 boolean rulerInvalidated = ruler.animationTick(t);
                 invalidated = rulerInvalidated | invalidated;
                 ruler.draw(t);
-                long t5 = SystemClock.uptimeMillis();
+                long t5 = SystemClock.elapsedRealtimeNanos();
 //                circle.draw();
                 invalidated = drawChart(invalidated, t);
-                long t6 = SystemClock.uptimeMillis();
+                long t6 = SystemClock.elapsedRealtimeNanos();
 
                 if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                     throw new RuntimeException("Cannot swap buffers");
                 }
                 if (LOGGING) {
 
-                    long t7 = SystemClock.uptimeMillis();
+                    long t7 = SystemClock.elapsedRealtimeNanos();
 //                frameCount++;
+
+                    log_trace("swap", t7, t6);
+                    log_trace("chart", t6, t5);
+                    log_trace("ruler", t5, t4);
+                    log_trace("overlay", t4, t3);
+                    log_trace("scrollbar", t3, t2);
+                    log_trace("f1", t2, t1);
+
                     long timeSinceLastReport = t - prevReportTime;
                     if (MainActivity.LOG_FPS && timeSinceLastReport > 1000) {
                         float fps = (float) frameCount * 1000 / timeSinceLastReport;
                         Log.d(MainActivity.TAG, "fps " + fps);
                         prevReportTime = t;
                         frameCount = 0;
-                        log_trace("swap", t7, t6);
-                        log_trace("chart", t6, t5);
-                        log_trace("ruler", t5, t4);
-                        log_trace("overlay", t4, t3);
-                        log_trace("scrollbar", t3, t2);
-                        log_trace("f1", t2, t);
+
                     } else {
                         frameCount++;
                     }
@@ -664,7 +668,7 @@ public class ChartViewGL extends TextureView {
         }
 
         private void log_trace(String name, long t5, long t4) {
-            if (LOGGING) Log.d(MainActivity.TAG, "trace " + name + " " + (t5 - t4));
+            if (LOGGING) Log.d(MainActivity.TAG, String.format("trace %20s %10d", name, t5 - t4));
         }
 
 

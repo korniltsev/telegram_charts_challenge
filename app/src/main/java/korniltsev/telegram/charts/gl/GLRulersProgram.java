@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import korniltsev.telegram.charts.MainActivity;
 import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
@@ -213,10 +214,13 @@ public final class GLRulersProgram {
 //            p.setTextSize(dimen.dpf(12));
 //            xValues.add(new TextTex("Feb 28", p));
 //        }
-        for (XValueLable xValueLable : animatingOut) {
-            drawXValue( xValueLable);
+//        Log.d("FUCK", String.format("ruler %d %d", animatingOut.size(), xValues.size()));
+        for (int i = 0, animatingOutSize = animatingOut.size(); i < animatingOutSize; i++) {
+            XValueLable xValueLable = animatingOut.get(i);
+            drawXValue(xValueLable);
         }
-        for (XValueLable xValue : xValues) {
+        for (int i = 0, xValuesSize = xValues.size(); i < xValuesSize; i++) {
+            XValueLable xValue = xValues.get(i);
             drawXValue(xValue);
         }
 
@@ -311,11 +315,15 @@ public final class GLRulersProgram {
             }
             if (r.toBeDeleted && r.alphaAnim == null && r.scaleAnim == null) {
                 List<TextTex> values = r.values;
-                for (int i1 = 0, valuesSize = values.size(); i1 < valuesSize; i1++) {
-                    TextTex value = values.get(i1);
-                    value.release();
+                try {
+                    for (int i1 = 0, valuesSize = values.size(); i1 < valuesSize; i1++) {
+                        TextTex value = values.get(i1);
+                        value.release();
+                    }
+                    rs.remove(i);
+                } catch (Throwable e) {
+                    if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err", e);
                 }
-                rs.remove(i);
             }
         }
         for (int i = 0, xValuesSize = xValues.size(); i < xValuesSize; i++) {
@@ -324,6 +332,8 @@ public final class GLRulersProgram {
                 x.alpha = x.alphaAnim.tick(t);
                 if (x.alphaAnim.ended) {
                     x.alphaAnim = null;
+                } else {
+                    invalidate = true;
                 }
             }
         }
@@ -334,8 +344,14 @@ public final class GLRulersProgram {
                 x.alpha = x.alphaAnim.tick(t);
                 if (x.alphaAnim.ended) {
                     x.alphaAnim = null;
-                    x.tex.release();
-                    animatingOut.remove(i);
+                    try {
+                        if (x.tex != null) {
+                            x.tex.release();
+                        }
+                        animatingOut.remove(i);
+                    } catch (Throwable e) {
+                        if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err", e);
+                    }
                 } else {
                     invalidate = true;
                 }
