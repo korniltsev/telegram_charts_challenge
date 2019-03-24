@@ -113,9 +113,9 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     + [ ! ] checkboxes
     + day/nigh animation bug
 
-    [ ! ] horizontal lables + animations
-        - why last value is not aligned??
-        - fix paddings & text size of x/y labels
+    + [ ! ] horizontal lables + animations
+        + why last value is not aligned??
+        + fix paddings & text size of x/y labels
 
     !!! The app should show 4 charts on one screen,
 
@@ -125,6 +125,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
     MUST HAVE
     --------------------------
+    lollipop toolbar color wtf
     startup optimization(see below)
     alpha animation on fbo
     [?] why DIRTY slow?
