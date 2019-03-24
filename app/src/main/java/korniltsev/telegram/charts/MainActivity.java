@@ -123,7 +123,7 @@ public class MainActivity extends Activity {
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
 
-        for (int i = 0, dataLength = data.length; i < 1; i++) {
+        for (int i = 0, dataLength = data.length; i < dataLength; i++) {
             ChartData dataset = data[i];
             ChartData dataset1 = dataset;
             View chart = createChart(dataset1);
@@ -132,76 +132,8 @@ public class MainActivity extends Activity {
         }
         scrollView.addView(list);
         mySetContentVie(scrollView);
-//        createChartList();
-
     }
 
-//    private void createChartList() {
-//        if (chartList == null) {
-//
-//            ScrollView.LayoutParams listLP = new ScrollView.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-//            LinearLayout list = new LinearLayout(this);
-//            list.setOrientation(LinearLayout.VERTICAL);
-//            list.setLayoutParams(listLP);
-//            list.setPadding(0, dimen.dpi(8), 0, dimen.dpi(8));
-//            MyColorDrawable background = new MyColorDrawable(currentColorSet.lightBackground);
-//            ds.add(background);
-//            list.setBackgroundDrawable(background);
-//            TypedValue outValue = new TypedValue();
-//            getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
-//
-//            buttons = new ArrayList<>();
-//            for (int i = 0; i < 5; i++) {
-//
-//                TextView v = new TextView(this);
-//                v.setTextColor(textColor);
-//                v.setText("Chart " + (i + 1));
-//                v.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
-//                v.setPadding(dimen.dpi(16), 0, 0, 0);
-//                v.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, false));
-//                v.setClickable(true);
-////                v.setClip
-////                v.set
-//
-////                v.setBackgroundResource(outValue.resourceId);
-//                final int finalI = i;
-//                v.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        showChart(finalI);
-//
-//                    }
-//                });
-//                list.addView(v, MATCH_PARENT, dimen.dpi(50));
-//                buttons.add(v);
-//            }
-//
-//            View shadow = new View(this);
-//            shadow.setBackgroundResource(R.drawable.header_shadow);
-////            list.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
-////        list.addView(legend);
-////        list.addView(chart_);
-//
-//            LinearLayout container = new LinearLayout(this);
-//            container.setOrientation(LinearLayout.VERTICAL);
-//            container.addView(list, MATCH_PARENT, WRAP_CONTENT);
-//            container.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
-//
-//
-//            ScrollView scrollView = new ScrollView(this);
-//            scrollView.addView(container);
-//            scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-//
-//            chartList = scrollView;
-//        }
-//        mySetContentVie(chartList);
-//
-//    }
-
-//    private void showChart(int finalI) {
-//        chartVisible = true;
-//        createChart(data[finalI]);
-//    }
 
     private View createChart(ChartData datum) {
         LinearLayout.LayoutParams legendLP = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
@@ -387,10 +319,6 @@ public class MainActivity extends Activity {
             currentColorSet = ColorSet.DAY;
         }
         root.animateColors(currentColorSet.statusbar, currentColorSet.darkBackground);
-//        if (Build.VERSION.SDK_INT >= 21) {
-            //todo replace with insets and color animatione
-//            getWindow().setStatusBarColor(currentColorSet.statusbar);
-//        }
         bgToolbar.animate(currentColorSet.toolbar);
         for (MyColorDrawable d : ds) {
             d.animate(currentColorSet.lightBackground);
@@ -403,17 +331,11 @@ public class MainActivity extends Activity {
             //todo do not animate if
             chart.animateToColors(currentColorSet, MyAnimation.ANIM_DRATION);
         }
-//        if (chart_ != null) {
-//
-//        }
         h.removeCallbacksAndMessages(null);
         h.postDelayed(new Runnable() {
             @Override
             public void run() {
                 imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton, true));
-//                for (TextView button : buttons) {
-//                    button.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, false));
-//                }
                 if (Build.VERSION.SDK_INT >= 21) {
                     for (CheckBox cb : checkboxes) {
 //                        cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
@@ -468,19 +390,6 @@ public class MainActivity extends Activity {
         root.postOnAnimation(r);
     }
 
-    private void trace(int delayMillis) {
-        if (TRACE) {
-            File filesDir = getFilesDir();
-            File trace = new File(filesDir, "trace");
-            Debug.startMethodTracing(trace.getAbsolutePath(), 1024 * 1024 * 10);
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Debug.stopMethodTracing();
-                }
-            }, delayMillis);
-        }
-    }
 
     public ChartData[] readData() {
         InputStream inputStream = getResources().openRawResource(R.raw.data);
