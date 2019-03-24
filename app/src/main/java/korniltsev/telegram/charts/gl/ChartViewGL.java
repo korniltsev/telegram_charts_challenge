@@ -1154,19 +1154,20 @@ public class ChartViewGL extends TextureView {
             }else  if (swindow < 0.03) {
                 swindow = 0;
             }
-            float sdataset = r.overlay.left + swindow * (r.overlay.right - r.overlay.left);
-            int n = r.data.data[0].values.length;
-            int i = (int) (Math.round(n-1) * sdataset);
-            if (i < 0) {
-                i = 0;
-            }
-            if (i >= n) {
-                i = n-1;
-            }
-            final int finali = i;
+            final float finalswindow = swindow;
             Runnable dispatchTouchdown = new Runnable() {
                 @Override
                 public void run() {
+                    float sdataset = r.overlay.left + finalswindow * (r.overlay.right - r.overlay.left);
+                    int n = r.data.data[0].values.length;
+                    int i = (int) (Math.round(n-1) * sdataset);
+                    if (i < 0) {
+                        i = 0;
+                    }
+                    if (i >= n) {
+                        i = n-1;
+                    }
+                    final int finali = i;
                     int checkedCount = 0;
                     for (GLChartProgram glChartProgram : r.chart) {
                         if (glChartProgram.checked) {
