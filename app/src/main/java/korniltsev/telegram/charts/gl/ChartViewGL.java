@@ -6,14 +6,15 @@ import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Process;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.ViewConfiguration;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -232,10 +233,11 @@ public class ChartViewGL extends TextureView {
         dimen_v_padding8 = dimen.dpi(8);
         dimen_chart_height = dimen.dpi(300);
         dimen_scrollbar_height = dimen.dpi(38);
+
         r = new Render(c);
         this.bgColor = currentColorsSet.lightBackground;
 //        this.rulerColor = currentColorsSet.ruler;
-        r.start();
+//        r.start();
         setSurfaceTextureListener(r);
 
         hpadding = dimen.dpi(16);
@@ -288,7 +290,7 @@ public class ChartViewGL extends TextureView {
     }
 
 
-    class Render extends Thread implements TextureView.SurfaceTextureListener {
+    class Render extends HandlerThread implements TextureView.SurfaceTextureListener {
 
 
         private final float[] PROJ = new float[16];
@@ -313,19 +315,32 @@ public class ChartViewGL extends TextureView {
         private boolean[] checked;
         private SimpleShader simple;
 
-
+        Handler renderHandler;
         public Render(ChartData column) {
+            super("RenderThread", Process.getThreadPriority(Process.myTid()));
             this.data = column;
+            start();
+            Looper l = getLooper();
 
+            rendererInvalidated = true;
+            renderHandler = new Handler(l);
+            renderHandler.post(new Init());
+//            invalidate();
+//
+            renderHandler.post(drawFrame_);
 
+//            renderHandler.post(drawFrame);
         }
 
-        @Override
-        public void run() {
-            if (!waitForSurface()) {
+        class Init implements Runnable {
 
-                return;
-            }
+            @Override
+            public void run() {
+                int threadPriority = Process.getThreadPriority(Process.myTid());
+                if (!waitForSurface()) {
+
+                    return;
+                }
 //            File filesDir = getContext().getFilesDir();
 //            File trace = new File(filesDir, "trace");
 //            if (MainActivity.TRACE) {
@@ -333,16 +348,30 @@ public class ChartViewGL extends TextureView {
 //            }
 //            long t2 = SystemClock.elapsedRealtimeNanos();
 
-            initGL(surface);
+                initGL(surface);
 //            long t3 = SystemClock.elapsedRealtimeNanos();
-            initPrograms();
+                initPrograms();
 //            long t5 = SystemClock.elapsedRealtimeNanos();
 //            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t2 - initTime));
 //            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t3 - t2));
 //            if (LOGGING) Log.d(MainActivity.TAG, "init time " + " " + (t5 - t3));
-            loop();
-
+            }
         }
+
+//        class Loop implements Runnable {//todo tmp, remove
+//
+//            @Override
+//            public void run() {
+//                loop();
+//            }
+//        }
+
+//        @Override
+//        public void run() {
+//
+//
+//
+//        }
 
         private void initPrograms() {
 //            long t1 = SystemClock.elapsedRealtimeNanos();
@@ -419,7 +448,7 @@ public class ChartViewGL extends TextureView {
 
         public void setChecked(final String id, final boolean isChecked) {
 
-            actionQueue.add(new Runnable() {
+            Runnable setCheckedOnRenderThread = new Runnable() {
                 @Override
                 public void run() {
                     if (scrollbar == null || chart == null) {
@@ -480,87 +509,100 @@ public class ChartViewGL extends TextureView {
                         ruler.animateScale(ratio, scaledMax, checkedCount, prevCheckedCOunt);
                         prevMax = scaledMax;
                     }
-
+//                    drawAndSwap();
+                    invalidateRender();
                 }
-            });
+            };
+            renderHandler.post(setCheckedOnRenderThread);
         }
 
-        private final BlockingQueue<Runnable> actionQueue = new ArrayBlockingQueue<Runnable>(100);
+//        private final BlockingQueue<Runnable> actionQueue = new ArrayBlockingQueue<Runnable>(100);
+        DrawFrame drawFrame_ = new DrawFrame();
+        class DrawFrame implements Runnable {
 
+            @Override
+            public void run() {
 
-        private void loop() {
-//            List<MyRect> debugRects = new ArrayList<>();
-//            debugRects.add(new MyRect(w, h, 0, 0, MyColor.red, w, h));
-//            debugRects.add(new MyRect(w, dimen_v_padding8 * 2 + dimen_scrollbar_height, 0, 0, MyColor.green, w, h));
-//            debugRects.add(new MyRect(w, dimen.dpi(280), 0, dimen.dpi(80), MyMyColor.blue, w, h));
-            boolean invalidated = true;
+                drawAndSwap2();
 
-//            MyCircle circle = new MyCircle(dimen,  w, h);
-
-            long frameCount = 0;
-            long prevReportTime = SystemClock.uptimeMillis();
-            int ccc = 0;
-            rulerInitDone = false;
-            out:
-            while (true) {
-                ccc++;
-                int cnt = 0;
-                while (true) {
-
-                    Runnable peek = actionQueue.poll();
-                    if (peek == null) {
-                        if (invalidated || cnt != 0) {
-                            break;
-                        } else {
-                            if (MainActivity.DIRTY_CHECK) {
-                                continue;
-                            } else {
-                                break;
-                            }
-                        }
-                    } else {
-                        cnt++;
-                        peek.run();
-                    }
-                }
-                invalidated = false;
-
-                long t = SystemClock.uptimeMillis();
-//                long t1 = SystemClock.elapsedRealtimeNanos();
-
-                invalidated = drawAndSwap(invalidated, t);
-                if (LOGGING) {
-
-//                    long t7 = SystemClock.elapsedRealtimeNanos();
-//                frameCount++;
-
-//                    log_trace("swap", t7, t6);
-//                    log_trace("chart", t6, t5);
-//                    log_trace("ruler", t5, t4);
-//                    log_trace("overlay", t4, t3);
-//                    log_trace("scrollbar", t3, t2);
-//                    log_trace("f1", t2, t1);
-
-                    long timeSinceLastReport = t - prevReportTime;
-                    if (MainActivity.LOG_FPS && timeSinceLastReport > 1000) {
-                        float fps = (float) frameCount * 1000 / timeSinceLastReport;
-                        Log.d(MainActivity.TAG, "fps " + fps);
-                        prevReportTime = t;
-                        frameCount = 0;
-
-                    } else {
-                        frameCount++;
-                    }
-                }
-//                prevReportTime;
-//                break;
-//                if (ccc == 1) {
-//                    Debug.stopMethodTracing();
-//                }
             }
         }
 
-        private boolean drawAndSwap(boolean invalidated, long t) {
+//        private void loop() {
+////            List<MyRect> debugRects = new ArrayList<>();
+////            debugRects.add(new MyRect(w, h, 0, 0, MyColor.red, w, h));
+////            debugRects.add(new MyRect(w, dimen_v_padding8 * 2 + dimen_scrollbar_height, 0, 0, MyColor.green, w, h));
+////            debugRects.add(new MyRect(w, dimen.dpi(280), 0, dimen.dpi(80), MyMyColor.blue, w, h));
+//            boolean invalidated = true;
+//
+////            MyCircle circle = new MyCircle(dimen,  w, h);
+//
+//            long frameCount = 0;
+//            long prevReportTime = SystemClock.uptimeMillis();
+//            int ccc = 0;
+//            rulerInitDone = false;
+//            out:
+//            while (true) {
+//                ccc++;
+//                int cnt = 0;
+//                while (true) {
+//
+//                    Runnable peek = actionQueue.poll();
+//                    if (peek == null) {
+//                        if (invalidated || cnt != 0) {
+//                            break;
+//                        } else {
+//                            if (MainActivity.DIRTY_CHECK) {
+//                                continue;
+//                            } else {
+//                                break;
+//                            }
+//                        }
+//                    } else {
+//                        cnt++;
+//                        peek.run();
+//                    }
+//                }
+//                invalidated = false;
+//
+//                long t = SystemClock.uptimeMillis();
+////                long t1 = SystemClock.elapsedRealtimeNanos();
+//
+//                invalidated = drawAndSwap(invalidated, t);
+//                if (LOGGING) {
+//
+////                    long t7 = SystemClock.elapsedRealtimeNanos();
+////                frameCount++;
+//
+////                    log_trace("swap", t7, t6);
+////                    log_trace("chart", t6, t5);
+////                    log_trace("ruler", t5, t4);
+////                    log_trace("overlay", t4, t3);
+////                    log_trace("scrollbar", t3, t2);
+////                    log_trace("f1", t2, t1);
+//
+//                    long timeSinceLastReport = t - prevReportTime;
+//                    if (MainActivity.LOG_FPS && timeSinceLastReport > 1000) {
+//                        float fps = (float) frameCount * 1000 / timeSinceLastReport;
+//                        Log.d(MainActivity.TAG, "fps " + fps);
+//                        prevReportTime = t;
+//                        frameCount = 0;
+//
+//                    } else {
+//                        frameCount++;
+//                    }
+//                }
+////                prevReportTime;
+////                break;
+////                if (ccc == 1) {
+////                    Debug.stopMethodTracing();
+////                }
+//            }
+//        }
+
+        private boolean drawAndSwap2() {
+            long t = SystemClock.uptimeMillis();
+            boolean invalidated = false;
             if (!rulerInitDone) {
                 prevMax = calculateMax(r.overlay.left, r.overlay.right);
                 ruler.init(prevMax);
@@ -605,7 +647,26 @@ public class ChartViewGL extends TextureView {
             if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                 throw new RuntimeException("Cannot swap buffers");
             }
+
+            rendererInvalidated = false;
+            if (invalidated) {
+                invalidateRender();
+            }
             return invalidated;
+        }
+
+        boolean rendererInvalidated = false;
+        public final void invalidateRender() {
+            if (rendererInvalidated) {
+                return;
+            }
+            rendererInvalidated = true;
+            //assert render thread
+            Render r = this;
+            if (Thread.currentThread() != r) {
+                throw new AssertionError();
+            }
+            renderHandler.post(drawFrame_);
         }
 
         private boolean drawScrollbar(boolean invalidated, long t) {
@@ -1035,7 +1096,7 @@ public class ChartViewGL extends TextureView {
                 i = n-1;
             }
             final int finali = i;
-            r.actionQueue.add(new Runnable() {
+            Runnable dispatchTouchdown = new Runnable() {
                 @Override
                 public void run() {
                     int checkedCount = 0;
@@ -1049,8 +1110,12 @@ public class ChartViewGL extends TextureView {
                             glChartProgram.setTooltipIndex(finali);
                         }
                     }
+//                    r.drawAndSwap();
+                    r.invalidateRender();
                 }
-            });
+            };
+            r.renderHandler.post(dispatchTouchdown);
+//            r.renderHandler.post(draw);
 
             if (LOGGING) Log.d(MainActivity.TAG, "chart touch down");
         }
@@ -1063,18 +1128,20 @@ public class ChartViewGL extends TextureView {
         final float right = (float) (scroller__right - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float scale = (right - left);
 //        motionEvents.poll()
-        r.actionQueue.add(new Runnable() {//todo do not allocate
+        Runnable updateLeftRight = new Runnable() {//todo do not allocate
             @Override
             public void run() {
 
                 r.updateLeftRight(left, right, scale);
 
-                        for (GLChartProgram glChartProgram : r.chart) {
-                            glChartProgram.setTooltipIndex(-1);
-                        }
-
+                for (GLChartProgram glChartProgram : r.chart) {
+                    glChartProgram.setTooltipIndex(-1);
+                }
+//                r.drawAndSwap();
+                r.invalidateRender();
             }
-        });
+        };
+        r.renderHandler.post(updateLeftRight);
     }
 
     public final long calculateMax(float left, float right) {
@@ -1096,7 +1163,7 @@ public class ChartViewGL extends TextureView {
     private ColorSet currentColors;
 
     public void animateToColors(final ColorSet colors) {
-        r.actionQueue.add(new Runnable() {
+        Runnable switchTheme = new Runnable() {
 
 
             @Override
@@ -1111,11 +1178,19 @@ public class ChartViewGL extends TextureView {
                 if (r.tooltip != null) {
                     r.tooltip.animateTo(colors);
                 }
+//                r.drawAndSwap();
+                r.invalidateRender();
             }
-        });
+        };
+        r.renderHandler.post(switchTheme);
     }
 
-//    class MyMotionEvent implements Runnable {
+//    @Override
+//    public void invalidate() {
+//        super.invalidate();
+//    }
+
+    //    class MyMotionEvent implements Runnable {
 //        float left;
 //        float scale;
 //        float right;

@@ -99,12 +99,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
-            @Override
-            public void doFrame(long frameTimeNanos) {
-
-            }
-        });
+//        Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
+//            @Override
+//            public void doFrame(long frameTimeNanos) {
+//
+//            }
+//        });
         currentColorSet = ColorSet.DAY;
         textColor = currentColorSet.textColor;
         dividerColor = currentColorSet.ruler;
@@ -248,8 +248,11 @@ public class MainActivity extends Activity {
                 dividers.add(divider);
             }
             CheckBox cb = new MyCheckBox(this, dimen);
+            cb.setBackgroundDrawable(null);
 //            cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
-            if (Build.VERSION.SDK_INT >= 21) {
+//            boolean b = Build.VERSION.SDK_INT >= 21;
+            boolean b = false;
+            if (b) {
                 cb.setButtonTintList(new ColorStateList(new int[][]{
                                 new int[]{android.R.attr.state_checked},
                                 new int[]{},
@@ -405,7 +408,7 @@ public class MainActivity extends Activity {
 //                }
                 if (Build.VERSION.SDK_INT >= 21) {
                     for (CheckBox cb : checkboxes) {
-                        cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
+//                        cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
                     }
                     ActivityManager.TaskDescription d = new ActivityManager.TaskDescription("Statistics", null, currentColorSet.toolbar);
                     setTaskDescription(d);
@@ -659,7 +662,9 @@ public class MainActivity extends Activity {
             if (action != null) {
                 action.canceled = true;
             }
-            alphaanim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, myalpha, checked ? 1f : 0f);
+//            int d = MyAnimation.ANIM_DRATION;
+            int d = 0;
+            alphaanim = new MyAnimation.Float(d, myalpha, checked ? 1f : 0f);
             action = new MyAnimationTick();
             postOnAnimation(action);
         }
