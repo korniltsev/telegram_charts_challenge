@@ -133,42 +133,48 @@ public class MainActivity extends Activity {
         }
         scrollView.addView(list);
         mySetContentVie(scrollView);
+        getWindow().getDecorView().setBackgroundDrawable(null);
     }
 
 
     private View createChart(ChartData datum) {
-        LinearLayout.LayoutParams legendLP = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+        FrameLayout.LayoutParams legendLP = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         TextView legend = new TextView(this);
-        legend.setPadding(dimen.dpi(16), dimen.dpi(8), 0, dimen.dpi(8));
+        legend.setPadding(dimen.dpi(16), dimen.dpi(16), 0, dimen.dpi(8));
         legend.setTextSize(16f);
         legend.setTextColor(currentColorSet.legendTitle);
         legend.setText("Followers");
         legend.setLayoutParams(legendLP);
-        MyColorDrawable d1 = new MyColorDrawable(currentColorSet.lightBackground);
-        ds.add(d1);
-        legend.setBackgroundDrawable(d1);
+//        MyColorDrawable d1 = new MyColorDrawable(currentColorSet.lightBackground);
+//        ds.add(d1);
+//        legend.setBackgroundDrawable(d1);
 
 
         final ChartViewGL newChart = new ChartViewGL(this, datum, dimen, currentColorSet);
-        newChart.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+        newChart.setLayoutParams(new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
         charts.add(newChart);
 
 
         ScrollView.LayoutParams listLP = new ScrollView.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-        LinearLayout list = new LinearLayout(this);
-        list.setOrientation(LinearLayout.VERTICAL);
+        FrameLayout list = new FrameLayout(this){
+            @Override
+            public boolean isOpaque() {
+                return true;
+            }
+        };
+//        list.setOrientation(LinearLayout.VERTICAL);
         list.setLayoutParams(listLP);
-        list.addView(legend);
         list.addView(newChart);
+        list.addView(legend);
 
 
 
         ColumnData[] data1 = datum.data;
-        LinearLayout checkboxlist = new LinearLayout(this);
-        checkboxlist.setOrientation(LinearLayout.VERTICAL);
+//        LinearLayout checkboxlist = new LinearLayout(this);
+//        checkboxlist.setOrientation(LinearLayout.VERTICAL);
         MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground);
         ds.add(d);
-        checkboxlist.setBackgroundDrawable(d);
+//        checkboxlist.setBackgroundDrawable(d);
         for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
             final ColumnData c = data1[i];
             if (c.id.equals(ChartData.COLUMN_ID_X)) {
@@ -176,10 +182,11 @@ public class MainActivity extends Activity {
             }
             if (i != 1) {
                 View divider = new View(this);
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(1));
+                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(MATCH_PARENT, dimen.dpi(1));
                 lp.leftMargin = dimen.dpi(59);
+                lp.gravity = Gravity.BOTTOM;
                 divider.setBackgroundColor(currentColorSet.ruler);
-                checkboxlist.addView(divider, lp);
+                list.addView(divider, lp);
                 dividers.add(divider);
             }
             CheckBox cb = new MyCheckBox(this, dimen);
@@ -199,17 +206,18 @@ public class MainActivity extends Activity {
                     newChart.setChecked(c.id, isChecked);
                 }
             });
-            LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(50));
-            cblp.leftMargin = dip14;
+            FrameLayout.LayoutParams cblp = new FrameLayout.LayoutParams(MATCH_PARENT, dimen.dpi(50));
+            cblp.gravity = Gravity.BOTTOM;
+//            cblp.leftMargin = dip14;
             cb.setLayoutParams(cblp);
 
-            checkboxlist.addView(cb);
+            list.addView(cb);
 
             checkboxes.add(cb);
 
         }
 
-        list.addView(checkboxlist, MATCH_PARENT, WRAP_CONTENT);
+//        list.addView(checkboxlist, MATCH_PARENT, WRAP_CONTENT);
         chartsRoots.add(list);
         return list;
     }
@@ -254,7 +262,12 @@ public class MainActivity extends Activity {
 
         LinearLayout.LayoutParams toolbarLP = new LinearLayout.LayoutParams(MATCH_PARENT, toolbar_size);
         bgToolbar = new MyColorDrawable(currentColorSet.toolbar);
-        toolbar = new LinearLayout(this);
+        toolbar = new LinearLayout(this){
+            @Override
+            public boolean isOpaque() {
+                return super.isOpaque();
+            }
+        };
         toolbar.setOrientation(LinearLayout.HORIZONTAL);
         toolbar.setBackgroundDrawable(bgToolbar);
         toolbar.setLayoutParams(toolbarLP);
@@ -298,7 +311,7 @@ public class MainActivity extends Activity {
         final boolean animateUI = true;
         if (animateUI) {
 
-//            root.animateColors(currentColorSet.statusbar, currentColorSet.darkBackground);
+            root.animateColors(currentColorSet.statusbar, currentColorSet.darkBackground);
             bgToolbar.animate(currentColorSet.toolbar);
             for (MyColorDrawable d : ds) {
                 d.animate(currentColorSet.lightBackground);
@@ -422,15 +435,15 @@ public class MainActivity extends Activity {
 
 
     public final Drawable createButtonBackground(int pressedColor, boolean borderless) {
-//        return null;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !USE_RIPPLE) {
-            StateListDrawable stateListDrawable = new StateListDrawable();
-            stateListDrawable.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(pressedColor));
-            return stateListDrawable;
-        } else {
-            ColorDrawable maskDrawable = borderless ? null : new ColorDrawable(Color.RED);
-            return new RippleDrawable(ColorStateList.valueOf(pressedColor), null, maskDrawable);
-        }
+        return null;
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !USE_RIPPLE) {
+//            StateListDrawable stateListDrawable = new StateListDrawable();
+//            stateListDrawable.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(pressedColor));
+//            return stateListDrawable;
+//        } else {
+//            ColorDrawable maskDrawable = borderless ? null : new ColorDrawable(Color.RED);
+//            return new RippleDrawable(ColorStateList.valueOf(pressedColor), null, maskDrawable);
+//        }
     }
 
 
