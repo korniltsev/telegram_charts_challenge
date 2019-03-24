@@ -128,23 +128,25 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     + korniltsev.telegram.charts.gl.GLChartProgram.Shader - simpleshader
     +  initial animation bug
     + 2. onStop/onStart - touch gl thread and invalidate
-    3. make day/night animation work
+    + 3. make day/night animation work
         + put ui over texture
         + shadow between charts
         + 5. [ ? ] move "folorwers" to gl +   text night mode + animation
-        - when scrolled down chart is not animating
+        + when scrolled down chart is not animating
 
     4. lollipop toolbar color wtf (one hour max)
     checkbox paddings on 16 android
     x values second chart, wtf values in reverse order
 
 
-    6. [ ! ] alpha animation blending - render to fbo
-
     Emulator crashes on tooltip dissmiss wtf
 
+    6. [ ! ] alpha animation blending - render to fbo
 
-    [ ? ] Matrix -> MyMatrix for inlining?
+
+
+
+    remove square icon, leave only round
 
     build release build with proguard/redex
 
@@ -153,21 +155,10 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 
 
-    -------------------------- DEADLINE
-    - don't draw x lablel if the label is offscreen - lazy textures are required
-
-    NICE TO HAVE
-    try to draw only every 16 ms, not faster, try to use handler thread, maybe it is faster
-    [ ! ] optimization
-        [?] https://github.com/facebook/redex
-        [?] reuse shaders between objects for faster start?
-        trace scrolling/caling allocations & perf
-
-
-    + fix touch (laggy, hard to select)
-
-
+    - fix touch (laggy, hard to select)
+    [ ? ] Matrix -> MyMatrix for inlining? test if it does something
     [?] optimize minmax animation, introduce step?, do not cancel animations or try to continue?
+    - don't draw x lablel if the label is offscreen - lazy textures are required
 
 
 
