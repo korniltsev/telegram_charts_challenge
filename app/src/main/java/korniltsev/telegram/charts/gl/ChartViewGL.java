@@ -125,7 +125,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     ---------------------------------------- 23 march
 
     + 1. cleanup - stop thread, destroy shaders, surface
-      korniltsev.telegram.charts.gl.GLChartProgram.Shader - simpleshader
+    + korniltsev.telegram.charts.gl.GLChartProgram.Shader - simpleshader
       initial animation bug
     2. onStop/onStart - touch gl thread and invalidate
     3. make day/night animation work
