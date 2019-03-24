@@ -126,8 +126,8 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
     + 1. cleanup - stop thread, destroy shaders, surface
     + korniltsev.telegram.charts.gl.GLChartProgram.Shader - simpleshader
-      initial animation bug
-    2. onStop/onStart - touch gl thread and invalidate
+    +  initial animation bug
+    + 2. onStop/onStart - touch gl thread and invalidate
     3. make day/night animation work
     4. lollipop toolbar color wtf (one hour max)
     5. [ ? ] move "folorwers" to gl +   text night mode + animation
@@ -273,6 +273,16 @@ public class ChartViewGL extends TextureView {
     public void setChecked(String id, boolean isChecked) {
         //todo maybe need to save to ChartViewGl if we will need RenderRestart
         this.r.setChecked(id, isChecked);
+    }
+
+    public void invalidateRender() {
+        r.postToRender(new Runnable() {
+            @Override
+            public void run() {
+                r.invalidateRender();
+            }
+        });
+
     }
 
 

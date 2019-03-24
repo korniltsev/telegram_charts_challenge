@@ -529,24 +529,12 @@ public class MainActivity extends Activity {
 
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
+        for (ChartViewGL chart : charts) {
+            chart.invalidateRender();
+        }
     }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-//    @Override
-//    public void onBackPressed() {
-//        if (chart_ != null && chartVisible) {
-//            chartVisible = false;
-//            mySetContentVie(chartList);
-//        } else {
-//            super.onBackPressed();
-//        }
-//    }
 
     @Override
     protected void onDestroy() {
