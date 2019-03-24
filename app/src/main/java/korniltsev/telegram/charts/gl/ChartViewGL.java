@@ -136,13 +136,13 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
     + 4. lollipop toolbar color wtf (one hour max)
 
-    checkbox paddings on 16 android
+    + checkbox paddings on 16 android
     x values second chart, wtf values in reverse order
 
 
     Emulator crashes on tooltip dissmiss wtf
 
-    6. [ ! ] alpha animation blending - render to fbo
+
 
 
 
@@ -153,7 +153,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
     -------------------------- GG
 
-
+    6. [ ! ] alpha animation blending - render to fbo
 
 
     - fix touch (laggy, hard to select)
