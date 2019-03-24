@@ -150,7 +150,6 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     + fix touch (laggy, hard to select)
 
 
-    [ ! ] tweak inital zoom for smal datasets
     [ ! ] move "folorwers" to gl +   text night mode + animation
     [ ! ] checkbox + animations + divider width
 
