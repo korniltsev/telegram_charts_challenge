@@ -134,7 +134,8 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
         + 5. [ ? ] move "folorwers" to gl +   text night mode + animation
         + when scrolled down chart is not animating
 
-    4. lollipop toolbar color wtf (one hour max)
+    + 4. lollipop toolbar color wtf (one hour max)
+
     checkbox paddings on 16 android
     x values second chart, wtf values in reverse order
 
