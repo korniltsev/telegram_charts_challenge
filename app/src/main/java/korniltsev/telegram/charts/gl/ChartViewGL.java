@@ -262,7 +262,7 @@ public class ChartViewGL extends TextureView {
         if (scroller_left == -1) {
             scroller__right = scrollbar.right;
             scroller_left = scrollbar.right - initial_scroller_dith;
-            setOverlayPos();
+            setOverlayPos(true);
         }
 
         chartBottom =  bottom - dimen.dpi(80);
@@ -281,6 +281,9 @@ public class ChartViewGL extends TextureView {
 
         private final float[] PROJ = new float[16];
         private final ChartData data;
+        public volatile float initleft;
+        public volatile float initRight;
+        public volatile float initSacle;
         private EGL10 mEgl;
         private EGLDisplay mEglDisplay;
         private EGLConfig mEglConfig;
@@ -311,7 +314,7 @@ public class ChartViewGL extends TextureView {
         private MyCircles.Shader joiningShader;
 
         public Render(ChartData column) {
-            super("RenderThread", Process.getThreadPriority(Process.myTid()));
+            super("ChartViewGLRender", Process.getThreadPriority(Process.myTid()));
             this.data = column;
             start();
             Looper l = getLooper();
@@ -431,6 +434,7 @@ public class ChartViewGL extends TextureView {
                 initGL(surface);
 //            long t3 = SystemClock.elapsedRealtimeNanos();
                 initPrograms();
+                setLeftRightImpl(initleft, initRight, initSacle);
 //            long t5 = SystemClock.elapsedRealtimeNanos();
 //            if (LOGGING) Log.d(MainActivity.TAG, String.format("init time1  %10d", t2 - t1));
 //            if (LOGGING) Log.d(MainActivity.TAG, String.format("init time2  %10d", t3 - t2));
@@ -1113,7 +1117,7 @@ public class ChartViewGL extends TextureView {
                                 scroller__right = this.scrollbar.right;
                                 scroller_left = this.scrollbar.right - scroller_move_down_width;
                             }
-                            setOverlayPos();
+                            setOverlayPos(false);
 //                            invalidate();
 //                            int scroller_width = scroller__right - scroller_left;
 //                            scroller_left = Math.min(Math.max(scroller_left, scrollbar.left), scrollbar.right - scroller_width);
@@ -1126,7 +1130,7 @@ public class ChartViewGL extends TextureView {
                             if (scroller__right - scroller_left < initial_scroller_dith) {
                                 scroller__right = scroller_left + initial_scroller_dith;
                             }
-                            setOverlayPos();
+                            setOverlayPos(false);
 //                            invalidate();
                         } else if (down_target == DOWN_RESIZE_LEFT) {
                             scroller_left = (int) x;
@@ -1138,7 +1142,7 @@ public class ChartViewGL extends TextureView {
 //                                scroller_left = initial_scroller_dith;
                                 scroller_left = scroller__right - initial_scroller_dith;
                             }
-                            setOverlayPos();
+                            setOverlayPos(false);
 //                            invalidate();
                         }
 
@@ -1216,25 +1220,34 @@ public class ChartViewGL extends TextureView {
 
 //    private static final BlockingQueue<MyMotionEvent> motionEvents = new ArrayBlockingQueue<MyMotionEvent>(100);
 
-    public final void setOverlayPos() {
+    public final void setOverlayPos(boolean init) {
         final float left = (float) (scroller_left - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float right = (float) (scroller__right - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float scale = (right - left);
 //        motionEvents.poll()
-        Runnable updateLeftRight = new Runnable() {//todo do not allocate
-            @Override
-            public void run() {
-
-                r.updateLeftRight(left, right, scale);
-
-                for (GLChartProgram glChartProgram : r.chart) {
-                    glChartProgram.setTooltipIndex(-1);
+        if (init) {
+            r.initleft = left;
+            r.initRight = right;
+            r.initSacle = scale;
+        } else {
+            Runnable updateLeftRight = new Runnable() {//todo do not allocate
+                @Override
+                public void run() {
+                    setLeftRightImpl(left, right, scale);
                 }
+            };
+            r.postToRender(updateLeftRight);
+        }
+    }
+
+    private void setLeftRightImpl(float left, float right, float scale) {
+        r.updateLeftRight(left, right, scale);
+
+        for (GLChartProgram glChartProgram : r.chart) {
+            glChartProgram.setTooltipIndex(-1);
+        }
 //                r.drawAndSwap();
-                r.invalidateRender();
-            }
-        };
-        r.postToRender(updateLeftRight);
+        r.invalidateRender();
     }
 
     public final long calculateMax(float left, float right) {
