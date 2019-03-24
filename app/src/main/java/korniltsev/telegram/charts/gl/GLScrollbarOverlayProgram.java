@@ -53,6 +53,7 @@ public final class GLScrollbarOverlayProgram {
     };
     private MyAnimation.Color borderAnim;
     private MyAnimation.Color overlayAnim;
+    private boolean released;
 
     public GLScrollbarOverlayProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int colorBorder, int coloroVerlay, SimpleShader shader) {
         this.color_overlay = coloroVerlay;
@@ -166,6 +167,10 @@ public final class GLScrollbarOverlayProgram {
     }
 
     public void release() {
+        if (released) {
+            return;
+        }
+        released = true;
         GLES20.glDeleteBuffers(1, vbos, 0);
 
     }

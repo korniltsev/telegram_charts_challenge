@@ -97,6 +97,7 @@ public final class GLRulersProgram {
     private float left;
     private float strideChangeLabelWidth
             ;
+    private boolean released;
 
 
     public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, ColorSet colors, SimpleShader s, ColumnData xColumn) {
@@ -550,6 +551,10 @@ public final class GLRulersProgram {
     }
 
     public void release() {
+        if (released) {
+            return;
+        }
+        released = true;
         GLES20.glDeleteBuffers(1, vbos, 0);
         zero.release();
         for (int i1 = 0, rsSize = rs.size(); i1 < rsSize; i1++) {

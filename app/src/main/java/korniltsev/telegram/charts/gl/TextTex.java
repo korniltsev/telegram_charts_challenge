@@ -19,6 +19,7 @@ public class TextTex {
 
     int color;
     private final TextPaint p;
+    private boolean released;
 
     TextTex(String text, TextPaint p) {
         this.text = text;
@@ -54,6 +55,10 @@ public class TextTex {
     }
 
     public final void release() {
+        if (released) {
+            return;
+        }
+        released = true;
         try {
             GLES20.glDeleteTextures(1, tex, 0);
         } catch (Throwable e) {

@@ -52,8 +52,13 @@ public final class GLChartProgram {
     //    private int goodCircleIndex;
     private MyAnimation.Color tooltipFillColorAnim;
     private final int[] vbos;
+    private boolean released;
 
     public void release() {
+        if (released) {
+            return;
+        }
+        released = true;
         GLES20.glDeleteBuffers(1, vbos, 0);
         lineJoining.release();
     }
@@ -91,8 +96,12 @@ public final class GLChartProgram {
             GLES20.glUseProgram(program);
             MyGL.checkGlError2();
         }
-
+        private boolean released;
         public void release() {
+            if (released) {
+                return;
+            }
+            released = true;
             GLES20.glDeleteProgram(program);
         }
     }

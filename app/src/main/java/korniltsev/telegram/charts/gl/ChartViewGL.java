@@ -37,6 +37,7 @@ import static android.opengl.GLES10.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES10.glClear;
 import static android.opengl.GLES10.glClearColor;
 import static korniltsev.telegram.charts.MainActivity.LOGGING;
+import static korniltsev.telegram.charts.MainActivity.TAG;
 
 /*
     + scrollbar overlay
@@ -124,6 +125,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     ---------------------------------------- 23 march
 
     1. cleanup - stop thread, destroy shaders, surface
+//    korniltsev.telegram.charts.gl.GLChartProgram.Shader - simpleshader
     2. onStop/onStart - touch gl thread and invalidate
     3. make day/night animation work
     4. lollipop toolbar color wtf (one hour max)
@@ -295,7 +297,7 @@ public class ChartViewGL extends TextureView {
         private boolean[] checked;
 
 
-        Handler renderHandler;
+        Handler renderHandler2;
 
         private Tooltip tooltip;
         private GLChartProgram[] scrollbar;
@@ -314,47 +316,98 @@ public class ChartViewGL extends TextureView {
             Looper l = getLooper();
 
             rendererInvalidated = true;
-            renderHandler = new Handler(l);
-            renderHandler.post(new Init());
+            renderHandler2 = new Handler(l);
+            renderHandler2.post(new Init());
 //            invalidate();
 //
-            renderHandler.post(drawFrame_);
+            renderHandler2.post(drawFrame_);
 
 //            renderHandler.post(drawFrame);
         }
 
+        public void postToRender(final Runnable target) {
+            renderHandler2.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (released) {
+                        return;
+                    }
+                    target.run();
+                }
+            });
+        }
+
         public void release() {
-            renderHandler.post(new Runnable() {
+            Runnable release = new Runnable() {
                 @Override
                 public void run() {
                     if (released) {
                         return;
                     }
                     released = true;
-                    if (tooltip != null) {
-                        tooltip.rlease();
+                    try {
+                        if (tooltip != null) {
+                            tooltip.rlease();
+                        }
+                    } catch (Throwable e) {
+                        if (LOGGING) Log.e(TAG, "release err", e);
                     }
                     for (GLChartProgram c : chart) {
-                        c.release();
+                        try {
+                            c.release();
+                        } catch (Throwable e) {
+                            if (LOGGING) Log.e(TAG, "release err", e);
+                        }
                     }
                     for (GLChartProgram c : scrollbar) {
-                        c.release();
+                        try {
+                            c.release();
+                        } catch (Throwable e) {
+                            if (LOGGING) Log.e(TAG, "release err", e);
+                        }
                     }
-                    overlay.release();
-                    ruler.release();
+                    try {
+                        overlay.release();
+                    } catch (Throwable e) {
+                        if (LOGGING) Log.e(TAG, "release err", e);
+                    }
+                    try {
+                        ruler.release();
+                    } catch (Throwable e) {
+                        if (LOGGING) Log.e(TAG, "release err", e);
 
-                    simple.release();
-                    joiningShader.release();
-                    chartShader.release();
+                    }
 
-                    mEgl.eglDestroySurface(mEglDisplay, mEglSurface);
-                    mEgl.eglDestroyContext(mEglDisplay, mEglContext);
+                    try {
+                        simple.release();
+                    } catch (Throwable e) {
+                        if (LOGGING) Log.e(TAG, "release err", e);
+
+                    }
+                    try {
+                        joiningShader.release();
+                    } catch (Throwable e) {
+                        if (LOGGING) Log.e(TAG, "release err", e);
+                    }
+                    try {
+                        chartShader.release();
+                    } catch (Throwable e) {
+                        if (LOGGING) Log.e(TAG, "release err", e);
+                    }
+
+                    try {
+                        mEgl.eglDestroySurface(mEglDisplay, mEglSurface);
+                        mEgl.eglDestroyContext(mEglDisplay, mEglContext);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
                     surface.release();
 
                     quit();
                 }
-            });
+            };
+            renderHandler2.post(release);
         }
 
         class Init implements Runnable {
@@ -538,7 +591,7 @@ public class ChartViewGL extends TextureView {
                     invalidateRender();
                 }
             };
-            renderHandler.post(setCheckedOnRenderThread);
+            postToRender(setCheckedOnRenderThread);
         }
 
 //        private final BlockingQueue<Runnable> actionQueue = new ArrayBlockingQueue<Runnable>(100);
@@ -693,7 +746,7 @@ public class ChartViewGL extends TextureView {
             if (Thread.currentThread() != r) {
                 throw new AssertionError();
             }
-            renderHandler.post(drawFrame_);
+            postToRender(drawFrame_);
         }
 
         private boolean drawScrollbar(boolean invalidated, long t) {
@@ -1151,7 +1204,7 @@ public class ChartViewGL extends TextureView {
                     r.invalidateRender();
                 }
             };
-            r.renderHandler.post(dispatchTouchdown);
+            r.postToRender(dispatchTouchdown);
 //            r.renderHandler.post(draw);
 
             if (LOGGING) Log.d(MainActivity.TAG, "chart touch down");
@@ -1178,7 +1231,7 @@ public class ChartViewGL extends TextureView {
                 r.invalidateRender();
             }
         };
-        r.renderHandler.post(updateLeftRight);
+        r.postToRender(updateLeftRight);
     }
 
     public final long calculateMax(float left, float right) {
@@ -1219,7 +1272,7 @@ public class ChartViewGL extends TextureView {
                 r.invalidateRender();
             }
         };
-        r.renderHandler.post(switchTheme);
+        r.postToRender(switchTheme);
     }
 
     public void release() {

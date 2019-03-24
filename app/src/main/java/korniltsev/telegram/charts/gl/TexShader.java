@@ -69,6 +69,7 @@ public class TexShader {
     public final int u_color;
 
     int[] vbos = new int[1];
+    private boolean released;
 
     public TexShader(boolean flip, boolean masked) {
         this.flip = flip;
@@ -106,6 +107,10 @@ public class TexShader {
     }
 
     public void release() {
+        if (released) {
+            return;
+        }
+        released = true;
         GLES20.glDeleteProgram(texProgram);
         GLES20.glDeleteBuffers(1, vbos, 0);
     }

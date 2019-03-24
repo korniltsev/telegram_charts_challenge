@@ -34,6 +34,7 @@ public class MyCircles {
     private final int canvash;
 
     private final int count;
+    private boolean released;
 
     public static class Shader {
         final int triangleCount;
@@ -95,8 +96,12 @@ public class MyCircles {
         public void use() {
             GLES20.glUseProgram(program);
         }
-
+        boolean released;
         public void release() {
+            if (released) {
+                return;
+            }
+            released = true;
             GLES20.glDeleteProgram(program);
 
         }
@@ -214,7 +219,11 @@ public class MyCircles {
 
     }
 
-    public void release(){
+    public void release() {
+        if (released) {
+            return;
+        }
+        released = true;
         try {
             GLES20.glDeleteBuffers(1, vbos, 0);
         } catch (Throwable e) {

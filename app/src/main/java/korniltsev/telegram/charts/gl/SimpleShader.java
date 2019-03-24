@@ -22,6 +22,8 @@ public final class SimpleShader {
     public final int positionHandle;
     public final int program;
     public final int colorHandle;
+    private boolean released;
+
     public SimpleShader() {
 
         program = MyGL.createProgram(vertexShader, fragmentShader);
@@ -31,6 +33,10 @@ public final class SimpleShader {
     }
 
     public void release() {
+        if (released) {
+            return;
+        }
+        released = true;
         GLES20.glDeleteProgram(program);
     }
 }

@@ -62,6 +62,7 @@ class TooltipFramebuffer {
     int[] vbos = new int[1];
     private int fakeShadowColor;
     private MyAnimation.Color fakeShadowColorAnim;
+    private boolean released;
 
     public TooltipFramebuffer(TexShader shader, ChartData data, int index, Dimen dimen, ColorSet set, boolean[] checked, SimpleShader simple) {
         this.dateColor = set.tooltipTitleColor;
@@ -269,6 +270,10 @@ class TooltipFramebuffer {
     }
 
     public void release() {
+        if (released) {
+            return;
+        }
+        released = true;
         title.release();
         for (TextTex name : names) {
             name.release();

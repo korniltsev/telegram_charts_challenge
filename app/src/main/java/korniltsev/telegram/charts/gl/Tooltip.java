@@ -48,6 +48,7 @@ public class Tooltip {
     private MyAnimation.Color lineANim;
     private int fbindex;
     private float ndcx;
+    private boolean released;
 //    private TexShader texShader;
 
     public Tooltip(Dimen dimen, int w, int h, ColorSet colors, ChartData data, SimpleShader simple) {
@@ -235,6 +236,10 @@ public class Tooltip {
     }
 
     public void rlease() {
+        if (released) {
+            return;
+        }
+        released = true;
         GLES20.glDeleteBuffers(1, vbos, 0);
         texShaderFlip.release();
         texShaderNoflip.release();
