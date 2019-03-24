@@ -307,7 +307,7 @@ public class ChartViewGL extends TextureView {
         private GLRulersProgram ruler;
 
         private SimpleShader simple;
-        private GLChartProgram.Shader chartShader;
+//        private GLChartProgram.Shader chartShader;
         private MyCircles.Shader joiningShader;
 
         public Render(ChartData column) {
@@ -390,11 +390,11 @@ public class ChartViewGL extends TextureView {
                     } catch (Throwable e) {
                         if (LOGGING) Log.e(TAG, "release err", e);
                     }
-                    try {
-                        chartShader.release();
-                    } catch (Throwable e) {
-                        if (LOGGING) Log.e(TAG, "release err", e);
-                    }
+//                    try {
+//                        chartShader.release();
+//                    } catch (Throwable e) {
+//                        if (LOGGING) Log.e(TAG, "release err", e);
+//                    }
 
                     try {
                         mEgl.eglDestroySurface(mEglDisplay, mEglSurface);
@@ -454,7 +454,7 @@ public class ChartViewGL extends TextureView {
 //        }
         private boolean released = false;
         private void initPrograms() {
-            chartShader = new GLChartProgram.Shader();
+//            chartShader = new GLChartProgram.Shader();
             joiningShader = new MyCircles.Shader(6);
             simple = new SimpleShader();
 //            long t2 = SystemClock.elapsedRealtimeNanos();
@@ -469,7 +469,7 @@ public class ChartViewGL extends TextureView {
 
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 ColumnData datum = data[i];
-                scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, chartShader, joiningShader);
+                scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, simple, joiningShader);
                 max = Math.max(max, datum.maxValue);
                 min = Math.min(min, datum.minValue);
             }
@@ -482,7 +482,7 @@ public class ChartViewGL extends TextureView {
             chart = new GLChartProgram[data.length - 1];
             checked = new boolean[data.length - 1];
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
-                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground, chartShader, joiningShader);
+                chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground, simple, joiningShader);
                 checked[i - 1] = true;
             }
 //            long chart = SystemClock.elapsedRealtimeNanos();

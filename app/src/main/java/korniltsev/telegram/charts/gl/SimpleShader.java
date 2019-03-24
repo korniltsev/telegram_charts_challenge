@@ -32,6 +32,10 @@ public final class SimpleShader {
         colorHandle = GLES20.glGetUniformLocation(program, "u_color");
     }
 
+    public final void use() {
+        GLES20.glUseProgram(program);
+    }
+
     public void release() {
         if (released) {
             return;

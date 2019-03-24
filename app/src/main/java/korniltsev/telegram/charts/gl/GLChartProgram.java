@@ -26,7 +26,7 @@ public final class GLChartProgram {
     private final FloatBuffer buf1;
     public final ColumnData column;
     public final MyCircles lineJoining;
-    public final Shader shader;
+    public final SimpleShader shader;
     public float zoom = 1f;//1 -- all, 0.2 - partial
     public float left = 0;
     private int tooltipIndex = -1;
@@ -63,51 +63,7 @@ public final class GLChartProgram {
         lineJoining.release();
     }
 
-    public static final class Shader {
-        static final String vertexShader =
-                "uniform mat4 u_MVPMatrix;      \n"
-                        + "attribute vec2 a_Position;     \n"
-                        + "void main()                    \n"
-                        + "{                              \n"
-                        + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
-                        + "}                              \n";
-
-        static final String fragmentShader =
-                "precision mediump float;       \n"
-                        + "uniform vec4 u_color;       \n"
-                        + "void main()                    \n"
-                        + "{                              \n"
-                        + "   gl_FragColor = u_color;     \n"
-//                    + "   gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);     \n"
-                        + "}                              \n";
-        private final int MVPHandle;
-        private final int positionHandle;
-        private final int program;
-        private final int colorHandle;
-
-        public Shader() {
-            program = MyGL.createProgram(vertexShader, fragmentShader);
-            MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
-            positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
-            colorHandle = GLES20.glGetUniformLocation(program, "u_color");
-        }
-
-        public void use() {
-            GLES20.glUseProgram(program);
-            MyGL.checkGlError2();
-        }
-        private boolean released;
-        public void release() {
-            if (released) {
-                return;
-            }
-            released = true;
-            GLES20.glDeleteProgram(program);
-        }
-    }
-
-
-    public GLChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, int toolttipFillColor, Shader shader, MyCircles.Shader joiningShader) {
+    public GLChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, int toolttipFillColor, SimpleShader shader, MyCircles.Shader joiningShader) {
         this.tooltipFillColor = toolttipFillColor;
         this.w = w;
         this.h = h;
