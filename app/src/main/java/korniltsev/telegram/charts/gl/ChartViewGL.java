@@ -131,8 +131,8 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     6. [ ! ] alpha animation blending - render to fbo
 
 
-    MUST HAVE
-    --------------------------
+
+    -------------------------- GG
 
     startup optimization(see below)
     alpha animation on fbo
