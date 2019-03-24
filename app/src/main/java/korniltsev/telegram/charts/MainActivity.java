@@ -458,15 +458,14 @@ public class MainActivity extends Activity {
 
 
     public final Drawable createButtonBackground(int pressedColor, boolean borderless) {
-        return null;
-//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !USE_RIPPLE) {
-//            StateListDrawable stateListDrawable = new StateListDrawable();
-//            stateListDrawable.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(pressedColor));
-//            return stateListDrawable;
-//        } else {
-//            ColorDrawable maskDrawable = borderless ? null : new ColorDrawable(Color.RED);
-//            return new RippleDrawable(ColorStateList.valueOf(pressedColor), null, maskDrawable);
-//        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP || !USE_RIPPLE) {
+            StateListDrawable stateListDrawable = new StateListDrawable();
+            stateListDrawable.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(pressedColor));
+            return stateListDrawable;
+        } else {
+            ColorDrawable maskDrawable = borderless ? null : new ColorDrawable(Color.RED);
+            return new RippleDrawable(ColorStateList.valueOf(pressedColor), null, maskDrawable);
+        }
     }
 
 
