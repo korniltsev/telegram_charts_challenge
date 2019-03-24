@@ -121,7 +121,7 @@ public class MainActivity extends Activity {
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
 
-        for (int i = 0, dataLength = data.length; i < 1; i++) {
+        for (int i = 0, dataLength = data.length; i < dataLength; i++) {
             ChartData dataset = data[i];
             ChartData dataset1 = dataset;
             View chart = createChart(dataset1);
@@ -251,22 +251,22 @@ public class MainActivity extends Activity {
             cb.setBackgroundDrawable(null);
 //            cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
 //            boolean b = Build.VERSION.SDK_INT >= 21;
-            boolean b = false;
-            if (b) {
-                cb.setButtonTintList(new ColorStateList(new int[][]{
-                                new int[]{android.R.attr.state_checked},
-                                new int[]{},
-                        }, new int[]{
-                                c.color,
-                                c.color,
-                        })
-                );
-            } else {
+//            boolean b = false;// fuck ripples
+//            if (b) {
+//                cb.setButtonTintList(new ColorStateList(new int[][]{
+//                                new int[]{android.R.attr.state_checked},
+//                                new int[]{},
+//                        }, new int[]{
+//                                c.color,
+//                                c.color,
+//                        })
+//                );
+//            } else {
                 Drawable iccb = getResources().getDrawable(R.drawable.ic_checkbox).mutate();
                 iccb.setColorFilter(c.color, PorterDuff.Mode.SRC_IN);
                 cb.setButtonDrawable(iccb);
 //                cb.setCompoundDrawablesWithIntrinsicBounds(iccb, null, null, null);
-            }
+//            }
             int dip14 = dimen.dpi(14);
             cb.setPadding(dip14, 0, dip14, 0);
 //            cb.setComp
