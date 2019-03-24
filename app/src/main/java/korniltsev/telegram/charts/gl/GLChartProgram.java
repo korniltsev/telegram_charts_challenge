@@ -296,7 +296,7 @@ public final class GLChartProgram {
 
         if (goodCircle == null || this.tooltipIndex != tooltipIndex) {
             if (goodCircle != null) {
-                goodCircle.release();//todo
+//                goodCircle.release();//todo
                 goodCircle = null;
 
             }

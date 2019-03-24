@@ -237,10 +237,11 @@ public class MyCircles {
             return;
         }
         released = true;
-//        try {//todo leak
-//            GLES20.glDeleteBuffers(2, vbos, 0);
-//        } catch (Throwable e) {
-//            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err", e);
-//        }
+        try {//todo leak
+            GLES20.glDeleteBuffers(2, vbos, 0);
+            GLES20.glGetError();
+        } catch (Throwable e) {
+            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err", e);
+        }
     }
 }
