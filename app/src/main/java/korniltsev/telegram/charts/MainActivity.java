@@ -343,16 +343,28 @@ public class MainActivity extends Activity {
                 ChartViewGL chart = charts.get(i);
                 View root = chartsRoots.get(i);
                 int top = root.getTop();
+                int bottom = root.getBottom();
                 if (LOGGING) Log.d("Chart", "top" + top);
                 //todo do not animate if
-                View parent = (View) root.getParent().getParent();
-                boolean offscreen = top > parent.getHeight();
-
-                if (animateDayNight && !offscreen) {
-                    chart.animateToColors(currentColorSet, colorAnimationDuration);
-                } else {
+                ScrollView parent = (ScrollView) root.getParent().getParent();
+                int height = parent.getHeight();
+                int y = parent.getScrollY();
+                top -= y;
+                bottom -= y;
+                if (bottom < 0 || top > height) {
+                    Log.d(TAG, "anim no op");
                     chart.animateToColors(currentColorSet, 0);
+                } else {
+                    Log.d(TAG, "anim ");
+                    chart.animateToColors(currentColorSet, colorAnimationDuration);
                 }
+//                boolean offscreen = top > parent.getHeight();
+//
+//                if (animateDayNight && !offscreen) {
+//
+//                } else {
+//
+//                }
             }
         }
         if (animateUI) {
