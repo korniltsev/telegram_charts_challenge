@@ -118,29 +118,20 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
         + why last value is not aligned??
         + fix paddings & text size of x/y labels
 
-    !!! The app should show 4 charts on one screen,
+    + The app should show 4 charts on one screen,
 
 
+    ---------------------------------------- 23 march
     [ ! ] cleanup - stop thread, destroy shaders, surface
     onStop/onStart - touch gl thread and invalidate
+
 
     MUST HAVE
     --------------------------
     lollipop toolbar color wtf
     startup optimization(see below)
     alpha animation on fbo
-    [?] why DIRTY slow?
     [ ? ] Matrix -> MyMatrix for inlining?
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -151,10 +142,6 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
     NICE TO HAVE
     try to draw only every 16 ms, not faster, try to use handler thread, maybe it is faster
     [ ! ] optimization
-        - try to create render thread before view
-        - shader warmup https://stackoverflow.com/questions/11726650/egl-can-context-be-shared-between-threads
-        - data swap
-        - destory on destroy
         [?] https://github.com/facebook/redex
         [?] reuse shaders between objects for faster start?
         trace scrolling/caling allocations & perf
