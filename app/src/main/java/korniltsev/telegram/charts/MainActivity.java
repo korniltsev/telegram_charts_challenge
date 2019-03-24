@@ -32,7 +32,6 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -125,12 +124,21 @@ public class MainActivity extends Activity {
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
 
-        for (int i = 0, dataLength = data.length; i < 1; i++) {
+        for (int i = 0, dataLength = data.length; i < dataLength; i++) {
             ChartData dataset = data[i];
             ChartData dataset1 = dataset;
             View chart = createChart(dataset1);
-            list.addView(chart, MATCH_PARENT, WRAP_CONTENT);
+            LinearLayout.LayoutParams chartlp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+//            if (i != 0) {
 
+//            }
+            list.addView(chart, chartlp);
+
+            View shadow = new View(this);
+            shadow.setBackgroundResource(R.drawable.header_shadow);
+            LinearLayout.LayoutParams shadowlp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(2));
+            shadowlp.bottomMargin = dimen.dpi(30);
+            list.addView(shadow, shadowlp);
         }
         scrollView.addView(list);
         mySetContentVie(scrollView);
@@ -182,7 +190,14 @@ public class MainActivity extends Activity {
                 continue;
             }
             if (i != 1) {
-                View divider = new View(this);
+                View divider = new View(this){
+                    @Override
+                    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+                    }
+
+
+                };
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(ChartViewGL.CHECKBOX_DIVIDER_HIEIGHT));
                 lp.leftMargin = dimen.dpi(59);
                 lp.gravity = Gravity.BOTTOM;
@@ -409,7 +424,8 @@ public class MainActivity extends Activity {
             byte[] bytes = readAll(inputStream);
             String s = new String(bytes, "UTF-8");
             JSONArray o = new JSONArray(s);
-            return ChartData.parse(o);
+            ChartData[] res = ChartData.parse(o);
+            return res;
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (JSONException e) {

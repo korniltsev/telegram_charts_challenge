@@ -129,8 +129,11 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     +  initial animation bug
     + 2. onStop/onStart - touch gl thread and invalidate
     3. make day/night animation work
-        - put ui over texture
+        + put ui over texture
+        + shadow between charts
         - when scrolled down chart is not animating
+
+    x values second chart, wtf values in reverse order
     4. lollipop toolbar color wtf (one hour max)
     5. [ ? ] move "folorwers" to gl +   text night mode + animation
     6. [ ! ] alpha animation blending - render to fbo
@@ -214,6 +217,12 @@ public class ChartViewGL extends TextureView {
     private int hpadding;
     //    private long currentMax;
 //    private ColorSet currentColorsSet;
+
+
+    @Override
+    public boolean isOpaque() {
+        return true;
+    }
 
     public ChartViewGL(Context context, ChartData c, Dimen dimen, ColorSet currentColorsSet) {
         super(context);
@@ -630,10 +639,10 @@ public class ChartViewGL extends TextureView {
 
             @Override
             public void run() {
-                long t1 = SystemClock.elapsedRealtimeNanos();
+//                long t1 = SystemClock.elapsedRealtimeNanos();
                 drawAndSwap2();
-                long t2 = SystemClock.elapsedRealtimeNanos();
-                if (LOGGING) Log.d(MainActivity.TAG, String.format("trace [ %d ] %20s %10d ",id, "draw frame", t2 - t1));
+//                long t2 = SystemClock.elapsedRealtimeNanos();
+//                if (LOGGING) Log.d(MainActivity.TAG, String.format("trace [ %d ] %20s %10d ",id, "draw frame", t2 - t1));
             }
         }
 
