@@ -28,6 +28,7 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -62,7 +63,7 @@ public class MainActivity extends Activity {
     public static final boolean TRACE = BuildConfig.DEBUG && false;
     public static final boolean USE_RIPPLE = true;
     public static final boolean LOGGING = DEBUG;
-    public static final boolean DIRTY_CHECK = false;
+    public static final boolean DIRTY_CHECK = true;
     public static final boolean LOG_FPS = true;
 
     //    private MyColorDrawable bgRoot;
@@ -77,16 +78,16 @@ public class MainActivity extends Activity {
     private MyColorDrawable bgToolbar;
     private TextView title;
     private ImageView imageButton;
-    private ChartViewGL chart_;
+    private List<ChartViewGL> charts = new ArrayList<>();
     private MyContentRoot root;
     private FrameLayout contentFrame;
     private View sgadow;
     private View currentView;
     private ChartData[] data;
 
-    private View chartList;
-    private ArrayList<TextView> buttons;
-    private boolean chartVisible;
+//    private View chartList;
+//    private ArrayList<TextView> buttons;
+//    private boolean chartVisible;
     private int textColor;
     private MyAnimation.Color textColorAnim;
     private List<CheckBox> checkboxes = new ArrayList<>();
@@ -104,78 +105,95 @@ public class MainActivity extends Activity {
 
         data = readData();
         prepareRootView();
-        createChartList();
 
-    }
+        ScrollView scrollView = new ScrollView(this);
 
-    private void createChartList() {
-        if (chartList == null) {
+        scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        scrollView.setVerticalScrollBarEnabled(false);
 
-            ScrollView.LayoutParams listLP = new ScrollView.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-            LinearLayout list = new LinearLayout(this);
-            list.setOrientation(LinearLayout.VERTICAL);
-            list.setLayoutParams(listLP);
-            list.setPadding(0, dimen.dpi(8), 0, dimen.dpi(8));
-            MyColorDrawable background = new MyColorDrawable(currentColorSet.lightBackground);
-            ds.add(background);
-            list.setBackgroundDrawable(background);
-            TypedValue outValue = new TypedValue();
-            getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+        LinearLayout list = new LinearLayout(this);
+        list.setOrientation(LinearLayout.VERTICAL);
 
-            buttons = new ArrayList<>();
-            for (int i = 0; i < 5; i++) {
+        for (ChartData dataset : data) {
+            ChartData dataset1 = dataset;
+            View chart = createChart(dataset1);
+            list.addView(chart, MATCH_PARENT, WRAP_CONTENT);
 
-                TextView v = new TextView(this);
-                v.setTextColor(textColor);
-                v.setText("Chart " + (i + 1));
-                v.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
-                v.setPadding(dimen.dpi(16), 0, 0, 0);
-                v.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, false));
-                v.setClickable(true);
-//                v.setClip
-//                v.set
-
-//                v.setBackgroundResource(outValue.resourceId);
-                final int finalI = i;
-                v.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        showChart(finalI);
-
-                    }
-                });
-                list.addView(v, MATCH_PARENT, dimen.dpi(50));
-                buttons.add(v);
-            }
-
-            View shadow = new View(this);
-            shadow.setBackgroundResource(R.drawable.header_shadow);
-//            list.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
-//        list.addView(legend);
-//        list.addView(chart_);
-
-            LinearLayout container = new LinearLayout(this);
-            container.setOrientation(LinearLayout.VERTICAL);
-            container.addView(list, MATCH_PARENT, WRAP_CONTENT);
-            container.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
-
-
-            ScrollView scrollView = new ScrollView(this);
-            scrollView.addView(container);
-            scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-
-            chartList = scrollView;
         }
-        mySetContentVie(chartList);
+        scrollView.addView(list);
+        mySetContentVie(scrollView);
+//        createChartList();
 
     }
 
-    private void showChart(int finalI) {
-        chartVisible = true;
-        createChart(data[finalI]);
-    }
+//    private void createChartList() {
+//        if (chartList == null) {
+//
+//            ScrollView.LayoutParams listLP = new ScrollView.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+//            LinearLayout list = new LinearLayout(this);
+//            list.setOrientation(LinearLayout.VERTICAL);
+//            list.setLayoutParams(listLP);
+//            list.setPadding(0, dimen.dpi(8), 0, dimen.dpi(8));
+//            MyColorDrawable background = new MyColorDrawable(currentColorSet.lightBackground);
+//            ds.add(background);
+//            list.setBackgroundDrawable(background);
+//            TypedValue outValue = new TypedValue();
+//            getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
+//
+//            buttons = new ArrayList<>();
+//            for (int i = 0; i < 5; i++) {
+//
+//                TextView v = new TextView(this);
+//                v.setTextColor(textColor);
+//                v.setText("Chart " + (i + 1));
+//                v.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
+//                v.setPadding(dimen.dpi(16), 0, 0, 0);
+//                v.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, false));
+//                v.setClickable(true);
+////                v.setClip
+////                v.set
+//
+////                v.setBackgroundResource(outValue.resourceId);
+//                final int finalI = i;
+//                v.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        showChart(finalI);
+//
+//                    }
+//                });
+//                list.addView(v, MATCH_PARENT, dimen.dpi(50));
+//                buttons.add(v);
+//            }
+//
+//            View shadow = new View(this);
+//            shadow.setBackgroundResource(R.drawable.header_shadow);
+////            list.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
+////        list.addView(legend);
+////        list.addView(chart_);
+//
+//            LinearLayout container = new LinearLayout(this);
+//            container.setOrientation(LinearLayout.VERTICAL);
+//            container.addView(list, MATCH_PARENT, WRAP_CONTENT);
+//            container.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
+//
+//
+//            ScrollView scrollView = new ScrollView(this);
+//            scrollView.addView(container);
+//            scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+//
+//            chartList = scrollView;
+//        }
+//        mySetContentVie(chartList);
+//
+//    }
 
-    private void createChart(ChartData datum) {
+//    private void showChart(int finalI) {
+//        chartVisible = true;
+//        createChart(data[finalI]);
+//    }
+
+    private View createChart(ChartData datum) {
         LinearLayout.LayoutParams legendLP = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         TextView legend = new TextView(this);
         legend.setPadding(dimen.dpi(16), dimen.dpi(8), 0, dimen.dpi(8));
@@ -188,8 +206,9 @@ public class MainActivity extends Activity {
         legend.setBackgroundDrawable(d1);
 
 
-        chart_ = new ChartViewGL(this, datum, dimen, currentColorSet);
-        chart_.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+        final ChartViewGL newChart = new ChartViewGL(this, datum, dimen, currentColorSet);
+        newChart.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+        charts.add(newChart);
 
 
         ScrollView.LayoutParams listLP = new ScrollView.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
@@ -197,10 +216,9 @@ public class MainActivity extends Activity {
         list.setOrientation(LinearLayout.VERTICAL);
         list.setLayoutParams(listLP);
         list.addView(legend);
-        list.addView(chart_);
+        list.addView(newChart);
 
-        ScrollView scrollView = new ScrollView(this);
-        scrollView.addView(list);
+
 
         ColumnData[] data1 = datum.data;
         LinearLayout checkboxlist = new LinearLayout(this);
@@ -250,7 +268,7 @@ public class MainActivity extends Activity {
             cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    chart_.setChecked(c.id, isChecked);
+                    newChart.setChecked(c.id, isChecked);
                 }
             });
             LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(50));
@@ -268,9 +286,10 @@ public class MainActivity extends Activity {
         list.addView(checkboxlist, MATCH_PARENT, WRAP_CONTENT);
         list.addView(shadow, MATCH_PARENT, WRAP_CONTENT);
         list.setPadding(0, 0, 0, dimen.dpi(8));
-        scrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        scrollView.setVerticalScrollBarEnabled(false);
-        mySetContentVie(scrollView);
+
+
+//        mySetContentVie(scrollView);
+        return list;
     }
 
     private void mySetContentVie(View v) {
@@ -362,17 +381,20 @@ public class MainActivity extends Activity {
         for (MyColorDrawable d : ds) {
             d.animate(currentColorSet.lightBackground);
         }
-        if (chart_ != null) {
-            chart_.animateToColors(currentColorSet);
+        for (ChartViewGL chart : charts) {
+            chart.animateToColors(currentColorSet);
         }
+//        if (chart_ != null) {
+//
+//        }
         h.removeCallbacksAndMessages(null);
         h.postDelayed(new Runnable() {
             @Override
             public void run() {
                 imageButton.setBackgroundDrawable(createButtonBackground(currentColorSet.pressedButton, true));
-                for (TextView button : buttons) {
-                    button.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, false));
-                }
+//                for (TextView button : buttons) {
+//                    button.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, false));
+//                }
                 if (Build.VERSION.SDK_INT >= 21) {
                     for (CheckBox cb : checkboxes) {
                         cb.setBackgroundDrawable(createButtonBackground(currentColorSet.listButtonPressedColor, true));
@@ -414,10 +436,10 @@ public class MainActivity extends Activity {
                     View divider = dividers.get(i);
                     divider.setBackgroundColor(dividerColor);
                 }
-                for (int i = 0, buttonsSize = buttons.size(); i < buttonsSize; i++) {
-                    TextView button = buttons.get(i);
-                    button.setTextColor(textColor);
-                }
+//                for (int i = 0, buttonsSize = buttons.size(); i < buttonsSize; i++) {
+//                    TextView button = buttons.get(i);
+//                    button.setTextColor(textColor);
+//                }
                 for (int i = 0, checkboxesSize = checkboxes.size(); i < checkboxesSize; i++) {
                     TextView button = checkboxes.get(i);
                     button.setTextColor(textColor);
@@ -497,15 +519,15 @@ public class MainActivity extends Activity {
         super.onStop();
     }
 
-    @Override
-    public void onBackPressed() {
-        if (chart_ != null && chartVisible) {
-            chartVisible = false;
-            mySetContentVie(chartList);
-        } else {
-            super.onBackPressed();
-        }
-    }
+//    @Override
+//    public void onBackPressed() {
+//        if (chart_ != null && chartVisible) {
+//            chartVisible = false;
+//            mySetContentVie(chartList);
+//        } else {
+//            super.onBackPressed();
+//        }
+//    }
 
     @Override
     protected void onDestroy() {

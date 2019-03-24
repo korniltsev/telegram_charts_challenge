@@ -559,7 +559,8 @@ public class ChartViewGL extends TextureView {
                 long t3 = SystemClock.uptimeMillis();
                 overlay.draw(t);
                 long t4 = SystemClock.uptimeMillis();
-
+                boolean rulerInvalidated = ruler.animationTick(t);
+                invalidated = rulerInvalidated | invalidated;
                 ruler.draw(t);
                 long t5 = SystemClock.uptimeMillis();
 //                circle.draw();

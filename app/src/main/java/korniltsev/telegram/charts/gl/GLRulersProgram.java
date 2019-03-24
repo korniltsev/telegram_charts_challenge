@@ -174,7 +174,7 @@ public final class GLRulersProgram {
 
 
     public final void draw(long t) {
-        animationTick(t);
+
 
 
 
@@ -273,18 +273,23 @@ public final class GLRulersProgram {
 
     ;
 
-    private void animationTick(long t) {
+    public final boolean animationTick(long t) {
         //todo invalidate
+        boolean invalidate = false;
         if (colorAnim != null) {
             lineColor = colorAnim.tick(t);
             if (colorAnim.ended) {
                 colorAnim = null;
+            } else {
+                invalidate = true;
             }
         }
         if (textColorAnim != null) {
             textColor = textColorAnim.tick(t);
             if (textColorAnim.ended) {
                 textColorAnim = null;
+            } else {
+                invalidate = true;
             }
         }
         for (int i = rs.size() - 1; i >= 0; i--) {
@@ -300,6 +305,8 @@ public final class GLRulersProgram {
                 r.alpha = r.alphaAnim.tick(t);
                 if (r.alphaAnim.ended) {
                     r.alphaAnim = null;
+                } else {
+                    invalidate = true;
                 }
             }
             if (r.toBeDeleted && r.alphaAnim == null && r.scaleAnim == null) {
@@ -327,10 +334,14 @@ public final class GLRulersProgram {
                 x.alpha = x.alphaAnim.tick(t);
                 if (x.alphaAnim.ended) {
                     x.alphaAnim = null;
+                    x.tex.release();
                     animatingOut.remove(i);
+                } else {
+                    invalidate = true;
                 }
             }
         }
+        return invalidate;
 
     }
 
