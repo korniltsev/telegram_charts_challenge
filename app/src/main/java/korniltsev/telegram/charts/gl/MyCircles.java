@@ -26,9 +26,10 @@ public class MyCircles {
 
 
     public final Shader shader;
+    private final int anglesVBO;
 
-    int[] vbos = new int[1];
-    private int vbo;
+    int[] vbos = new int[2];
+    private int pointsVBO;
 
     private final int canvasw;
     private final int canvash;
@@ -76,11 +77,12 @@ public class MyCircles {
                         + "{                              \n"
                         + "   gl_FragColor = u_color;     \n"
                         + "}                              \n";
+        private final String vertexShaderFormatted;
 
         public Shader(int triangleCount) {
 
             this.triangleCount = triangleCount;
-            String vertexShaderFormatted = String.format(Locale.US, vertexShader, triangleCount);
+            vertexShaderFormatted = String.format(Locale.US, vertexShader, triangleCount);
             program = MyGL.createProgram(vertexShaderFormatted, fragmentShader);
             MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
 //        VHandle = GLES20.glGetUniformLocation(program, "u_VMatrix");
@@ -163,10 +165,22 @@ public class MyCircles {
         buf1.position(0);
 
 
-        GLES20.glGenBuffers(1, vbos, 0);
-        vbo = vbos[0];
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
+        GLES20.glGenBuffers(2, vbos, 0);
+        pointsVBO = vbos[0];
+        anglesVBO = vbos[1];
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, pointsVBO);
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vs.size() * 3 * 4, buf1, GLES20.GL_STATIC_DRAW);
+
+
+        ByteBuffer b2 = ByteBuffer.allocateDirect(angles.length * 4)
+                .order(ByteOrder.nativeOrder());
+        FloatBuffer buf2 = b2.asFloatBuffer();
+        buf2.put(angles);
+        buf2.position(0);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, anglesVBO);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, buf2.capacity(), buf2, GLES20.GL_STATIC_DRAW);
+
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
 
@@ -190,19 +204,18 @@ public class MyCircles {
 
 
     public final void draw(float[] MVP, float[] colors, int from, int to, float radiusx, float ratio) {
-
-//        GLES20.glUseProgram(shader.program);
+        GLES20.glUseProgram(shader.program);
         GLES20.glUniform2fv(shader.anglesHandle, triangle_count, angles, 0);
         GLES20.glUniform1f(shader.u_radiusHandle, radiusx);
         GLES20.glUniform1f(shader.u_radtioHandle, 1/ratio);
         GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
 
         GLES20.glEnableVertexAttribArray(shader.positionHandle);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, pointsVBO);
         GLES20.glVertexAttribPointer(shader.positionHandle, 2, GLES20.GL_FLOAT, false, 12, 0);
 
         GLES20.glEnableVertexAttribArray(shader.attributeNoHandle);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, pointsVBO);
         GLES20.glVertexAttribPointer(shader.attributeNoHandle, 1, GLES20.GL_FLOAT, false, 12, 8);
 
         GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
@@ -224,10 +237,10 @@ public class MyCircles {
             return;
         }
         released = true;
-        try {
-            GLES20.glDeleteBuffers(1, vbos, 0);
-        } catch (Throwable e) {
-            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err", e);
-        }
+//        try {//todo leak
+//            GLES20.glDeleteBuffers(2, vbos, 0);
+//        } catch (Throwable e) {
+//            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err", e);
+//        }
     }
 }

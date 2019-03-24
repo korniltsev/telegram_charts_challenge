@@ -773,8 +773,8 @@ public class ChartViewGL extends TextureView {
             MyGL.checkGlError2();
             for (GLChartProgram c : chart) {
                 if (c.goodCircle != null) {
-                    c.goodCircle.shader.use();
-
+//                    c.goodCircle.shader.use();
+//
                     c.step4();
                 }
             }
