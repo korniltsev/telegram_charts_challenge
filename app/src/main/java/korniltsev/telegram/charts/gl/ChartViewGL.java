@@ -523,54 +523,12 @@ public class ChartViewGL extends TextureView {
                         peek.run();
                     }
                 }
-                if (!rulerInitDone) {
-                    prevMax = calculateMax(r.overlay.left, r.overlay.right);
-                    ruler.init(prevMax);
-                    for (GLChartProgram glChartProgram : chart) {
-                        glChartProgram.maxValue = prevMax;
-                    }
-                    rulerInitDone = true;
-                }
                 invalidated = false;
 
                 long t = SystemClock.uptimeMillis();
 //                long t1 = SystemClock.elapsedRealtimeNanos();
 
-                if (bgAnim != null) {
-                    bgColor = bgAnim.tick(t);
-                    if (bgAnim.ended) {
-                        bgAnim = null;
-                    } else {
-                        invalidated = true;
-                    }
-                }
-                glClearColor(
-                        MyColor.red(bgColor) / 255f,
-                        MyColor.green(bgColor) / 255f,
-                        MyColor.blue(bgColor) / 255f,
-                        1.0f
-                );
-                glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-//                for (MyRect r : debugRects) {
-//                    r.draw();
-//                }
-//                long t2 = SystemClock.elapsedRealtimeNanos();
-
-                invalidated = drawScrollbar(invalidated, t);
-//                long t3 = SystemClock.elapsedRealtimeNanos();
-                overlay.draw(t);
-//                long t4 = SystemClock.elapsedRealtimeNanos();
-                boolean rulerInvalidated = ruler.animationTick(t);
-                invalidated = rulerInvalidated | invalidated;
-                ruler.draw(t);
-//                long t5 = SystemClock.elapsedRealtimeNanos();
-//                circle.draw();
-                invalidated = drawChart(invalidated, t);
-//                long t6 = SystemClock.elapsedRealtimeNanos();
-
-                if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
-                    throw new RuntimeException("Cannot swap buffers");
-                }
+                invalidated = drawAndSwap(invalidated, t);
                 if (LOGGING) {
 
 //                    long t7 = SystemClock.elapsedRealtimeNanos();
@@ -600,6 +558,54 @@ public class ChartViewGL extends TextureView {
 //                    Debug.stopMethodTracing();
 //                }
             }
+        }
+
+        private boolean drawAndSwap(boolean invalidated, long t) {
+            if (!rulerInitDone) {
+                prevMax = calculateMax(r.overlay.left, r.overlay.right);
+                ruler.init(prevMax);
+                for (GLChartProgram glChartProgram : chart) {
+                    glChartProgram.maxValue = prevMax;
+                }
+                rulerInitDone = true;
+            }
+
+            if (bgAnim != null) {
+                bgColor = bgAnim.tick(t);
+                if (bgAnim.ended) {
+                    bgAnim = null;
+                } else {
+                    invalidated = true;
+                }
+            }
+            glClearColor(
+                    MyColor.red(bgColor) / 255f,
+                    MyColor.green(bgColor) / 255f,
+                    MyColor.blue(bgColor) / 255f,
+                    1.0f
+            );
+            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+//                for (MyRect r : debugRects) {
+//                    r.draw();
+//                }
+//                long t2 = SystemClock.elapsedRealtimeNanos();
+
+            invalidated = drawScrollbar(invalidated, t);
+//                long t3 = SystemClock.elapsedRealtimeNanos();
+            overlay.draw(t);
+//                long t4 = SystemClock.elapsedRealtimeNanos();
+            boolean rulerInvalidated = ruler.animationTick(t);
+            invalidated = rulerInvalidated | invalidated;
+            ruler.draw(t);
+//                long t5 = SystemClock.elapsedRealtimeNanos();
+//                circle.draw();
+            invalidated = drawChart(invalidated, t);
+//                long t6 = SystemClock.elapsedRealtimeNanos();
+
+            if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
+                throw new RuntimeException("Cannot swap buffers");
+            }
+            return invalidated;
         }
 
         private boolean drawScrollbar(boolean invalidated, long t) {
