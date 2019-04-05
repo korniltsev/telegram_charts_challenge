@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewConfiguration;
 
 
+import java.util.ArrayList;
+
 import korniltsev.telegram.charts.MainActivity;
 import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.data.ColumnData;
@@ -44,6 +46,7 @@ public class ChartView extends View {
     public final ColumnData xColumn;
     private final Paint pOverlay;
     private final Paint pRuler;
+    private final ArrayList<UIColumnData> scroller = new ArrayList<>();
     //    public final int checkboxesHeight;
     //    public final long initTime;
     public int bgColor;
@@ -105,6 +108,22 @@ public class ChartView extends View {
         pOverlay.setColor(init_colors.scrollbarOverlay);
         pRuler = new Paint();
         pRuler.setColor(init_colors.scrollbarBorder);
+
+        ColumnData[] data1 = data.data;
+        long max = Long.MIN_VALUE;
+        long min = Long.MAX_VALUE;
+        for (int i = 1; i < data1.length; i++) {
+            ColumnData datum = data1[i];
+            UIColumnData e = new UIColumnData(datum);
+            e.p.setStrokeWidth(dimen.dpf(1));
+            scroller.add(e);
+            max = Math.max(max, datum.max);
+            min = Math.min(min, datum.min);
+        }
+        for (UIColumnData datum : scroller) {
+            datum.max = max;
+            datum.min = min;
+        }
     }
 
     @Override
@@ -438,14 +457,54 @@ public class ChartView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 //        canvas.drawRect(scrollbar.left, scrollbar.top, scrollbar.right, scrollbar.bottom, p);
-
+        float dip2 = dimen.dpf(2);
+        float dip1 = dimen.dpf(1);
+        float dip4 = dimen.dpf(4);
         canvas.drawRect(scrollbar.left, chartTop, scrollbar.right, chartBottom, p2);
+
+
+        float vspace = scrollbar.height() - 2 * dip2;
+        float step = scrollbar.width() / (float) (data.data[0].values.length - 1);
+        for (int i1 = 0; i1 < scroller.size(); i1++) {
+            UIColumnData c = scroller.get(i1);
+
+//            for (ColumnData c : data.data) {
+            float x = scrollbar.left;
+            long min = c.min;
+            float diff = c.max - min;
+            long[] values = c.data.values;
+            float cur_value = (values[0] - min) / diff;
+            float cur_pos = scrollbar.bottom - dip1 - cur_value * vspace;
+            for (int i = 1; i < values.length; i++) {
+                float next_value = (values[i] - min) / diff;
+                float next_pos = scrollbar.bottom - dip1 - next_value * vspace;
+                canvas.drawLine(x, cur_pos, x + step, next_pos, c.p);
+                x += step;
+                cur_value = next_value;
+                cur_pos = next_pos;
+            }
+//            }
+        }
+//        canvas.drawLine(0);
 
         canvas.drawRect(scrollbar.left, scrollbar.top, scroller_left, scrollbar.bottom, pOverlay);
         canvas.drawRect(scroller__right, scrollbar.top, scrollbar.right, scrollbar.bottom, pOverlay);
-        float dip4 = dimen.dpf(4);
-        canvas.drawRect(scroller_left, scrollbar.top, scroller_left+ dip4, scrollbar.bottom, pRuler);
-        canvas.drawRect(scroller__right-dip4, scrollbar.top, scroller__right, scrollbar.bottom, pRuler);
 
+        canvas.drawRect(scroller_left, scrollbar.top, scroller_left + dip4, scrollbar.bottom, pRuler);
+        canvas.drawRect(scroller__right - dip4, scrollbar.top, scroller__right, scrollbar.bottom, pRuler);
+
+    }
+
+    public static class UIColumnData {
+        public final ColumnData data;
+        public long max;
+        public long min;
+        public final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+
+        public UIColumnData(ColumnData data) {
+            this.data = data;
+            p.setColor(data.color);
+        }
     }
 }

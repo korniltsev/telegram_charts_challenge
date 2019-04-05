@@ -510,8 +510,8 @@ public class ChartViewGL extends TextureView {
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 ColumnData datum = data[i];
                 scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, simple, joiningShader);
-                max = Math.max(max, datum.maxValue);
-                min = Math.min(min, datum.minValue);
+                max = Math.max(max, datum.max);
+                min = Math.min(min, datum.min);
             }
             for (GLChartProgram it : scrollbar) {
                 it.maxValue = max;
@@ -596,8 +596,8 @@ public class ChartViewGL extends TextureView {
                         }
                         if (c.checked) {
                             checkedCount++;
-                            max = Math.max(c.column.maxValue, max);
-                            min = Math.min(c.column.minValue, min);
+                            max = Math.max(c.column.max, max);
+                            min = Math.min(c.column.min, min);
                         }
                     }
                     for (GLChartProgram c : scrollbar) {

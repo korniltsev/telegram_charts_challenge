@@ -4,8 +4,8 @@ public class ColumnData {
     public final String id;
     public final String name;
     public final long[] values;
-    public final long maxValue;
-    public long minValue;
+    public final long max;
+    public final long min;
     public final String type;
     public final int color;
 
@@ -20,8 +20,8 @@ public class ColumnData {
             min = Math.min(min, value);
             max = Math.max(max, value);
         }
-        this.maxValue = max;
-        this.minValue = min;
+        this.max = max;
+        this.min = min;
         this.type = type;
         this.color = color;
     }
