@@ -47,6 +47,7 @@ public class ChartView extends View {
     private final Paint pOverlay;
     private final Paint pRuler;
     private final ArrayList<UIColumnData> scroller = new ArrayList<>();
+    private final ArrayList<UIColumnData> chart = new ArrayList<>();
     //    public final int checkboxesHeight;
     //    public final long initTime;
     public int bgColor;
@@ -56,6 +57,7 @@ public class ChartView extends View {
     public int hpadding;
     private Paint p = new Paint();
     private Paint p2 = new Paint();
+    private int chartUsefullHiehgt;
     //    public long currentMax;
 //    public ColorSet currentColorsSet;
 
@@ -74,6 +76,7 @@ public class ChartView extends View {
         this.dimen = dimen;
         this.data = c;
         dimen_v_padding8 = dimen.dpi(8);
+        chartUsefullHiehgt = dimen.dpi(280);
         dimen_chart_height = dimen.dpi(300);
         dimen_scrollbar_height = dimen.dpi(38);
 
@@ -117,6 +120,9 @@ public class ChartView extends View {
             UIColumnData e = new UIColumnData(datum);
             e.p.setStrokeWidth(dimen.dpf(1));
             scroller.add(e);
+            UIColumnData e2 = new UIColumnData(datum);
+            e2.p.setStrokeWidth(dimen.dpf(2));
+            chart.add(e2);
             max = Math.max(max, datum.max);
             min = Math.min(min, datum.min);
         }
@@ -124,6 +130,10 @@ public class ChartView extends View {
             datum.max = max;
             datum.min = min;
         }
+        for (UIColumnData datum : chart) {
+            datum.max = max;
+        }
+//        setBackgroundColor(Color.RED);
     }
 
     @Override
@@ -154,7 +164,7 @@ public class ChartView extends View {
 //        int bottom = getHeight() - dimen.dpi(80);
 
         chartBottom = h - dimen.dpi(CHART_BOTTOM_DIP);
-        chartTop = chartBottom - dimen.dpi(280);
+        chartTop = chartBottom - chartUsefullHiehgt;
 //        chartTop = dimen.dpi(80);
     }
 
@@ -460,38 +470,62 @@ public class ChartView extends View {
         float dip2 = dimen.dpf(2);
         float dip1 = dimen.dpf(1);
         float dip4 = dimen.dpf(4);
-        canvas.drawRect(scrollbar.left, chartTop, scrollbar.right, chartBottom, p2);
+//        canvas.drawRect(scrollbar.left, chartTop, scrollbar.right, chartBottom, p2);
 
 
-        float vspace = scrollbar.height() - 2 * dip2;
-        float step = scrollbar.width() / (float) (data.data[0].values.length - 1);
-        for (int i1 = 0; i1 < scroller.size(); i1++) {
-            UIColumnData c = scroller.get(i1);
-
-//            for (ColumnData c : data.data) {
-            float x = scrollbar.left;
-            long min = c.min;
-            float diff = c.max - min;
-            long[] values = c.data.values;
-            float cur_value = (values[0] - min) / diff;
-            float cur_pos = scrollbar.bottom - dip1 - cur_value * vspace;
-            for (int i = 1; i < values.length; i++) {
-                float next_value = (values[i] - min) / diff;
-                float next_pos = scrollbar.bottom - dip1 - next_value * vspace;
-                canvas.drawLine(x, cur_pos, x + step, next_pos, c.p);
-                x += step;
-                cur_value = next_value;
-                cur_pos = next_pos;
+        {// draw scrollbar chart
+            float vspace = chartUsefullHiehgt;
+            float step = scrollbar.width() / (float) (data.data[0].values.length - 1);
+            for (int i1 = 0; i1 < chart.size(); i1++) {
+                UIColumnData c = chart.get(i1);
+                float x = scrollbar.left;
+                final long min = 0;
+                float diff = c.max - min;
+                long[] values = c.data.values;
+                float cur_value = (values[0] - min) / diff;
+                float cur_pos = chartBottom - cur_value * vspace;
+                for (int i = 1; i < values.length; i++) {
+                    float next_value = (values[i] - min) / diff;
+                    float next_pos = chartBottom - next_value * vspace;
+                    canvas.drawLine(x, cur_pos, x + step, next_pos, c.p);
+                    x += step;
+                    cur_value = next_value;
+                    cur_pos = next_pos;
+                }
             }
-//            }
         }
-//        canvas.drawLine(0);
 
+
+        {// draw scrollbar chart
+            float vspace = scrollbar.height() - 2 * dip2;
+            float step = scrollbar.width() / (float) (data.data[0].values.length - 1);
+            for (int i1 = 0; i1 < scroller.size(); i1++) {
+                UIColumnData c = scroller.get(i1);
+                float x = scrollbar.left;
+                long min = c.min;
+                float diff = c.max - min;
+                long[] values = c.data.values;
+                float cur_value = (values[0] - min) / diff;
+                float cur_pos = scrollbar.bottom - dip1 - cur_value * vspace;
+                for (int i = 1; i < values.length; i++) {
+                    float next_value = (values[i] - min) / diff;
+                    float next_pos = scrollbar.bottom - dip1 - next_value * vspace;
+                    canvas.drawLine(x, cur_pos, x + step, next_pos, c.p);
+                    x += step;
+                    cur_value = next_value;
+                    cur_pos = next_pos;
+                }
+            }
+        }
+
+//         draw scrollbar overlay
         canvas.drawRect(scrollbar.left, scrollbar.top, scroller_left, scrollbar.bottom, pOverlay);
         canvas.drawRect(scroller__right, scrollbar.top, scrollbar.right, scrollbar.bottom, pOverlay);
-
         canvas.drawRect(scroller_left, scrollbar.top, scroller_left + dip4, scrollbar.bottom, pRuler);
         canvas.drawRect(scroller__right - dip4, scrollbar.top, scroller__right, scrollbar.bottom, pRuler);
+        canvas.drawRect(scroller_left + dip4, scrollbar.top, scroller__right - dip4, scrollbar.top + dip1, pRuler);
+        canvas.drawRect(scroller_left + dip4, scrollbar.bottom - dip1, scroller__right - dip4, scrollbar.bottom, pRuler);
+        //todo
 
     }
 
