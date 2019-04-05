@@ -25,7 +25,15 @@ import korniltsev.telegram.charts.ui.MyAnimation;
 import static korniltsev.telegram.charts.MainActivity.LOGGING;
 import static korniltsev.telegram.charts.MainActivity.TAG;
 
+/**
+ animate scrollbar chart (alpha + min-max)
+ chart zoom
+ animate chart (alpha + min-max (global)
+ animate chart (min-max viewport)
 
+
+
+ */
 public class ChartView extends View {
     public static final int CHECKBOX_HEIGHT_DPI = 50;
     public static final int CHECKBOX_DIVIDER_HIEIGHT = 1;
@@ -175,10 +183,7 @@ public class ChartView extends View {
 
     public static int counter;
 
-    //    public int scroller_width;//todo replace with scroller_left/right
-//    public int scroller_pos = -1;
     public Rect scrollbar = new Rect();
-    //    public int scroller_move_down_x;
     static final int DOWN_MOVE = 0;
     static final int DOWN_RESIZE_LEFT = 1;
     static final int DOWN_RESIZE_RIGHT = 2;
@@ -198,9 +203,6 @@ public class ChartView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getActionMasked();
-//        if (LOGGING) Log.d("tg.chart", "ScrollBug touchevent " + event);
-//        if (action != MotionEvent.ACTION_MOVE) {
-//        }
         float x = event.getX();
         float y = event.getY();
         switch (action) {
@@ -208,25 +210,20 @@ public class ChartView extends View {
                 boolean scrollbar = y >= this.scrollbar.top && y <= this.scrollbar.bottom;
                 if (scrollbar) {
                     if (Math.abs(x - scroller_left) <= resize_touch_area2) {
-                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize left");
                         last_x = x;
                         down_target = DOWN_RESIZE_LEFT;
-//                        resze_scroller_right = scroller_left + scroller_width;
                         return true;
                     } else if (Math.abs(x - (scroller__right)) < resize_touch_area2) {
-                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize right");
                         last_x = x;
                         down_target = DOWN_RESIZE_RIGHT;
                         return true;
                     } else if (x >= scroller_left && x <= scroller__right) {
-                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN inside scrollbar");
                         last_x = x;
                         scroller_move_down_x = (int) (x - scroller_left);
                         scroller_move_down_width = scroller__right - scroller_left;
                         down_target = DOWN_MOVE;
                         return true;
                     } else {
-                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
                     }
                 } else {
                     boolean chart = y >= this.chartTop && y <= this.chartBottom;
@@ -234,9 +231,7 @@ public class ChartView extends View {
                         last_x = x;
                         down_target = DOWN_TOOLTIP;
                         return true;
-//                        dispatchTouchDownChart(x);
                     } else {
-                        if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
                     }
                 }
                 break;
@@ -258,9 +253,6 @@ public class ChartView extends View {
                                 scroller_left = this.scrollbar.right - scroller_move_down_width;
                             }
                             setOverlayPos(false);
-//                            invalidate();
-//                            int scroller_width = scroller__right - scroller_left;
-//                            scroller_left = Math.min(Math.max(scroller_left, scrollbar.left), scrollbar.right - scroller_width);
                         } else if (down_target == DOWN_RESIZE_RIGHT) {
                             scroller__right = (int) x;
                             if (scroller__right > this.scrollbar.right) {
@@ -271,15 +263,12 @@ public class ChartView extends View {
                                 scroller__right = scroller_left + initial_scroller_dith;
                             }
                             setOverlayPos(false);
-//                            invalidate();
                         } else if (down_target == DOWN_RESIZE_LEFT) {
                             scroller_left = (int) x;
                             if (scroller_left < this.scrollbar.left) {
                                 scroller_left = this.scrollbar.left;
                             }
-//                            scroller_width = resze_scroller_right - scroller_left;
                             if (scroller__right - scroller_left < initial_scroller_dith) {
-//                                scroller_left = initial_scroller_dith;
                                 scroller_left = scroller__right - initial_scroller_dith;
                             }
                             setOverlayPos(false);
@@ -291,8 +280,6 @@ public class ChartView extends View {
                     } else {
                         float move = x - last_x;
                         if (Math.abs(move) > touchSlop) {
-//                            disall
-//                            Log.d("ScrollBug", "request disasllow ");
                             getParent().getParent().requestDisallowInterceptTouchEvent(true);
                             dragging = true;
                             last_x = x;
@@ -363,107 +350,25 @@ public class ChartView extends View {
         }
     }
 
-//    public static final BlockingQueue<MyMotionEvent> motionEvents = new ArrayBlockingQueue<MyMotionEvent>(100);
 
     public final void setOverlayPos(boolean init) {
         final float left = (float) (scroller_left - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float right = (float) (scroller__right - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float scale = (right - left);
-//        motionEvents.poll()
-//        if (init) {
-//            r.initleft = left;
-//            r.initRight = right;
-//            r.initSacle = scale;
-//        } else {
-//            Runnable updateLeftRight = new Runnable() {//todo do not allocate
-//                @Override
-//                public void run() {
-//                    setLeftRightImpl(left, right, scale);
-//                }
-//            };
-//            r.postToRender(updateLeftRight);
-//        }
-    }
-
-    public void setLeftRightImpl(float left, float right, float scale) {
-//        r.updateLeftRight(left, right, scale);
-//
-//        for (GLChartProgram glChartProgram : r.chart) {
-//            glChartProgram.setTooltipIndex(-1);
-//        }
-////                r.drawAndSwap();
-//        r.invalidateRender();
     }
 
     public final long calculateMax(float left, float right) {
         long max = -1;
-//        int len = r.chart[0].column.values.length;
-//        int from = Math.max(0, (int)Math.ceil(len * (left-0.02f)));
-//        int to = Math.min(len, (int)Math.ceil(len * (right+0.02f)));
-//        for (GLChartProgram glChartProgram : r.chart) {
-//            if (glChartProgram.checked) {
-//                long[] values = glChartProgram.column.values;
-//                for (int i = from; i < to; i++) {
-//                    max = (max >= values[i]) ? max : values[i];
-//                }
-//            }
-//        }
         return max;
     }
 
     public ColorSet currentColors;
 
     public void animateToColors(final ColorSet colors, final long duration) {
-//        Runnable switchTheme = new Runnable() {
-//
-//
-//            @Override
-//            public void run() {
-//                currentColors = colors;
-//                bgAnim = new MyAnimation.Color(duration, bgColor, colors.lightBackground);
-//                r.ruler.animate(colors, duration);
-//                r.overlay.animate(colors, duration);
-//                for (GLChartProgram glChartProgram : r.chart) {
-//                    glChartProgram.animateColors(colors, duration);
-//                }
-//                if (r.tooltip != null) {
-//                    r.tooltip.animateTo(colors, duration);
-//                }
-////                r.drawAndSwap();
-//                r.invalidateRender();
-//            }
-//        };
-//        r.postToRender(switchTheme);
+        //todo
     }
 
-    public void release() {
-//        r.release();
 
-    }
-
-//    @Override
-//    public void invalidate() {
-//        super.invalidate();
-//    }
-
-    //    class MyMotionEvent implements Runnable {
-//        float left;
-//        float scale;
-//        float right;
-//
-//        @Override
-//        public void run() {
-//            r.overlay.setLeftRight(left, right);
-//            for (GLChartProgram glChartProgram : r.chart) {
-//                glChartProgram.zoom = scale;
-//                glChartProgram.left = left;
-//            }
-//            motionEvents.offer(this);
-//        }
-//    }
-
-
-    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 //        canvas.drawRect(scrollbar.left, scrollbar.top, scrollbar.right, scrollbar.bottom, p);

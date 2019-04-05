@@ -482,9 +482,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        for (ChartView c : charts) {
-            c.release();
-        }
+        
     }
 
     public static class MyContentRoot extends LinearLayout {
