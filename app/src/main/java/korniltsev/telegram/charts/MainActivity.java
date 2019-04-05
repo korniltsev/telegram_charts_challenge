@@ -46,6 +46,7 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
+import korniltsev.telegram.charts.canvas.ChartView;
 import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.gl.ChartViewGL;
@@ -79,7 +80,7 @@ public class MainActivity extends Activity {
     private MyColorDrawable bgToolbar;
     private TextView title;
     private ImageView imageButton;
-    private List<ChartViewGL> charts = new ArrayList<>();
+    private List<ChartView> charts = new ArrayList<>();
     private List<View> chartsRoots = new ArrayList<>();
     private MyContentRoot root;
     private FrameLayout contentFrame;
@@ -145,7 +146,7 @@ public class MainActivity extends Activity {
 
 
     private View createChart(ChartData datum) {
-        FrameLayout.LayoutParams legendLP = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+        LinearLayout.LayoutParams legendLP = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         final TextView legend = new TextView(this);
         legend.setPadding(dimen.dpi(16), dimen.dpi(16), 0, dimen.dpi(8));
         legend.setTextSize(16f);
@@ -157,27 +158,27 @@ public class MainActivity extends Activity {
 //        legend.setBackgroundDrawable(d1);
 
 
-        final ChartViewGL newChart = new ChartViewGL(this, datum, dimen, currentColorSet);
-        newChart.setLayoutParams(new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+        final ChartView newChart = new ChartView(this, datum, dimen, currentColorSet);
+        newChart.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
         charts.add(newChart);
 
 
         ScrollView.LayoutParams listLP = new ScrollView.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-        FrameLayout list = new FrameLayout(this){
+        LinearLayout list = new LinearLayout(this){
             @Override
             public boolean isOpaque() {
                 return true;
             }
         };
-//        list.setOrientation(LinearLayout.VERTICAL);
+        list.setOrientation(LinearLayout.VERTICAL);
         list.setLayoutParams(listLP);
-        list.addView(newChart);
         list.addView(legend);
+        list.addView(newChart);
 
 
 
         ColumnData[] data1 = datum.data;
-        LinearLayout checkboxlist = new LinearLayout(this);
+        LinearLayout checkboxlist = list;
         checkboxlist.setOrientation(LinearLayout.VERTICAL);
 //        MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground);
 //        ds.add(d);
@@ -225,7 +226,8 @@ public class MainActivity extends Activity {
 
         FrameLayout.LayoutParams cblp = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         cblp.gravity = Gravity.BOTTOM;
-        list.addView(checkboxlist, cblp);
+//        list.addView(checkboxlist, cblp);
+        list.setBackgroundColor(currentColorSet.lightBackground);
         chartsRoots.add(list);
         return list;
     }
@@ -332,7 +334,7 @@ public class MainActivity extends Activity {
         if (animateChart) {
 
             for (int i = 0, chartsSize = charts.size(); i < chartsSize; i++) {
-                ChartViewGL chart = charts.get(i);
+                ChartView chart = charts.get(i);
                 View root = chartsRoots.get(i);
                 int top = root.getTop();
                 int bottom = root.getBottom();
@@ -472,15 +474,15 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        for (ChartViewGL chart : charts) {
-            chart.invalidateRender();
-        }
+//        for (ChartViewGL chart : charts) {
+//            chart.invalidateRender();
+//        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        for (ChartViewGL c : charts) {
+        for (ChartView c : charts) {
             c.release();
         }
     }
