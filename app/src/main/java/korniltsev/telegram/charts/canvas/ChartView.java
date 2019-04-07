@@ -25,15 +25,16 @@ import korniltsev.telegram.charts.ui.MyAnimation;
 import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
 /*
- [bp] chart zoom
- [bp] animate chart (alpha + min-max (global)
  [bp] animate chart (min-max viewport)
 
 
     Глобальный план:
-    - срочно решить, opengl или канвас
     - реализовать все без бонусов, потом ебашить бонусы
 
+    Бэкпорот план
+        - вертиакльные линии + надписи + анимации
+        - горизонтальный линии + надписи + анимации
+        - тултип ( новый дизайн )
  */
 public class ChartView extends View {
     public static final int CHECKBOX_HEIGHT_DPI = 50;
