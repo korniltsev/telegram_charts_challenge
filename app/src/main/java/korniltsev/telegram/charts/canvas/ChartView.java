@@ -465,7 +465,7 @@ public class ChartView extends View {
             drawChart(canvas);
         }
 
-
+        Log.d("ANim", "draw");
         if (drawScrollbar) {
             drawScrollbar(canvas);
         }
@@ -495,14 +495,22 @@ public class ChartView extends View {
             long[] values = c.data.values;
             float cur_value = (values[0] - min) / diff;
             float cur_pos = chartBottom - cur_value * vspace;
+            float[] pts = c.pts;
+            int j = 0;
             for (int i = 1; i < values.length; i++) {
                 float next_value = (values[i] - min) / diff;
                 float next_pos = chartBottom - next_value * vspace;
-                canvas.drawLine(x, cur_pos, x + step, next_pos, c.p);
+                pts[j] = x;
+                pts[j + 1] = cur_pos;
+                pts[j + 2] = x + step;
+                pts[j + 3] = next_pos;
+//                canvas.drawLine(x, cur_pos, x + step, next_pos, c.p);
                 x += step;
                 cur_value = next_value;
                 cur_pos = next_pos;
+                j += 4;
             }
+            canvas.drawLines(pts, c.p);
         }
     }
 
@@ -527,14 +535,21 @@ public class ChartView extends View {
             long[] values = c.data.values;
             float cur_value = (values[0] - min) / diff;
             float cur_pos = scrollbar.bottom - dip1 - cur_value * vspace;
+            float[] pts = c.pts;
+            int j = 0;
             for (int i = 1; i < values.length; i++) {
                 float next_value = (values[i] - min) / diff;
                 float next_pos = scrollbar.bottom - dip1 - next_value * vspace;
-                canvas.drawLine(x, cur_pos, x + step, next_pos, c.p);
+                pts[j] = x;
+                pts[j + 1] = cur_pos;
+                pts[j + 2] = x+step;
+                pts[j + 3] = next_pos;
                 x += step;
                 cur_value = next_value;
                 cur_pos = next_pos;
+                j += 4;
             }
+            canvas.drawLines(pts, c.p);
         }
     }
 
@@ -548,10 +563,13 @@ public class ChartView extends View {
         public MyAnimation.Float minAnim;
         public MyAnimation.Float maxAnim;
         public MyAnimation.Float alphaAnim;
+        float[] pts;
+
 
         public UIColumnData(ColumnData data) {
             this.data = data;
             p.setColor(data.color);
+            pts = new float[4 * (data.values.length - 1)];//todo no need for multiple buffers, may use one!
         }
 
         public boolean tick(long t) {
