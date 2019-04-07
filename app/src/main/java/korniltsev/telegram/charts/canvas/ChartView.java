@@ -558,8 +558,8 @@ public class ChartView extends View {
 
         public void animateMinMax(long min, long max, boolean animate) {
             if (animate) {
-                minAnim = new MyAnimation.Float(3200, this.min, min);
-                maxAnim = new MyAnimation.Float(3200, this.max, max);
+                minAnim = new MyAnimation.Float(192, this.min, min);
+                maxAnim = new MyAnimation.Float(192, this.max, max);
             } else {
                 minAnim = null;
                 maxAnim = null;
@@ -567,7 +567,7 @@ public class ChartView extends View {
         }
 
         public void animateAlpha(boolean isChecked) {
-            alphaAnim = new MyAnimation.Float(3200, alpha, isChecked ? 1f : 0f);
+            alphaAnim = new MyAnimation.Float(192, alpha, isChecked ? 1f : 0f);
         }
     }
 }
