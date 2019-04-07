@@ -458,17 +458,9 @@ public class ChartView extends View {
         float dip4 = dimen.dpf(4);
 //        canvas.drawRect(scrollbar.left, chartTop, scrollbar.right, chartBottom, p2);
 
-        final boolean drawChart = true;
-        final boolean drawScrollbar = true;
+        drawChart(canvas);
 
-        if (drawChart) {
-            drawChart(canvas);
-        }
-
-        Log.d("ANim", "draw");
-        if (drawScrollbar) {
-            drawScrollbar(canvas);
-        }
+        drawScrollbar(canvas);
 
 //         draw scrollbar overlay
         canvas.drawRect(scrollbar.left, scrollbar.top, scroller_left, scrollbar.bottom, pOverlay);
