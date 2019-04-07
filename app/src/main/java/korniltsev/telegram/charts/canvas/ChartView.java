@@ -5,9 +5,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.TextureView;
 import android.view.View;
 import android.view.ViewConfiguration;
 
@@ -23,15 +23,16 @@ import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 
 import static korniltsev.telegram.charts.MainActivity.LOGGING;
-import static korniltsev.telegram.charts.MainActivity.TAG;
 
-/**
- animate scrollbar chart (alpha + min-max)
- chart zoom
- animate chart (alpha + min-max (global)
- animate chart (min-max viewport)
+/*
+ [bp] chart zoom
+ [bp] animate chart (alpha + min-max (global)
+ [bp] animate chart (min-max viewport)
 
 
+    Глобальный план:
+    - срочно решить, opengl или канвас
+    - реализовать все без бонусов, потом ебашить бонусы
 
  */
 public class ChartView extends View {
@@ -177,7 +178,53 @@ public class ChartView extends View {
     }
 
     public void setChecked(String id, boolean isChecked) {
-        //todo
+        UIColumnData foundScroller = null;
+        UIColumnData foundChart = null;
+        for (UIColumnData c : scroller) {
+            if (id.equals(c.data.id)) {
+                foundScroller = c;
+                c.checked = isChecked;
+                break;
+            }
+        }
+        for (UIColumnData c : chart) {
+            if (id.equals(c.data.id)) {
+                foundChart = c;
+                c.checked = isChecked;
+                break;
+            }
+        }
+        long min = Long.MAX_VALUE;
+        long max = Long.MIN_VALUE;
+        for (UIColumnData c : chart) {
+            if (c.checked) {
+                min = Math.min(min, c.data.min);
+                max = Math.max(max, c.data.max);
+            }
+        }
+        for (UIColumnData c : scroller) {
+            if (c == foundScroller) {
+                if (isChecked) {
+                    if (c.alpha == 0f) {
+                        c.animateMinMax(min, max, false);
+                    } else {
+                        c.animateMinMax(min, max, true);
+                    }
+                }
+                c.animateAlpha(isChecked);
+            } else {
+                c.animateMinMax(min, max, true);
+            }
+        }
+        for (UIColumnData c : chart) {
+            if (c == foundChart) {
+                c.animateMinMax(min, max, true);
+                c.animateAlpha(isChecked);
+            } else {
+                c.animateMinMax(0, max, true);
+            }
+        }
+        invalidate();
     }
 
 
@@ -371,18 +418,39 @@ public class ChartView extends View {
 
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        long t = SystemClock.uptimeMillis();
+        boolean dirty = false;
+        for (int i = 0; i < scroller.size(); i++) {
+            UIColumnData columnData = scroller.get(i);
+            boolean tick = columnData.tick(t);
+            dirty = dirty || tick;
+        }
+        for (int i = 0; i < chart.size(); i++) {
+            UIColumnData columnData = chart.get(i);
+            boolean tick = columnData.tick(t);
+            dirty = dirty || tick;
+        }
+        if (dirty) {
+            invalidate();
+        }
+
 //        canvas.drawRect(scrollbar.left, scrollbar.top, scrollbar.right, scrollbar.bottom, p);
         float dip2 = dimen.dpf(2);
         float dip1 = dimen.dpf(1);
         float dip4 = dimen.dpf(4);
 //        canvas.drawRect(scrollbar.left, chartTop, scrollbar.right, chartBottom, p2);
 
+        final boolean drawChart = true;
+        final boolean drawScrollbar = true;
 
-        {// draw scrollbar chart
+        if (drawChart) {
             float vspace = chartUsefullHiehgt;
             float step = scrollbar.width() / (float) (data.data[0].values.length - 1);
             for (int i1 = 0; i1 < chart.size(); i1++) {
                 UIColumnData c = chart.get(i1);
+                if (c.alpha == 0f) {
+                    continue;
+                }
                 float x = scrollbar.left;
                 final long min = 0;
                 float diff = c.max - min;
@@ -401,14 +469,22 @@ public class ChartView extends View {
         }
 
 
-        {// draw scrollbar chart
+        if (drawScrollbar) {
             float vspace = scrollbar.height() - 2 * dip2;
-            float step = scrollbar.width() / (float) (data.data[0].values.length - 1);
+            float step = (scrollbar.width() - dip2) / (float) (data.data[0].values.length - 1);
             for (int i1 = 0; i1 < scroller.size(); i1++) {
                 UIColumnData c = scroller.get(i1);
-                float x = scrollbar.left;
-                long min = c.min;
-                float diff = c.max - min;
+                if (c.alpha == 0f) {
+                    continue;
+                }
+                float x = scrollbar.left + dip1;
+                float min;
+                float diff;
+
+
+                min = c.min;
+                diff = c.max - min;
+
                 long[] values = c.data.values;
                 float cur_value = (values[0] - min) / diff;
                 float cur_pos = scrollbar.bottom - dip1 - cur_value * vspace;
@@ -436,14 +512,62 @@ public class ChartView extends View {
 
     public static class UIColumnData {
         public final ColumnData data;
-        public long max;
-        public long min;
+        public float max;
+        public float min;
         public final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-
+        public boolean checked = true;
+        public float alpha = 1f;
+        public MyAnimation.Float minAnim;
+        public MyAnimation.Float maxAnim;
+        public MyAnimation.Float alphaAnim;
 
         public UIColumnData(ColumnData data) {
             this.data = data;
             p.setColor(data.color);
+        }
+
+        public boolean tick(long t) {
+            boolean invalidate = false;
+            if (minAnim != null) {
+                min = minAnim.tick(t);
+                if (minAnim.ended) {
+                    minAnim = null;
+                } else {
+                    invalidate = true;
+                }
+            }
+            if (maxAnim != null) {
+                max = maxAnim.tick(t);
+                if (maxAnim.ended) {
+                    maxAnim = null;
+                } else {
+                    invalidate = true;
+                }
+            }
+            if (alphaAnim != null) {
+                alpha = alphaAnim.tick(t);
+                p.setAlpha((int) (alpha * 255));
+                if (alphaAnim.ended) {
+                    alphaAnim = null;
+                } else {
+                    invalidate = true;
+                }
+            }
+            return invalidate;
+        }
+
+        public void animateMinMax(long min, long max, boolean animate) {
+            if (animate) {
+                minAnim = new MyAnimation.Float(3200, this.min, min);
+                maxAnim = new MyAnimation.Float(3200, this.max, max);
+            } else {
+                minAnim = null;
+                maxAnim = null;
+            }
+        }
+
+        public void animateAlpha(boolean isChecked) {
+            alphaAnim = new MyAnimation.Float(3200, alpha, isChecked ? 1f : 0f);
         }
     }
 }

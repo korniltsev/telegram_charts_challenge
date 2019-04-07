@@ -95,4 +95,8 @@ public class ExampleUnitTest {
     }
 
 
+    @Test
+    public void teet() {
+        System.out.println();
+    }
 }
