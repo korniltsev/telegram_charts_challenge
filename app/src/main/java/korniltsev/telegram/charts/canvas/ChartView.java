@@ -204,10 +204,10 @@ public class ChartView extends View {
         }
         for (UIColumnData c : scroller) {
             if (c == foundScroller) {
-                if (isChecked) {
-                    if (c.alpha == 0f) {
-                        c.animateMinMax(min, max, false);
-                    } else {
+                if (c.alpha == 0f) {
+                    c.animateMinMax(min, max, false);
+                } else {
+                    if (isChecked) {
                         c.animateMinMax(min, max, true);
                     }
                 }
@@ -561,6 +561,8 @@ public class ChartView extends View {
                 minAnim = new MyAnimation.Float(192, this.min, min);
                 maxAnim = new MyAnimation.Float(192, this.max, max);
             } else {
+                this.min = min;
+                this.max = max;
                 minAnim = null;
                 maxAnim = null;
             }
