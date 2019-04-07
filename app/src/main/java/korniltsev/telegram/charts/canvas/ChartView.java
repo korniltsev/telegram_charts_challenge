@@ -483,73 +483,64 @@ public class ChartView extends View {
 
     private void drawChart(Canvas canvas) {
         float vspace = chartUsefullHiehgt;
-        float step = scrollbar.width() / (float) (data.data[0].values.length - 1);
         for (int i1 = 0; i1 < chart.size(); i1++) {
             UIColumnData c = chart.get(i1);
             if (c.alpha == 0f) {
                 continue;
             }
-            float x = scrollbar.left;
-            final long min = 0;
-            float diff = c.max - min;
-            long[] values = c.data.values;
-            float cur_value = (values[0] - min) / diff;
-            float cur_pos = chartBottom - cur_value * vspace;
-            float[] pts = c.pts;
-            int j = 0;
-            for (int i = 1; i < values.length; i++) {
-                float next_value = (values[i] - min) / diff;
-                float next_pos = chartBottom - next_value * vspace;
-                pts[j] = x;
-                pts[j + 1] = cur_pos;
-                pts[j + 2] = x + step;
-                pts[j + 3] = next_pos;
-//                canvas.drawLine(x, cur_pos, x + step, next_pos, c.p);
-                x += step;
-                cur_value = next_value;
-                cur_pos = next_pos;
-                j += 4;
-            }
-            canvas.drawLines(pts, c.p);
+            int l = scrollbar.left;
+            int w = scrollbar.width();
+            int b = this.chartBottom;
+            float h = vspace;
+            calcChart(l, w, b, h, c, true);
+            canvas.drawLines(c.pts, c.p);
+        }
+    }
+
+    private static void calcChart(float left, float w, float bottom, float vspace, UIColumnData c, boolean minZero) {
+        float[] pts = c.pts;
+        float step = w / (float) (c.data.values.length - 1);
+        float x = left;
+        final float min;
+        if (minZero) {
+            min = 0;
+        } else {
+            min = c.min;
+        }
+        float diff = c.max - min;
+        long[] values = c.data.values;
+        float cur_value = (values[0] - min) / diff;
+        float cur_pos = bottom - cur_value * vspace;
+        int j = 0;
+        for (int i = 1; i < values.length; i++) {
+            float next_value = (values[i] - min) / diff;
+            float next_pos = bottom - next_value * vspace;
+            pts[j] = x;
+            pts[j + 1] = cur_pos;
+            pts[j + 2] = x + step;
+            pts[j + 3] = next_pos;
+            x += step;
+            cur_value = next_value;
+            cur_pos = next_pos;
+            j += 4;
         }
     }
 
     private void drawScrollbar(Canvas canvas) {
         float dip2 = dimen.dpf(2);
         float dip1 = dimen.dpf(1);
-        float vspace = scrollbar.height() - 2 * dip2;
-        float step = (scrollbar.width() - dip2) / (float) (data.data[0].values.length - 1);
         for (int i1 = 0; i1 < scroller.size(); i1++) {
             UIColumnData c = scroller.get(i1);
             if (c.alpha == 0f) {
                 continue;
             }
-            float x = scrollbar.left + dip1;
-            float min;
-            float diff;
 
-
-            min = c.min;
-            diff = c.max - min;
-
-            long[] values = c.data.values;
-            float cur_value = (values[0] - min) / diff;
-            float cur_pos = scrollbar.bottom - dip1 - cur_value * vspace;
-            float[] pts = c.pts;
-            int j = 0;
-            for (int i = 1; i < values.length; i++) {
-                float next_value = (values[i] - min) / diff;
-                float next_pos = scrollbar.bottom - dip1 - next_value * vspace;
-                pts[j] = x;
-                pts[j + 1] = cur_pos;
-                pts[j + 2] = x+step;
-                pts[j + 3] = next_pos;
-                x += step;
-                cur_value = next_value;
-                cur_pos = next_pos;
-                j += 4;
-            }
-            canvas.drawLines(pts, c.p);
+            float l = scrollbar.left + dip1;
+            float w = scrollbar.width() - dip2;
+            float b = scrollbar.bottom - dip1;
+            float h = scrollbar.height() - 2 * dip2;
+            calcChart(l, w, b, h, c, false);
+            canvas.drawLines(c.pts, c.p);
         }
     }
 
