@@ -484,16 +484,18 @@ public class ChartView extends View {
             int w = scrollbar.width();
             int b = this.chartBottom;
             float h = vspace;
-            calcChart(l, w, b, h, c, true);
+            calcChart(l, w, b, h, c, true, zoom_left, zoom_scale);
             canvas.drawLines(c.pts, c.p);
         }
     }
 
-    private static void calcChart(float left, float w, float bottom, float vspace, UIColumnData c, boolean minZero) {
-        float[] pts = c.pts;
-        float step = w / (float) (c.data.values.length - 1);
-        float x = left;
+    private static void calcChart(float left, float w, float bottom, float vspace, UIColumnData c, boolean minZero, float zoom_left, float zoom_scale) {
+        final float[] pts = c.pts;
+        final int pointsCount = c.data.values.length;
+        final int lineCount = pointsCount - 1;
+        final float step = w / (float) lineCount;
         final float min;
+//        float x = left;
         if (minZero) {
             min = 0;
         } else {
@@ -507,11 +509,16 @@ public class ChartView extends View {
         for (int i = 1; i < values.length; i++) {
             float next_value = (values[i] - min) / diff;
             float next_pos = bottom - next_value * vspace;
-            pts[j] = x;
+            float _x = (i - 1) / (float)(pointsCount -1);
+            float _nextx = i / (float) (pointsCount-1);
+            _x -= zoom_left;
+            _nextx -= zoom_left;
+            _x /= zoom_scale;
+            _nextx /= zoom_scale;
+            pts[j] = left + _x * w ;
             pts[j + 1] = cur_pos;
-            pts[j + 2] = x + step;
+            pts[j + 2] = left + _nextx * w ;
             pts[j + 3] = next_pos;
-            x += step;
             cur_value = next_value;
             cur_pos = next_pos;
             j += 4;
@@ -531,7 +538,7 @@ public class ChartView extends View {
             float w = scrollbar.width() - dip2;
             float b = scrollbar.bottom - dip1;
             float h = scrollbar.height() - 2 * dip2;
-            calcChart(l, w, b, h, c, false);
+            calcChart(l, w, b, h, c, false, 0f, 1f);
             canvas.drawLines(c.pts, c.p);
         }
     }
