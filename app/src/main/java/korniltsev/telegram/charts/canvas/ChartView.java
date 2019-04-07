@@ -67,6 +67,9 @@ public class ChartView extends View {
     private Paint p = new Paint();
     private Paint p2 = new Paint();
     private int chartUsefullHiehgt;
+    private float zoom_left;
+    private float zoom_right;
+    private float zoom_scale;
     //    public long currentMax;
 //    public ColorSet currentColorsSet;
 
@@ -194,6 +197,12 @@ public class ChartView extends View {
                 break;
             }
         }
+        int checkedCount = 0;
+        for (UIColumnData c : chart) {
+            if (c.checked) {
+                checkedCount++;
+            }
+        }
         long min = Long.MAX_VALUE;
         long max = Long.MIN_VALUE;
         for (UIColumnData c : chart) {
@@ -218,7 +227,13 @@ public class ChartView extends View {
         }
         for (UIColumnData c : chart) {
             if (c == foundChart) {
-                c.animateMinMax(min, max, true);
+                if (!isChecked && checkedCount == 0) {
+
+                } else if (c.alpha == 0f) {
+                    c.animateMinMax(min, max, false);
+                } else {
+                    c.animateMinMax(min, max, true);
+                }
                 c.animateAlpha(isChecked);
             } else {
                 c.animateMinMax(0, max, true);
@@ -402,6 +417,9 @@ public class ChartView extends View {
         final float left = (float) (scroller_left - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float right = (float) (scroller__right - scrollbar.left) / (scrollbar.right - scrollbar.left);
         final float scale = (right - left);
+        this.zoom_left = left;
+        this.zoom_right = right;
+        this.zoom_scale = scale;
     }
 
     public final long calculateMax(float left, float right) {

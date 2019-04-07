@@ -126,7 +126,11 @@ public class MainActivity extends Activity {
         for (int i = 0, dataLength = data.length; i < dataLength; i++) {
             ChartData dataset = data[i];
             ChartData dataset1 = dataset;
+            if (i != data.length - 1) {
+                continue;
+            }
             View chart = createChart(dataset1);
+
             LinearLayout.LayoutParams chartlp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
 //            if (i != 0) {
 
