@@ -47,6 +47,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
+        - fix bug with wrong ruler position
     - 3. A stacked bar chart with 7 data types (Screenshots 5-6).
     - 4. A daily bar chart with single data type (Screenshot 7).
     - 5. A percentage stacked area chart with 6 data types (Screenshots 9, 10).
