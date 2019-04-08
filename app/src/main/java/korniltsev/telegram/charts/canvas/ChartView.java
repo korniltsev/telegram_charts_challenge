@@ -45,6 +45,8 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
    Глобальный план:
         - реализовать все без бонусов, потом ебашить бонусы
 
+    - незабыть
+
  */
 public class ChartView extends View {
     public static final int CHECKBOX_HEIGHT_DPI = 50;
@@ -86,14 +88,18 @@ public class ChartView extends View {
     //    public long currentMax;
 //    public ColorSet currentColorsSet;
 
-
+    float[]pts;
     @Override
     public boolean isOpaque() {
         return true;
     }
 
+
     public ChartView(Context context, ChartData c, Dimen dimen, ColorSet currentColorsSet) {
         super(context);
+        //todo reallocate for recycler
+        pts = new float[4 * (c.data[0].values.length - 1)];
+
         xColumn = c.data[0];
 //        initTime = SystemClock.elapsedRealtimeNanos();
         this.init_colors = currentColorsSet;
@@ -522,13 +528,12 @@ public class ChartView extends View {
             int w = scrollbar.width();
             int b = this.chartBottom;
             float h = vspace;
-            calcChart(l, w, b, h, c, true, zoom_left, zoom_scale);
-            canvas.drawLines(c.pts, c.p);
+            calcChart(l, w, b, h, c, true, zoom_left, zoom_scale, pts);
+            canvas.drawLines(pts, c.p);
         }
     }
 
-    private static void calcChart(float left, float w, float bottom, float vspace, UIColumnData c, boolean minZero, float zoom_left, float zoom_scale) {
-        final float[] pts = c.pts;
+    private static void calcChart(float left, float w, float bottom, float vspace, UIColumnData c, boolean minZero, float zoom_left, float zoom_scale, float []pts) {
         final int pointsCount = c.data.values.length;
         final int lineCount = pointsCount - 1;
         final float step = w / (float) lineCount;
@@ -576,8 +581,8 @@ public class ChartView extends View {
             float w = scrollbar.width() - dip2;
             float b = scrollbar.bottom - dip1;
             float h = scrollbar.height() - 2 * dip2;
-            calcChart(l, w, b, h, c, false, 0f, 1f);
-            canvas.drawLines(c.pts, c.p);
+            calcChart(l, w, b, h, c, false, 0f, 1f, pts);
+            canvas.drawLines(pts, c.p);
         }
     }
 
@@ -591,13 +596,11 @@ public class ChartView extends View {
         public MyAnimation.Float minAnim;
         public MyAnimation.Float maxAnim;
         public MyAnimation.Float alphaAnim;
-        float[] pts;
 
 
         public UIColumnData(ColumnData data) {
             this.data = data;
             p.setColor(data.color);
-            pts = new float[4 * (data.values.length - 1)];//todo no need for multiple buffers, may use one!
         }
 
         public boolean tick(long t) {
