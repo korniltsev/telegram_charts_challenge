@@ -40,8 +40,8 @@ public final class GLChartProgram {
 
     private final Dimen dimen;
 
-    public long maxValue;
-    public long minValue;
+    public float maxValue;
+    public float minValue;
     public float minValueAnim = 1f;
     public float maxValueAnim = 1f;
 
@@ -262,13 +262,13 @@ public final class GLChartProgram {
     }
 
     public void animateMinMax(long min, long max, boolean animate, long duration) {
-        long prevMin = this.minValue;
-        long prevMax = this.maxValue;
+        float prevMin = this.minValue;
+        float prevMax = this.maxValue;
         if (minValueAnim != 1f) {
-            prevMin = (long) (prevMin * minValueAnim);
+            prevMin =  (prevMin * minValueAnim);
         }
         if (maxValueAnim != 1f) {
-            prevMax = (long) (prevMax * maxValueAnim);
+            prevMax =  (prevMax * maxValueAnim);
         }
         this.minValue = min;
         this.maxValue = max;

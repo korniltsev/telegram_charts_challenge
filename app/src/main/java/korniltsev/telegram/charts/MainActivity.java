@@ -425,7 +425,8 @@ public class MainActivity extends Activity {
 
     public List<ChartData> readData() {
         List<ChartData> res = new ArrayList<>();
-        boolean parseOld = false;
+        boolean parseOld = true;
+        boolean parseNew = false;
         if (parseOld) {
             InputStream inputStream = getResources().openRawResource(R.raw.data);
             try {
@@ -452,25 +453,28 @@ public class MainActivity extends Activity {
                 R.raw.d4,
                 R.raw.d5,
         };
-        for (int d : ds) {
-            InputStream inputStream = getResources().openRawResource(d);
-            try {
-                byte[] bytes = readAll(inputStream);
-                String s = new String(bytes, "UTF-8");
-                JSONObject o = new JSONObject(s);
-                ChartData it= ChartData.pareOne(o);
-                res.add(it);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            } finally {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                }
-            }
+        if (parseNew) {
 
+            for (int d : ds) {
+                InputStream inputStream = getResources().openRawResource(d);
+                try {
+                    byte[] bytes = readAll(inputStream);
+                    String s = new String(bytes, "UTF-8");
+                    JSONObject o = new JSONObject(s);
+                    ChartData it= ChartData.pareOne(o);
+                    res.add(it);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                    }
+                }
+
+            }
         }
         return res;
     }
