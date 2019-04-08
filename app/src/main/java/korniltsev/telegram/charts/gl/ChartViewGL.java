@@ -1,6 +1,7 @@
 package korniltsev.telegram.charts.gl;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
@@ -15,6 +16,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.ViewConfiguration;
+
+import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -40,7 +43,7 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 import static korniltsev.telegram.charts.MainActivity.TAG;
 
 /*
-    - The Y-scale on line graphs should start with the lowest visible value (Screenshot 4).
+
 
     - A line chart with 2 lines, exactly like in Stage 1 (Screenshot 1).
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
@@ -53,8 +56,8 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     [ ? ] Matrix -> MyMatrix for inlining? test if it does something
 
 
-
-
+    разобраться что с цветами, 0xff222222 не рисуется
+    4.1 крашится на выходе
 
 
     сократить цифры на лейблах
@@ -112,6 +115,8 @@ public class ChartViewGL extends TextureView {
     public int chartBottom;
     public int chartTop;
     public int hpadding;
+    private long viewportMin;
+    private long viewportMax;
     //    public long currentMax;
 //    public ColorSet currentColorsSet;
 
@@ -225,6 +230,7 @@ public class ChartViewGL extends TextureView {
         public int h;
 
         public long prevMax;
+        public long prevMin;
 
         public boolean rulerInitDone;
         public boolean[] checked;
@@ -241,6 +247,7 @@ public class ChartViewGL extends TextureView {
         public SimpleShader simple;
 //        public GLChartProgram.Shader chartShader;
         public MyCircles.Shader joiningShader;
+        private ArrayList<MyRect> debugRects;
 
         public Render(ChartData column) {
             super("ChartViewGLRender", Process.getThreadPriority(Process.myTid()));
@@ -437,6 +444,9 @@ public class ChartViewGL extends TextureView {
 //            if (LOGGING) Log.d(MainActivity.TAG, String.format("%20s   %10d","chart init", chart- scrollbar));
 //            if (LOGGING) Log.d(MainActivity.TAG, String.format("%20s   %10d", "overlay init", overlay- chart));
 //            if (LOGGING) Log.d(MainActivity.TAG, String.format("%20s   %10d", "ruler init", ruler- overlay));
+
+            debugRects = new ArrayList<>();
+//            debugRects.add(new MyRect(w, chartBottom-chartTop, 0, h-chartBottom, Color.BLUE, w, h));
         }
 
 
@@ -508,20 +518,21 @@ public class ChartViewGL extends TextureView {
                         }
                     }
 
-                    long scaledMax = calculateMax(r.overlay.left, r.overlay.right);
+                    calculateMax(r.overlay.left, r.overlay.right);
                     //todo
-                    float ratio = prevMax / (float) scaledMax;
+                    float ratio = prevMax / (float) viewportMax;
 //                    if (MainActivity.LOGGING) Log.d(MainActivity.TAG, "anim ratio " + ratio);
 
                     // chart
                     for (GLChartProgram c : chart) {
                         if (checkedCount != 0) {
-                            c.animateMinMax(0, scaledMax, true, 208);
+                            c.animateMinMax(viewportMin, viewportMax, true, 208);
                         }
                     }
-                    if (prevMax != scaledMax) {
-                        ruler.animateScale(ratio, scaledMax, checkedCount, prevCheckedCOunt, 208);
-                        prevMax = scaledMax;
+                    if (prevMax != viewportMax || prevMin != viewportMin) {
+                        ruler.animateScale(ratio,viewportMin, viewportMax, checkedCount, prevCheckedCOunt, 208);
+                        prevMax = viewportMax;
+                        prevMin = viewportMin;
                     }
 //                    drawAndSwap();
                     invalidateRender();
@@ -550,10 +561,12 @@ public class ChartViewGL extends TextureView {
             long t = SystemClock.uptimeMillis();
             boolean invalidated = false;
             if (!rulerInitDone) {
-                prevMax = calculateMax(r.overlay.left, r.overlay.right);
-                ruler.init(prevMax);
+                calculateMax(r.overlay.left, r.overlay.right);
+                prevMax = viewportMax;
+                prevMin = viewportMin;
+                ruler.init(viewportMin, prevMax);
                 for (GLChartProgram glChartProgram : chart) {
-                    glChartProgram.maxValue = prevMax;
+                    glChartProgram.animateMinMax(viewportMin, viewportMax, false, 0);
                 }
                 rulerInitDone = true;
             }
@@ -585,11 +598,16 @@ public class ChartViewGL extends TextureView {
 //                long t4 = System.nanoTime();
             boolean rulerInvalidated = ruler.animationTick(t);
             invalidated = rulerInvalidated | invalidated;
+            GLES20.glScissor(0,h-chartBottom- dimen.dpi(1), w, chartBottom-chartTop);
+            GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+            MyGL.checkGlError2();
             ruler.draw(t);
 //                long t5 = System.nanoTime();
 //                circle.draw();
             invalidated = drawChart(invalidated, t);
 //                long t6 = System.nanoTime();
+            GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
+            MyGL.checkGlError2();
 
             if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                 throw new RuntimeException("Cannot swap buffers");
@@ -864,7 +882,7 @@ public class ChartViewGL extends TextureView {
             overlay.setLeftRight(left, right);
 //                long t = SystemClock.elapsedRealtimeNanos();
 //            long newMax = calculateMax(left, right);
-            long scaledMax = calculateMax(left, right);
+            calculateMax(left, right);
 
             int checkedCount = 0;
             for (GLChartProgram glChartProgram : r.chart) {
@@ -873,8 +891,8 @@ public class ChartViewGL extends TextureView {
                 if (glChartProgram.checked) {
                     checkedCount++;
                 }
-                if (prevMax != scaledMax) {
-                    glChartProgram.animateMinMax(0, scaledMax, !firstLeftRightUpdate, 256);
+                if (prevMax != viewportMax || prevMin != viewportMin) {
+                    glChartProgram.animateMinMax(viewportMin, viewportMax, !firstLeftRightUpdate, 256);
                 }
             }
             ruler.setLeftRight(left, right, scale);
@@ -882,7 +900,7 @@ public class ChartViewGL extends TextureView {
 
 
             //todo
-            float ratio = prevMax / (float) scaledMax;
+            float ratio = prevMax / (float) viewportMax;
 //            if (MainActivity.LOGGING) Log.d(MainActivity.TAG, "anim ratio " + ratio);
 
             // chart
@@ -894,11 +912,12 @@ public class ChartViewGL extends TextureView {
 //
 //                }
 //            }
-            if (prevMax != scaledMax) {
+            if (prevMax != viewportMax || prevMin != viewportMin) {
                 if (rulerInitDone) {
-                    ruler.animateScale(ratio, scaledMax, checkedCount,checkedCount, 256);
+                    ruler.animateScale(ratio, viewportMin, viewportMax, checkedCount,checkedCount, 256);
                 }
-                prevMax = scaledMax;
+                prevMax = viewportMax;
+                prevMin = viewportMin;
             }
         }
     }
@@ -1124,8 +1143,9 @@ public class ChartViewGL extends TextureView {
         r.invalidateRender();
     }
 
-    public final long calculateMax(float left, float right) {
-        long max = -1;
+    public final void calculateMax(float left, float right) {
+        long max = Long.MIN_VALUE;
+        long min = Long.MAX_VALUE;
         int len = r.chart[0].column.values.length;
         int from = Math.max(0, (int)Math.ceil(len * (left-0.02f)));
         int to = Math.min(len, (int)Math.ceil(len * (right+0.02f)));
@@ -1133,11 +1153,14 @@ public class ChartViewGL extends TextureView {
             if (glChartProgram.checked) {
                 long[] values = glChartProgram.column.values;
                 for (int i = from; i < to; i++) {
-                    max = (max >= values[i]) ? max : values[i];
+                    long value = values[i];
+                    max = (max >= value) ? max : value;
+                    min = Math.min(min, value);
                 }
             }
         }
-        return max;
+        this.viewportMin = min;
+        this.viewportMax = max;
     }
 
     public ColorSet currentColors;

@@ -63,7 +63,7 @@ public final class GLRulersProgram {
 
 //    private final int texVerticesVBO;
     private final TexShader texShader;
-    private final TextTex zero;
+//    private final TextTex zero;
     private final SimpleShader simpleShader;
     private final float wpx;
     private final float hpadding;
@@ -143,14 +143,14 @@ public final class GLRulersProgram {
         paint.setColor(Color.BLUE);
         paint.setTextSize(dimen.dpf(12));
 
-        zero = new TextTex("0", paint);
+//        zero = new TextTex("0", paint);
 
         hpadding = dimen.dpf(16);
         wpx = canvasW - 2 * hpadding;
     }
 
-    public void init(long max) {
-        Ruler r = new Ruler(max, 1.0f, paint);
+    public void init(long min, long max) {
+        Ruler r = new Ruler(min, max, 1.0f, paint);
         rs.add(r);
     }
 
@@ -188,20 +188,21 @@ public final class GLRulersProgram {
 
         float vpaddingTextOverPadding = dimen.dpf(3);
         final float zero = dimen.dpf(80) + root.checkboxesHeight;
-        drawLine(hpadding, zero + 0, canvasW - 2 * hpadding, 1f);
-        drawText(this.zero, hpadding, zero + vpaddingTextOverPadding, 1f);
+//        drawLine(hpadding, zero + 0, canvasW - 2 * hpadding, 1f);
+//        drawText(this.zero, hpadding, zero + vpaddingTextOverPadding, 1f);
 
         final float dip50 = dimen.dpf(50);
         for (int ruler_i = 0, rsSize = rs.size(); ruler_i < rsSize; ruler_i++) {
             Ruler r = rs.get(ruler_i);
 
-            float dy = dip50;
+            float dy = 0;
 
-            for (int i = 1; i < 6; ++i) {
+            for (int i = 0; i < 6; ++i) {
+//                if (i != 0) {
+                    drawLine(hpadding, zero + dy * r.scale, canvasW - 2 * hpadding, r.alpha);
+//                }
 
-                drawLine(hpadding, zero + dy * r.scale, canvasW - 2 * hpadding, r.alpha);
-
-                drawText(r.values.get(i-1), hpadding, zero + dy * r.scale + vpaddingTextOverPadding, r.alpha);
+                drawText(r.values.get(i), hpadding, zero + dy * r.scale + vpaddingTextOverPadding, r.alpha);
 
                 dy += dip50;
             }
@@ -441,7 +442,7 @@ public final class GLRulersProgram {
 //        Log.d("OVERLAY", " " + left + " " + right);
 //    }
 
-    public void animateScale(float ratio, long maxValue, int checkedCount, int prevCheckedCOunt, long duration) {
+    public void animateScale(float ratio, long minValue, long maxValue, int checkedCount, int prevCheckedCOunt, long duration) {
         for (int i = 0, rsSize = rs.size(); i < rsSize; i++) {
             Ruler r = rs.get(i);
             if (r.toBeDeleted) {
@@ -456,7 +457,7 @@ public final class GLRulersProgram {
             r.toBeDeleted = true;
         }
         if (checkedCount != 0) {
-            Ruler e = new Ruler(maxValue, 1f/ratio, paint);
+            Ruler e = new Ruler(minValue, maxValue, 1f/ratio, paint);
             e.alpha = 0f;
             if (prevCheckedCOunt == 0) {
                 e.scale = 1f;
@@ -569,7 +570,7 @@ public final class GLRulersProgram {
         }
         released = true;
         GLES20.glDeleteBuffers(1, vbos, 0);
-        zero.release();
+//        zero.release();
         for (int i1 = 0, rsSize = rs.size(); i1 < rsSize; i1++) {
             Ruler r = rs.get(i1);
             List<TextTex> values = r.values;
@@ -612,25 +613,28 @@ public final class GLRulersProgram {
 //    static final NumberFormat numberFormat = NumberFormat.getInstance(Locale.getDefault());
 
     public static final class Ruler {
-        long maxValue;
         float scale = 1f;
         float alpha = 1f;
         MyAnimation.Float scaleAnim;
         MyAnimation.Float alphaAnim;
         boolean toBeDeleted = false;
         public final List<TextTex> values = new ArrayList<>();
-        public Ruler(long maxValue, float scale, TextPaint p) {
-            this.maxValue = maxValue;
+
+        public Ruler(long minValue, long maxValue, float scale, TextPaint p) {
             this.scale = scale;
-            int dy = 50;
-            int max = 280;
-            for (int i = 1; i < 6; i++) {
-                float s = (float)dy / max;
-                long v = (long) (maxValue * s);
-                String text = String.valueOf(v);
+//            int dy = 50;
+//            int max = 280;
+            long diff = maxValue - minValue;
+            long step = diff / 5;
+            long from = minValue;
+            for (int i = 0; i < 6; i++) {
+//                float s = (float)dy / max;
+//                long v = (long) (maxValue * s);
+                String text = String.valueOf(from);
 //                String format = numberFormat.format(v);
                 values.add(new TextTex(text, p));
-                dy += 50;
+//                dy += 50;
+                from += step;
             }
         }
     }

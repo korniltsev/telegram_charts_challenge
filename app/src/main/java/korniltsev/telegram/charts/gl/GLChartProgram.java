@@ -148,33 +148,35 @@ public final class GLChartProgram {
 
     public void step1(float[] PROJ) {
         float hpadding = dimen.dpf(16);
-        float minx = vertices[0];
         float maxx = vertices[vertices.length - 2];
 
         Matrix.setIdentityM(V, 0);
         if (scrollbar) {
             hpadding += dimen.dpf(1);
             final float dip2 = dimen.dpf(2);
-            Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + root.checkboxesHeight + dip2, 0);
-            float w = this.w - 2 * hpadding;
-            float h = root.dimen_scrollbar_height - 2 * dip2;
-            float ydiff = maxValue - minValue;
-            Matrix.translateM(V, 0, 0, 0, 0f);
-            float yscale = h / ydiff;
-            float dy = -yscale * minValue;
-            Matrix.translateM(V, 0, 0, dy, 0);
-            Matrix.scaleM(V, 0, w / ((maxx - minx)), yscale, 1.0f);
 
+            final float w = this.w - 2 * hpadding;
+            final float h = root.dimen_scrollbar_height - 2 * dip2;
+            final float yscale = h / (maxValue - minValue);
+            final float dy = -yscale * minValue;
+
+            Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + root.checkboxesHeight + dip2, 0);
+            Matrix.translateM(V, 0, 0, dy, 0);
+            Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
             Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
         } else {
-            int ypx = dimen.dpi(80) + root.checkboxesHeight;
-            Matrix.translateM(V, 0, hpadding, ypx, 0);
-            float w = this.w - 2 * hpadding;
-            int h = dimen.dpi(CHART_HEIGHT);
-            float xdiff = maxx - minx;
-            float ws = w / xdiff / zoom;
-            float hs = h / maxValue;
+            final int ypx = dimen.dpi(80) + root.checkboxesHeight;
 
+            final float w = this.w - 2 * hpadding;
+            final int h = dimen.dpi(CHART_HEIGHT);
+            final float xdiff = maxx;
+            final float ws = w / xdiff / zoom;
+            final float hs = h / (maxValue - minValue);
+            final float dy = -hs * minValue;
+
+
+            Matrix.translateM(V, 0, hpadding, ypx, 0);
+            Matrix.translateM(V, 0, 0, dy, 0);
             Matrix.scaleM(V, 0, ws, hs, 1.0f);
             Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
 
