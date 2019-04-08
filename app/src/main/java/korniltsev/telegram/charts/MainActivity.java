@@ -49,7 +49,6 @@ import java.util.List;
 import korniltsev.telegram.charts.canvas.ChartView;
 import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.data.ColumnData;
-import korniltsev.telegram.charts.gl.ChartViewGL;
 import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
@@ -202,7 +201,7 @@ public class MainActivity extends Activity {
 
 
                 };
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(ChartViewGL.CHECKBOX_DIVIDER_HIEIGHT));
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(1));
                 lp.leftMargin = dimen.dpi(56);
                 lp.gravity = Gravity.BOTTOM;
                 divider.setBackgroundColor(currentColorSet.ruler);
@@ -219,7 +218,7 @@ public class MainActivity extends Activity {
                     newChart.setChecked(c.id, isChecked);
                 }
             });
-            LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(ChartViewGL.CHECKBOX_HEIGHT_DPI));
+            LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(50));
             cblp.gravity = Gravity.BOTTOM;
             cb.setLayoutParams(cblp);
 

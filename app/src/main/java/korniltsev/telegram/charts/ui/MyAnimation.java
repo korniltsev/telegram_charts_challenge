@@ -10,8 +10,8 @@ public class MyAnimation {
     public static final int ANIM_DRATION = 160;
 
 
-//    public static final AccelerateDecelerateInterpolator INTERPOLATOR = new AccelerateDecelerateInterpolator();
-    public static final DecelerateInterpolator INTERPOLATOR = new DecelerateInterpolator();
+    public static final AccelerateDecelerateInterpolator INTERPOLATOR = new AccelerateDecelerateInterpolator();
+//    public static final DecelerateInterpolator INTERPOLATOR = new DecelerateInterpolator();
     public static final class Float {
 
         final long startTime = SystemClock.uptimeMillis();
