@@ -45,11 +45,10 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 /*
 
 
-
+    - 4. A daily bar chart with single data type (Screenshot 7).
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
         - fix bug with wrong ruler position
     - 3. A stacked bar chart with 7 data types (Screenshots 5-6).
-    - 4. A daily bar chart with single data type (Screenshot 7).
     - 5. A percentage stacked area chart with 6 data types (Screenshots 9, 10).
 
     - A long tap on any data filter should uncheck all other filters.
@@ -605,9 +604,9 @@ public class ChartViewGL extends TextureView {
             ruler.draw(t);
 //                long t5 = System.nanoTime();
 //                circle.draw();
-            GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+
             invalidated = drawChart(invalidated, t);
-            GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
+
 //                long t6 = System.nanoTime();
             MyGL.checkGlError2();
 
@@ -670,6 +669,8 @@ public class ChartViewGL extends TextureView {
                     this.tooltip = new Tooltip(dimen, w, h, currentColors, data, simple, ChartViewGL.this);
                 }
             }
+
+
             for (GLChartProgram chartProgram : chart) {
                 boolean it_invalid = chartProgram.animateionTick(t);
                 invalidated = invalidated || it_invalid;
@@ -685,6 +686,8 @@ public class ChartViewGL extends TextureView {
             }
 
             MyGL.checkGlError2();
+            GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+
             for (GLChartProgram chartProgram : chart) {
                 chartProgram.shader.use();//todo use only once!
                 chartProgram.step2();
@@ -702,6 +705,7 @@ public class ChartViewGL extends TextureView {
             }
             MyGL.checkGlError2();
 
+            GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
 
             if (tooltipIndex != -1) {
                 this.tooltip.drawTooltip(PROJ);
@@ -1016,8 +1020,8 @@ public class ChartViewGL extends TextureView {
                                 scroller__right = this.scrollbar.right;
                             }
                             // check the scrollbar is not too small
-                            if (scroller__right - scroller_left < initial_scroller_dith) {
-                                scroller__right = scroller_left + initial_scroller_dith;
+                            if (scroller__right - scroller_left < initial_scroller_dith/2) {
+                                scroller__right = scroller_left + initial_scroller_dith/2;
                             }
                             setOverlayPos(false);
 //                            invalidate();
@@ -1027,9 +1031,9 @@ public class ChartViewGL extends TextureView {
                                 scroller_left = this.scrollbar.left;
                             }
 //                            scroller_width = resze_scroller_right - scroller_left;
-                            if (scroller__right - scroller_left < initial_scroller_dith) {
+                            if (scroller__right - scroller_left < initial_scroller_dith/2) {
 //                                scroller_left = initial_scroller_dith;
-                                scroller_left = scroller__right - initial_scroller_dith;
+                                scroller_left = scroller__right - initial_scroller_dith/2;
                             }
                             setOverlayPos(false);
 //                            invalidate();
