@@ -97,6 +97,7 @@ public class MainActivity extends Activity {
     private int dividerColor;
     private MyAnimation.Color dividerAnim;
     private List<View> dividers = new ArrayList<>();
+    private ArrayList<MyColorDrawable> lbs = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -231,7 +232,9 @@ public class MainActivity extends Activity {
         FrameLayout.LayoutParams cblp = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         cblp.gravity = Gravity.BOTTOM;
 //        list.addView(checkboxlist, cblp);
-        list.setBackgroundColor(currentColorSet.lightBackground);
+        MyColorDrawable lb = new MyColorDrawable(currentColorSet.lightBackground);
+        list.setBackgroundDrawable(lb);
+        lbs.add(lb);
         chartsRoots.add(list);
         return list;
     }
@@ -323,7 +326,7 @@ public class MainActivity extends Activity {
         }
         final boolean animateChart = true;
         final boolean animateUI = true;
-        final boolean animateDayNight = Build.VERSION.SDK_INT >= 21;
+        final boolean animateDayNight = true;
         final int colorAnimationDuration;
         if (animateDayNight) {
             colorAnimationDuration = MyAnimation.ANIM_DRATION;
@@ -334,6 +337,10 @@ public class MainActivity extends Activity {
 
             root.animateColors(currentColorSet.statusbar, currentColorSet.darkBackground, colorAnimationDuration);
             bgToolbar.animate(currentColorSet.toolbar, colorAnimationDuration);
+        }
+        for (int i = 0; i < lbs.size(); i++) {
+            MyColorDrawable lb = lbs.get(i);
+            lb.animate(currentColorSet.lightBackground, colorAnimationDuration);
         }
         if (animateChart) {
 

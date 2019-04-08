@@ -25,16 +25,22 @@ import korniltsev.telegram.charts.ui.MyAnimation;
 import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
 /*
- [bp] animate chart (min-max viewport)
 
 
-    Глобальный план:
-    - реализовать все без бонусов, потом ебашить бонусы
+
 
     Бэкпорот план
+        - animate chart (min-max viewport)
         - вертиакльные линии + надписи + анимации
         - горизонтальный линии + надписи + анимации
         - тултип ( новый дизайн )
+
+   План
+        - 2y
+        - recycler
+   Глобальный план:
+        - реализовать все без бонусов, потом ебашить бонусы
+
  */
 public class ChartView extends View {
     public static final int CHECKBOX_HEIGHT_DPI = 50;
@@ -54,8 +60,8 @@ public class ChartView extends View {
     public final ColorSet init_colors;
     public final ChartData data;
     public final ColumnData xColumn;
-    private final Paint pOverlay;
-    private final Paint pRuler;
+    private final Paint pScrollbarOverlay;
+    private final Paint pScrollbarBorder;
     private final ArrayList<UIColumnData> scroller = new ArrayList<>();
     private final ArrayList<UIColumnData> chart = new ArrayList<>();
     //    public final int checkboxesHeight;
@@ -71,6 +77,8 @@ public class ChartView extends View {
     private float zoom_left;
     private float zoom_right;
     private float zoom_scale;
+    private MyAnimation.Color animScroollbarOverlay;
+    private MyAnimation.Color animScrollbarBorder;
     //    public long currentMax;
 //    public ColorSet currentColorsSet;
 
@@ -120,10 +128,10 @@ public class ChartView extends View {
         p2.setColor(Color.GREEN);
         setWillNotDraw(false);
 
-        pOverlay = new Paint();
-        pOverlay.setColor(init_colors.scrollbarOverlay);
-        pRuler = new Paint();
-        pRuler.setColor(init_colors.scrollbarBorder);
+        pScrollbarOverlay = new Paint();
+        pScrollbarOverlay.setColor(init_colors.scrollbarOverlay);
+        pScrollbarBorder = new Paint();
+        pScrollbarBorder.setColor(init_colors.scrollbarBorder);
 
         ColumnData[] data1 = data.data;
         long max = Long.MIN_VALUE;
@@ -431,14 +439,59 @@ public class ChartView extends View {
     public ColorSet currentColors;
 
     public void animateToColors(final ColorSet colors, final long duration) {
-        //todo
+        animScroollbarOverlay = new MyAnimation.Color(duration, pScrollbarOverlay.getColor(), colors.scrollbarOverlay);
+        animScrollbarBorder = new MyAnimation.Color(duration, pScrollbarBorder.getColor(), colors.scrollbarBorder);
+        invalidate();
     }
 
 
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        long t = SystemClock.uptimeMillis();
+        animtionStep();
+
+//        canvas.drawRect(scrollbar.left, scrollbar.top, scrollbar.right, scrollbar.bottom, p);
+        float dip2 = dimen.dpf(2);
+        float dip1 = dimen.dpf(1);
+        float dip4 = dimen.dpf(4);
+//        canvas.drawRect(scrollbar.left, chartTop, scrollbar.right, chartBottom, p2);
+
+        drawChart(canvas);
+
+        drawScrollbar(canvas);
+
+//         draw scrollbar overlay
+        canvas.drawRect(scrollbar.left, scrollbar.top, scroller_left, scrollbar.bottom, pScrollbarOverlay);
+        canvas.drawRect(scroller__right, scrollbar.top, scrollbar.right, scrollbar.bottom, pScrollbarOverlay);
+        canvas.drawRect(scroller_left, scrollbar.top, scroller_left + dip4, scrollbar.bottom, pScrollbarBorder);
+        canvas.drawRect(scroller__right - dip4, scrollbar.top, scroller__right, scrollbar.bottom, pScrollbarBorder);
+        canvas.drawRect(scroller_left + dip4, scrollbar.top, scroller__right - dip4, scrollbar.top + dip1, pScrollbarBorder);
+        canvas.drawRect(scroller_left + dip4, scrollbar.bottom - dip1, scroller__right - dip4, scrollbar.bottom, pScrollbarBorder);
+        //todo
+
+    }
+
+    private void animtionStep() {
         boolean dirty = false;
+        long t = SystemClock.uptimeMillis();
+        if (animScrollbarBorder != null) {
+            int c = animScrollbarBorder.tick(t);
+            pScrollbarBorder.setColor(c);
+            if (animScrollbarBorder.ended) {
+                animScrollbarBorder = null;
+            } else {
+                dirty = true;
+            }
+        }
+        if (animScroollbarOverlay != null) {
+            int c = animScroollbarOverlay.tick(t);
+            pScrollbarOverlay.setColor(c);
+            if (animScroollbarOverlay.ended) {
+                animScroollbarOverlay = null;
+            } else {
+                dirty = true;
+            }
+        }
+
         for (int i = 0; i < scroller.size(); i++) {
             UIColumnData columnData = scroller.get(i);
             boolean tick = columnData.tick(t);
@@ -452,26 +505,6 @@ public class ChartView extends View {
         if (dirty) {
             invalidate();
         }
-
-//        canvas.drawRect(scrollbar.left, scrollbar.top, scrollbar.right, scrollbar.bottom, p);
-        float dip2 = dimen.dpf(2);
-        float dip1 = dimen.dpf(1);
-        float dip4 = dimen.dpf(4);
-//        canvas.drawRect(scrollbar.left, chartTop, scrollbar.right, chartBottom, p2);
-
-        drawChart(canvas);
-
-        drawScrollbar(canvas);
-
-//         draw scrollbar overlay
-        canvas.drawRect(scrollbar.left, scrollbar.top, scroller_left, scrollbar.bottom, pOverlay);
-        canvas.drawRect(scroller__right, scrollbar.top, scrollbar.right, scrollbar.bottom, pOverlay);
-        canvas.drawRect(scroller_left, scrollbar.top, scroller_left + dip4, scrollbar.bottom, pRuler);
-        canvas.drawRect(scroller__right - dip4, scrollbar.top, scroller__right, scrollbar.bottom, pRuler);
-        canvas.drawRect(scroller_left + dip4, scrollbar.top, scroller__right - dip4, scrollbar.top + dip1, pRuler);
-        canvas.drawRect(scroller_left + dip4, scrollbar.bottom - dip1, scroller__right - dip4, scrollbar.bottom, pRuler);
-        //todo
-
     }
 
     private void drawChart(Canvas canvas) {
