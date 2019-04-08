@@ -2,6 +2,7 @@ package korniltsev.telegram.charts.gl;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -42,8 +43,6 @@ public final class GLChartProgram {
 
     public float maxValue;
     public float minValue;
-    public float minValueAnim = 1f;
-    public float maxValueAnim = 1f;
 
     final ChartViewGL root;
 
@@ -118,7 +117,7 @@ public final class GLChartProgram {
             }
         }
         if (minAnim != null) {
-            minValueAnim = minAnim.tick(t);
+            minValue = minAnim.tick(t);
             if (minAnim.ended) {
                 minAnim = null;
             } else {
@@ -127,7 +126,7 @@ public final class GLChartProgram {
         }
 
         if (maxAnim != null) {
-            maxValueAnim = maxAnim.tick(t);
+            maxValue = maxAnim.tick(t);
             if (maxAnim.ended) {
                 maxAnim = null;
             } else {
@@ -159,10 +158,10 @@ public final class GLChartProgram {
             Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + root.checkboxesHeight + dip2, 0);
             float w = this.w - 2 * hpadding;
             float h = root.dimen_scrollbar_height - 2 * dip2;
-            float ydiff = maxValueAnim * maxValue - minValueAnim * minValue;
+            float ydiff = maxValue - minValue;
             Matrix.translateM(V, 0, 0, 0, 0f);
             float yscale = h / ydiff;
-            float dy = -yscale * minValue * minValueAnim;
+            float dy = -yscale * minValue;
             Matrix.translateM(V, 0, 0, dy, 0);
             Matrix.scaleM(V, 0, w / ((maxx - minx)), yscale, 1.0f);
 
@@ -174,7 +173,7 @@ public final class GLChartProgram {
             int h = dimen.dpi(CHART_HEIGHT);
             float xdiff = maxx - minx;
             float ws = w / xdiff / zoom;
-            float hs = h / (float) (maxValue * maxValueAnim);
+            float hs = h / maxValue;
 
             Matrix.scaleM(V, 0, ws, hs, 1.0f);
             Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
@@ -262,24 +261,14 @@ public final class GLChartProgram {
     }
 
     public void animateMinMax(long min, long max, boolean animate, long duration) {
-        float prevMin = this.minValue;
-        float prevMax = this.maxValue;
-        if (minValueAnim != 1f) {
-            prevMin =  (prevMin * minValueAnim);
-        }
-        if (maxValueAnim != 1f) {
-            prevMax =  (prevMax * maxValueAnim);
-        }
-        this.minValue = min;
-        this.maxValue = max;
         if (alpha == 0f || !animate) {
-            minValueAnim = 1.0f;
-            maxValueAnim = 1.0f;
+            minValue = min;
+            maxValue = max;
+            minAnim = null;
+            maxAnim = null;
         } else {
-            minValueAnim = (float) prevMin / min;
-            maxValueAnim = (float) prevMax / max;
-            minAnim = new MyAnimation.Float(duration, minValueAnim, 1.0f);
-            maxAnim = new MyAnimation.Float(duration, maxValueAnim, 1.0f);
+            minAnim = new MyAnimation.Float(duration, minValue, min);
+            maxAnim = new MyAnimation.Float(duration, maxValue, max);
         }
 
     }

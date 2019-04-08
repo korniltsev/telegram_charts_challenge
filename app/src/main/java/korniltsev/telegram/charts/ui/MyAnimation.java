@@ -21,6 +21,7 @@ public class MyAnimation {
         public boolean ended = false;
 
         public Float(long duration, float from, float to) {
+
             this.duration = duration;
             endTime = startTime + duration;
             this.from = from;
