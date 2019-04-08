@@ -30,7 +30,7 @@ public class ColumnData {
 //            "area”,
 //            "bar”,
 
-    enum Type {
+    public enum Type {
         line("line"),
         area("area"),
         bar("bar"),;

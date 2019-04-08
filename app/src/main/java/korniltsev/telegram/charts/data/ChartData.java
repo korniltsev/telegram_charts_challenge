@@ -17,12 +17,14 @@ public class ChartData {
     public final boolean percentage;
     public final boolean stacked;
     public final boolean y_scaled;
+    public final ColumnData.Type type;
 
-    public ChartData(ColumnData[] data, boolean percentage, boolean stacked, boolean y_scaled) {
+    public ChartData(ColumnData[] data, boolean percentage, boolean stacked, boolean y_scaled, ColumnData.Type type) {
         this.data = data;
         this.percentage = percentage;
         this.stacked = stacked;
         this.y_scaled = y_scaled;
+        this.type = type;
     }
 
     public static ArrayList<ChartData> parseMany(JSONArray charts) throws JSONException {
@@ -43,6 +45,7 @@ public class ChartData {
 //        chart.y_scaled – true for charts with 2 Y axes.
         JSONArray columns = o.getJSONArray("columns");
         ColumnData[] jcolumn = new ColumnData[columns.length()];
+        ColumnData.Type lastT = null;
         for (int i = 0; i < columns.length(); i++) {
             JSONArray column = columns.getJSONArray(i);
             String id = column.getString(0);
@@ -79,10 +82,11 @@ public class ChartData {
             }
 
             jcolumn[i] = new ColumnData(id, name, vs, t, color);
+            lastT = t;
         }
         boolean percentage = o.optBoolean("percentage", false);
         boolean stacked = o.optBoolean("stacked", false);
         boolean y_scaled = o.optBoolean("y_scaled", false);
-        return new ChartData(jcolumn, percentage, stacked, y_scaled);
+        return new ChartData(jcolumn, percentage, stacked, y_scaled, lastT );
     }
 }

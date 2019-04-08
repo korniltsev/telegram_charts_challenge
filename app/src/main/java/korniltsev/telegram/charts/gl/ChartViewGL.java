@@ -1,7 +1,6 @@
 package korniltsev.telegram.charts.gl;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
@@ -171,10 +170,10 @@ public class ChartViewGL extends TextureView {
 //
 //        int scrollbar_top = chart_bottom + this.scroll_bar_v_padding;
 
-        scrollbar.left = hpadding;
-        scrollbar.right = w - hpadding;
-        scrollbar.bottom = h - dimen_v_padding8 - checkboxesHeight;
-        scrollbar.top = scrollbar.bottom - dimen_scrollbar_height;
+        scrollbarPos.left = hpadding;
+        scrollbarPos.right = w - hpadding;
+        scrollbarPos.bottom = h - dimen_v_padding8 - checkboxesHeight;
+        scrollbarPos.top = scrollbarPos.bottom - dimen_scrollbar_height;
 
         setMeasuredDimension(w, h);
 
@@ -184,8 +183,8 @@ public class ChartViewGL extends TextureView {
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
         if (scroller_left == -1) {
-            scroller__right = scrollbar.right;
-            scroller_left = scrollbar.right - initial_scroller_dith;
+            scroller__right = scrollbarPos.right;
+            scroller_left = scrollbarPos.right - initial_scroller_dith;
             setOverlayPos(true);
         }
 
@@ -930,7 +929,7 @@ public class ChartViewGL extends TextureView {
 
     //    public int scroller_width;//todo replace with scroller_left/rightd
 //    public int scroller_pos = -1;
-    public Rect scrollbar = new Rect();
+    public Rect scrollbarPos = new Rect();
     //    public int scroller_move_down_x;
     static final int DOWN_MOVE = 0;
     static final int DOWN_RESIZE_LEFT = 1;
@@ -958,7 +957,7 @@ public class ChartViewGL extends TextureView {
         float y = event.getY();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                boolean scrollbar = y >= this.scrollbar.top && y <= this.scrollbar.bottom;
+                boolean scrollbar = y >= this.scrollbarPos.top && y <= this.scrollbarPos.bottom;
                 if (scrollbar) {
                     if (Math.abs(x - scroller_left) <= resize_touch_area2) {
                         if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize left");
@@ -1002,13 +1001,13 @@ public class ChartViewGL extends TextureView {
 
                             scroller_left = (int) (x - scroller_move_down_x);
                             scroller__right = scroller_left + scroller_move_down_width;
-                            if (scroller_left < this.scrollbar.left) {
-                                scroller_left = this.scrollbar.left;
-                                scroller__right = this.scrollbar.left + scroller_move_down_width;
+                            if (scroller_left < this.scrollbarPos.left) {
+                                scroller_left = this.scrollbarPos.left;
+                                scroller__right = this.scrollbarPos.left + scroller_move_down_width;
                             }
-                            if (scroller__right > this.scrollbar.right) {
-                                scroller__right = this.scrollbar.right;
-                                scroller_left = this.scrollbar.right - scroller_move_down_width;
+                            if (scroller__right > this.scrollbarPos.right) {
+                                scroller__right = this.scrollbarPos.right;
+                                scroller_left = this.scrollbarPos.right - scroller_move_down_width;
                             }
                             setOverlayPos(false);
 //                            invalidate();
@@ -1016,8 +1015,8 @@ public class ChartViewGL extends TextureView {
 //                            scroller_left = Math.min(Math.max(scroller_left, scrollbar.left), scrollbar.right - scroller_width);
                         } else if (down_target == DOWN_RESIZE_RIGHT) {
                             scroller__right = (int) x;
-                            if (scroller__right > this.scrollbar.right) {
-                                scroller__right = this.scrollbar.right;
+                            if (scroller__right > this.scrollbarPos.right) {
+                                scroller__right = this.scrollbarPos.right;
                             }
                             // check the scrollbar is not too small
                             if (scroller__right - scroller_left < initial_scroller_dith/2) {
@@ -1027,8 +1026,8 @@ public class ChartViewGL extends TextureView {
 //                            invalidate();
                         } else if (down_target == DOWN_RESIZE_LEFT) {
                             scroller_left = (int) x;
-                            if (scroller_left < this.scrollbar.left) {
-                                scroller_left = this.scrollbar.left;
+                            if (scroller_left < this.scrollbarPos.left) {
+                                scroller_left = this.scrollbarPos.left;
                             }
 //                            scroller_width = resze_scroller_right - scroller_left;
                             if (scroller__right - scroller_left < initial_scroller_dith/2) {
@@ -1072,10 +1071,10 @@ public class ChartViewGL extends TextureView {
     }
 
     public void dispatchTouchDownChart(float x) {
-        if (x < scrollbar.left || x > scrollbar.right) {
+        if (x < scrollbarPos.left || x > scrollbarPos.right) {
             if (LOGGING) Log.d(MainActivity.TAG, "chart down miss");
         } else {
-            float swindow = (x - scrollbar.left) / scrollbar.width();
+            float swindow = (x - scrollbarPos.left) / scrollbarPos.width();
             if (swindow > 0.97) {
                 swindow = 1f;
             }else  if (swindow < 0.03) {
@@ -1120,8 +1119,8 @@ public class ChartViewGL extends TextureView {
 //    public static final BlockingQueue<MyMotionEvent> motionEvents = new ArrayBlockingQueue<MyMotionEvent>(100);
 
     public final void setOverlayPos(boolean init) {
-        final float left = (float) (scroller_left - scrollbar.left) / (scrollbar.right - scrollbar.left);
-        final float right = (float) (scroller__right - scrollbar.left) / (scrollbar.right - scrollbar.left);
+        final float left = (float) (scroller_left - scrollbarPos.left) / (scrollbarPos.right - scrollbarPos.left);
+        final float right = (float) (scroller__right - scrollbarPos.left) / (scrollbarPos.right - scrollbarPos.left);
         final float scale = (right - left);
 //        motionEvents.poll()
         if (init) {
