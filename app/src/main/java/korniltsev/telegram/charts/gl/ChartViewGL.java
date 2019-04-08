@@ -238,7 +238,7 @@ public class ChartViewGL extends TextureView {
         Handler renderHandler2;
 
         public Tooltip tooltip;
-        public GLChartProgram[] scrollbar;
+        public GLChartProgram[] scrollbar_lines;
         public GLChartProgram[] chart;
         public GLScrollbarOverlayProgram overlay;
         public GLRulersProgram ruler;
@@ -298,11 +298,14 @@ public class ChartViewGL extends TextureView {
                             if (LOGGING) Log.e(TAG, "release err", e);
                         }
                     }
-                    for (GLChartProgram c : scrollbar) {
-                        try {
-                            c.release();
-                        } catch (Throwable e) {
-                            if (LOGGING) Log.e(TAG, "release err", e);
+                    if (scrollbar_lines != null) {
+
+                        for (GLChartProgram c : scrollbar_lines) {
+                            try {
+                                c.release();
+                            } catch (Throwable e) {
+                                if (LOGGING) Log.e(TAG, "release err", e);
+                            }
                         }
                     }
                     try {
@@ -399,22 +402,24 @@ public class ChartViewGL extends TextureView {
 //            long t2 = SystemClock.elapsedRealtimeNanos();
 
 
-
             ColumnData[] data = this.data.data;
-            scrollbar = new GLChartProgram[data.length - 1];
-            long max = -1;
-            long min = Long.MAX_VALUE;
+            if (this.data.type == ColumnData.Type.line) {
+
+                scrollbar_lines = new GLChartProgram[data.length - 1];
+                long max = -1;
+                long min = Long.MAX_VALUE;
 
 
-            for (int i = 1, dataLength = data.length; i < dataLength; i++) {
-                ColumnData datum = data[i];
-                scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, simple, joiningShader);
-                max = Math.max(max, datum.max);
-                min = Math.min(min, datum.min);
-            }
-            for (GLChartProgram it : scrollbar) {
-                it.maxValue = max;
-                it.minValue = min;
+                for (int i = 1, dataLength = data.length; i < dataLength; i++) {
+                    ColumnData datum = data[i];
+                    scrollbar_lines[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, simple, joiningShader);
+                    max = Math.max(max, datum.max);
+                    min = Math.min(min, datum.min);
+                }
+                for (GLChartProgram it : scrollbar_lines) {
+                    it.maxValue = max;
+                    it.minValue = min;
+                }
             }
 //            long scrollbar = SystemClock.elapsedRealtimeNanos();
 
@@ -474,38 +479,53 @@ public class ChartViewGL extends TextureView {
             Runnable setCheckedOnRenderThread = new Runnable() {
                 @Override
                 public void run() {
-                    if (scrollbar == null || chart == null) {
+                    if (chart == null) {
                         return;
                     }
                     int prevCheckedCOunt = 0;
-                    for (GLChartProgram glChartProgram : chart) {
-                        if (glChartProgram.checked) {
+                    for (boolean b : checked) {
+                        if (b) {
                             prevCheckedCOunt++;
                         }
                     }
-                    // scrollbar
-                    GLChartProgram found = null;
-                    long max = -1;
-                    long min = Long.MAX_VALUE;
-                    int checkedCount = 0;
-
-                    for (int i = 0; i < scrollbar.length; i++) {
-                        GLChartProgram c = scrollbar[i];
-                        if (c.column.id.equals(id)) {
-                            checked[i] = isChecked;
-                            found = c;
-                            c.animateAlpha(isChecked);
-                        }
-                        if (c.checked) {
-                            checkedCount++;
-                            max = Math.max(c.column.max, max);
-                            min = Math.min(c.column.min, min);
+                    ColumnData[] data1 = data.data;
+                    for (int i = 1; i < data1.length; i++) {
+                        ColumnData datum = data1[i];
+                        if (datum.id.equals(id)) {
+                            checked[i - 1] = isChecked;
                         }
                     }
-                    for (GLChartProgram c : scrollbar) {
-                        if (found == c && !isChecked) {
-                        } else {
-                            c.animateMinMax(min, max, true, 208);
+                    int checkedCount = 0;
+                    for (boolean b : checked) {
+                        if (b) {
+                            checkedCount++;
+                        }
+                    }
+                    // scrollbar
+                    if (scrollbar_lines != null) {
+
+                        GLChartProgram found = null;
+                        long max = -1;
+                        long min = Long.MAX_VALUE;
+
+
+                        for (int i = 0; i < scrollbar_lines.length; i++) {
+                            GLChartProgram c = scrollbar_lines[i];
+                            if (c.column.id.equals(id)) {
+                                found = c;
+                                c.animateAlpha(isChecked);
+                            }
+                            if (c.checked) {
+                                checkedCount++;
+                                max = Math.max(c.column.max, max);
+                                min = Math.min(c.column.min, min);
+                            }
+                        }
+                        for (GLChartProgram c : scrollbar_lines) {
+                            if (found == c && !isChecked) {
+                            } else {
+                                c.animateMinMax(min, max, true, 208);
+                            }
                         }
                     }
 
@@ -642,15 +662,18 @@ public class ChartViewGL extends TextureView {
         }
 
         public boolean drawScrollbar(boolean invalidated, long t) {
-            for (GLChartProgram chartProgram : scrollbar) {
+            if (scrollbar_lines == null) {
+                return false;
+            }
+            for (GLChartProgram chartProgram : scrollbar_lines ) {
                 boolean it_invalid = chartProgram.animateionTick(t);
                 invalidated = invalidated || it_invalid;
             }
-            for (GLChartProgram chartProgram : scrollbar) {
+            for (GLChartProgram chartProgram : scrollbar_lines ) {
                 chartProgram.step1(PROJ);
             }
             MyGL.checkGlError2();
-            for (GLChartProgram chartProgram : scrollbar) {
+            for (GLChartProgram chartProgram : scrollbar_lines ) {
                 chartProgram.shader.use();//todo use only once!
                 chartProgram.step2();
 
