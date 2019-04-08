@@ -4,13 +4,13 @@ public class ColumnData {
     public final String id;
     public final String name;
     public final long[] values;
-    public final long maxValue;
-    public long minValue;
-    public final String type;
+    public final long max;
+    public final long min;
+    public final Type type;
     public final int color;
 
 
-    public ColumnData(String id, String name, long[] values, String type, int color) {
+    public ColumnData(String id, String name, long[] values, Type type, int color) {
         this.id = id;
         this.name = name;
         this.values = values;
@@ -20,11 +20,25 @@ public class ColumnData {
             min = Math.min(min, value);
             max = Math.max(max, value);
         }
-        this.maxValue = max;
-        this.minValue = min;
+        this.max = max;
+        this.min = min;
         this.type = type;
         this.color = color;
     }
 
+//    "line",
+//            "area”,
+//            "bar”,
+
+    enum Type {
+        line("line"),
+        area("area"),
+        bar("bar"),;
+        final String name;
+
+        Type(String name) {
+            this.name = name;
+        }
+    }
 
 }

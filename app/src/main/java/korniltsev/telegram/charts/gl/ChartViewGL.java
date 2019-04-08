@@ -510,8 +510,8 @@ public class ChartViewGL extends TextureView {
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 ColumnData datum = data[i];
                 scrollbar[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, simple, joiningShader);
-                max = Math.max(max, datum.maxValue);
-                min = Math.min(min, datum.minValue);
+                max = Math.max(max, datum.max);
+                min = Math.min(min, datum.min);
             }
             for (GLChartProgram it : scrollbar) {
                 it.maxValue = max;
@@ -596,14 +596,14 @@ public class ChartViewGL extends TextureView {
                         }
                         if (c.checked) {
                             checkedCount++;
-                            max = Math.max(c.column.maxValue, max);
-                            min = Math.min(c.column.minValue, min);
+                            max = Math.max(c.column.max, max);
+                            min = Math.min(c.column.min, min);
                         }
                     }
                     for (GLChartProgram c : scrollbar) {
                         if (found == c && !isChecked) {
                         } else {
-                            c.animateMinMax(min, max, true);
+                            c.animateMinMax(min, max, true, 208);
                         }
                     }
 
@@ -623,7 +623,7 @@ public class ChartViewGL extends TextureView {
                     // chart
                     for (GLChartProgram c : chart) {
                         if (checkedCount != 0) {
-                            c.animateMinMax(0, scaledMax, true);
+                            c.animateMinMax(0, scaledMax, true, 208);
                         }
                     }
                     if (prevMax != scaledMax) {
@@ -643,10 +643,10 @@ public class ChartViewGL extends TextureView {
 
             @Override
             public void run() {
-//                long t1 = SystemClock.elapsedRealtimeNanos();
+//                long t1 = System.nanoTime();
                 drawAndSwap2();
-//                long t2 = SystemClock.elapsedRealtimeNanos();
-//                if (LOGGING) Log.d(MainActivity.TAG, String.format("trace [ %d ] %20s %10d ",id, "draw frame", t2 - t1));
+//                long t2 = System.nanoTime();
+//                Log.d(MainActivity.TAG, String.format("trace [ %d ] %20s %10d ", id, "draw frame", t2 - t1));
             }
         }
 
@@ -673,6 +673,7 @@ public class ChartViewGL extends TextureView {
                     invalidated = true;
                 }
             }
+//            long t1 = System.nanoTime();
             glClearColor(
                     MyColor.red(bgColor) / 255f,
                     MyColor.green(bgColor) / 255f,
@@ -683,25 +684,33 @@ public class ChartViewGL extends TextureView {
 //                for (MyRect r : debugRects) {
 //                    r.draw();
 //                }
-//                long t2 = SystemClock.elapsedRealtimeNanos();
+//            long t2 = System.nanoTime();
 
             invalidated = drawScrollbar(invalidated, t);
-//                long t3 = SystemClock.elapsedRealtimeNanos();
+//                long t3 = System.nanoTime();
             overlay.draw(t);
-//                long t4 = SystemClock.elapsedRealtimeNanos();
+//                long t4 = System.nanoTime();
             boolean rulerInvalidated = ruler.animationTick(t);
             invalidated = rulerInvalidated | invalidated;
             ruler.draw(t);
-//                long t5 = SystemClock.elapsedRealtimeNanos();
+//                long t5 = System.nanoTime();
 //                circle.draw();
             invalidated = drawChart(invalidated, t);
-//                long t6 = SystemClock.elapsedRealtimeNanos();
+//                long t6 = System.nanoTime();
 
             if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {
                 throw new RuntimeException("Cannot swap buffers");
             }
-
+//            long t7 = System.nanoTime();
+//
+//            Log.d(MainActivity.TAG, String.format("      [ %d ] -> %20s %10d ", id, "2", t2 - t1));
+//            Log.d(MainActivity.TAG, String.format("      [ %d ] -> %20s %10d ", id, "3", t3 - t2));
+//            Log.d(MainActivity.TAG, String.format("      [ %d ] -> %20s %10d ", id, "4", t4 - t3));
+//            Log.d(MainActivity.TAG, String.format("      [ %d ] -> %20s %10d ", id, "5", t5 - t4));
+//            Log.d(MainActivity.TAG, String.format("      [ %d ] -> %20s %10d ", id, "6", t6 - t5));
+//            Log.d(MainActivity.TAG, String.format("      [ %d ] -> %20s %10d ", id, "7", t7 - t6));
             rendererInvalidated = false;
+//            invalidated = true;
             if (invalidated) {
                 invalidateRender();
             }
@@ -972,7 +981,7 @@ public class ChartViewGL extends TextureView {
                     checkedCount++;
                 }
                 if (prevMax != scaledMax) {
-                    glChartProgram.animateMinMax(0, scaledMax, !firstLeftRightUpdate);
+                    glChartProgram.animateMinMax(0, scaledMax, !firstLeftRightUpdate, 256);
                 }
             }
             ruler.setLeftRight(left, right, scale);
@@ -1001,7 +1010,7 @@ public class ChartViewGL extends TextureView {
         }
     }
 
-    //    public int scroller_width;//todo replace with scroller_left/right
+    //    public int scroller_width;//todo replace with scroller_left/rightd
 //    public int scroller_pos = -1;
     public Rect scrollbar = new Rect();
     //    public int scroller_move_down_x;

@@ -85,7 +85,7 @@ public class MainActivity extends Activity {
     private FrameLayout contentFrame;
     private View sgadow;
     private View currentView;
-    private ChartData[] data;
+    private List<ChartData> data;
 
 //    private View chartList;
 //    private ArrayList<TextView> buttons;
@@ -122,8 +122,8 @@ public class MainActivity extends Activity {
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
 
-        for (int i = 0, dataLength = data.length; i < dataLength; i++) {
-            ChartData dataset = data[i];
+        for (int i = 0, dataLength = data.size(); i < dataLength; i++) {
+            ChartData dataset = data.get(i);
             ChartData dataset1 = dataset;
             View chart = createChart(dataset1);
             LinearLayout.LayoutParams chartlp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
@@ -422,14 +422,13 @@ public class MainActivity extends Activity {
     }
 
 
-    public ChartData[] readData() {
+    public List<ChartData> readData() {
         InputStream inputStream = getResources().openRawResource(R.raw.data);
         try {
             byte[] bytes = readAll(inputStream);
             String s = new String(bytes, "UTF-8");
             JSONArray o = new JSONArray(s);
-            ChartData[] res = ChartData.parse(o);
-            return res;
+            return ChartData.parseMany(o);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (JSONException e) {

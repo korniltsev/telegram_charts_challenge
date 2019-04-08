@@ -261,7 +261,7 @@ public final class GLChartProgram {
         }
     }
 
-    public void animateMinMax(long min, long max, boolean animate) {
+    public void animateMinMax(long min, long max, boolean animate, long duration) {
         long prevMin = this.minValue;
         long prevMax = this.maxValue;
         if (minValueAnim != 1f) {
@@ -278,8 +278,8 @@ public final class GLChartProgram {
         } else {
             minValueAnim = (float) prevMin / min;
             maxValueAnim = (float) prevMax / max;
-            minAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, minValueAnim, 1.0f);
-            maxAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, maxValueAnim, 1.0f);
+            minAnim = new MyAnimation.Float(duration, minValueAnim, 1.0f);
+            maxAnim = new MyAnimation.Float(duration, maxValueAnim, 1.0f);
         }
 
     }
