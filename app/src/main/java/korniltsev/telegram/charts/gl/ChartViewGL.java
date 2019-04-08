@@ -600,14 +600,15 @@ public class ChartViewGL extends TextureView {
             boolean rulerInvalidated = ruler.animationTick(t);
             invalidated = rulerInvalidated | invalidated;
             GLES20.glScissor(0,h-chartBottom- dimen.dpi(1), w, chartBottom-chartTop);
-            GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+
             MyGL.checkGlError2();
             ruler.draw(t);
 //                long t5 = System.nanoTime();
 //                circle.draw();
+            GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
             invalidated = drawChart(invalidated, t);
-//                long t6 = System.nanoTime();
             GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
+//                long t6 = System.nanoTime();
             MyGL.checkGlError2();
 
             if (!mEgl.eglSwapBuffers(mEglDisplay, mEglSurface)) {

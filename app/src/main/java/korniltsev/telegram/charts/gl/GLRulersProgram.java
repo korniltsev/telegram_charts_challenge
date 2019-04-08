@@ -192,6 +192,8 @@ public final class GLRulersProgram {
 //        drawText(this.zero, hpadding, zero + vpaddingTextOverPadding, 1f);
 
         final float dip50 = dimen.dpf(50);
+        GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+
         for (int ruler_i = 0, rsSize = rs.size(); ruler_i < rsSize; ruler_i++) {
             Ruler r = rs.get(ruler_i);
 
@@ -208,6 +210,7 @@ public final class GLRulersProgram {
             }
 //            drawLine(hpadding, zero + root.dimen_chart_height-10, (canvasW - 2 * hpadding)/2, 1.0f);
         }
+        GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
 
         drawX(t);
     }
