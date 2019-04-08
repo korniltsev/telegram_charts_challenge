@@ -25,10 +25,6 @@ import korniltsev.telegram.charts.ui.MyAnimation;
 import static korniltsev.telegram.charts.MainActivity.LOGGING;
 
 /*
-
-
-
-
     Бэкпорот план
         - animate chart (min-max viewport)
         - вертиакльные линии + надписи + анимации
@@ -36,8 +32,14 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
         - тултип ( новый дизайн )
 
    План
-        - 2y
+        - распарсить новые данные
+        - A line chart with 2 lines and 2 Y axes (Screenshot 3).
+        - A stacked bar chart with 7 data types (Screenshots 5-6).
+        - A daily bar chart with single data type (Screenshot 7).
+        - A percentage stacked area chart with 6 data types (Screenshots 9, 10).
+        - The Y-scale on line graphs should start with the lowest visible value (Screenshot 4). A long tap on any data filter should uncheck all other filters.
         - recycler
+
    Глобальный план:
         - реализовать все без бонусов, потом ебашить бонусы
 
