@@ -40,13 +40,14 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 import static korniltsev.telegram.charts.MainActivity.TAG;
 
 /*
+    - The Y-scale on line graphs should start with the lowest visible value (Screenshot 4).
 
     - A line chart with 2 lines, exactly like in Stage 1 (Screenshot 1).
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
     - 3. A stacked bar chart with 7 data types (Screenshots 5-6).
     - 4. A daily bar chart with single data type (Screenshot 7).
     - 5. A percentage stacked area chart with 6 data types (Screenshots 9, 10).
-    - The Y-scale on line graphs should start with the lowest visible value (Screenshot 4).
+
     - A long tap on any data filter should uncheck all other filters.
 
     [ ? ] Matrix -> MyMatrix for inlining? test if it does something
@@ -55,18 +56,12 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 
 
-    build release build with proguard/redex
 
-    -------------------------- GG
-
-
+    сократить цифры на лейблах
     fix touch (laggy, hard to select)
     tooltip animation
     alpha animation blending - render to fbo
     [?] optimize minmax animation, introduce step?, do not cancel animations or try to continue?
-
-    -------------------------- maybe
-
     - don't draw x lablel if the label is offscreen - lazy textures are required
 
 
