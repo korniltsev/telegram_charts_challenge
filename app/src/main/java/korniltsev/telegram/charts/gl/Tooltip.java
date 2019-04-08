@@ -171,6 +171,7 @@ public class Tooltip {
 //    }
 
     public void drawTooltip(float[] proj) {
+        GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
         // ndcx
 //        float
 //        Log.d("FUCK", " " + ndcx);
@@ -214,6 +215,8 @@ public class Tooltip {
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, framebuffer.tex);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, TexShader.texVertices.length / 2);
+
+        GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
     }
 
     public void drawVLine(float[] proj, float[] chartMVP, int index) {
