@@ -40,110 +40,14 @@ import static korniltsev.telegram.charts.MainActivity.LOGGING;
 import static korniltsev.telegram.charts.MainActivity.TAG;
 
 /*
-    + scrollbar overlay
-    + scrollbar scroller
-    + scrollbar charts with minvalue non zero + 2dip offset
 
-    + checkbox alpha animation for scroller & chart
-    + checkbox min max animation for scroller & chart
-
-
-
-
-    + scrollbar pointer response for scroller
-    + scrollbar pointer response for charts (scale + scroll)
-
-    + animation bug on dataset 0
-
-
-
-    + rules
-    + rules vertical labels
-    + actionbar + night mode animation
-    ---------------------------------------- 19 march
-
-    + rules vertical animation
-    + stop drawing when nothing changes and draw only animation / changes
-
-    + chart pointer response for max animation
-
-    + do not animate first show
-    + animation double tap bug (jump)
-
-
-    + scrollbar night mode,
-    + toolbar shadow
-    + format digits on rulers
-
-
-
-
-    ---------------------------------------- 20 march
-    + animate statusbar day night
-    + [ ! ] round joining + alpha animation
-
-    + Circles
-        + wrong touch calc
-        + draw over lines
-        + seems oval
-
-
-    ---------------------------------------- 21 march
-
-    [ ! ] toooltip by touching
-        + fbo
-        + rect
-        + text
-        + text ugly bug
-        + scroll bug
-        + design
-        + no shadows and round corners
-
-
-    [ ! ] implement empty chart
-            + draw zero only once
-            + when empty draw only one line
-            + do not show tooltip if empty
-            + do not animate rulers when animting in-out from empty view
-            + remove tooltip when animating
-
-     + [ ! ] chart selector screen
-    ---------------------------------------- 22 march
-
-
-    + tooltip draw line over tooltop
-    + [ ! ] checkboxes
-    + day/nigh animation bug
-
-    + [ ! ] horizontal lables + animations
-        + why last value is not aligned??
-        + fix paddings & text size of x/y labels
-
-    + The app should show 4 charts on one screen,
-
-
-    ---------------------------------------- 23 march
-
-    + 1. cleanup - stop thread, destroy shaders, surface
-    + korniltsev.telegram.charts.gl.GLChartProgram.Shader - simpleshader
-    +  initial animation bug
-    + 2. onStop/onStart - touch gl thread and invalidate
-    + 3. make day/night animation work
-        + put ui over texture
-        + shadow between charts
-        + 5. [ ? ] move "folorwers" to gl +   text night mode + animation
-        + when scrolled down chart is not animating
-
-    + 4. lollipop toolbar color wtf (one hour max)
-
-    + checkbox paddings on 16 android
-    + remove square icon, leave only round
-
-
-
-
-    Emulator crashes on tooltip dissmiss wtf
-
+    - A line chart with 2 lines, exactly like in Stage 1 (Screenshot 1).
+    - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
+    - 3. A stacked bar chart with 7 data types (Screenshots 5-6).
+    - 4. A daily bar chart with single data type (Screenshot 7).
+    - 5. A percentage stacked area chart with 6 data types (Screenshots 9, 10).
+    - The Y-scale on line graphs should start with the lowest visible value (Screenshot 4).
+    - A long tap on any data filter should uncheck all other filters.
 
     [ ? ] Matrix -> MyMatrix for inlining? test if it does something
 
@@ -163,17 +67,11 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
     -------------------------- maybe
 
-
-
-
     - don't draw x lablel if the label is offscreen - lazy textures are required
 
-    couldnot reproduce + x values second chart, wtf values in reverse order
 
 
-// todo design
-//    check colors & paddings with collor picker
-//    compare label fonts with design
+
 
 //todo testing
 //     requestLayaout during drag
