@@ -441,7 +441,7 @@ public final class GLRulersProgram {
 //        Log.d("OVERLAY", " " + left + " " + right);
 //    }
 
-    public void animateScale(float ratio, long maxValue, int checkedCount, int prevCheckedCOunt) {
+    public void animateScale(float ratio, long maxValue, int checkedCount, int prevCheckedCOunt, long duration) {
         for (int i = 0, rsSize = rs.size(); i < rsSize; i++) {
             Ruler r = rs.get(i);
             if (r.toBeDeleted) {
@@ -450,7 +450,7 @@ public final class GLRulersProgram {
             if (checkedCount == 0 && prevCheckedCOunt != 0) {
 
             } else {
-                r.scaleAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.scale, ratio);
+                r.scaleAnim = new MyAnimation.Float(duration, r.scale, ratio);
             }
             r.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.alpha, 0f);
             r.toBeDeleted = true;
@@ -461,7 +461,7 @@ public final class GLRulersProgram {
             if (prevCheckedCOunt == 0) {
                 e.scale = 1f;
             } else {
-                e.scaleAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, e.scale, 1f);
+                e.scaleAnim = new MyAnimation.Float(duration, e.scale, 1f);
             }
             e.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, e.alpha, 1f);
             rs.add(e);

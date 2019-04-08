@@ -627,7 +627,7 @@ public class ChartViewGL extends TextureView {
                         }
                     }
                     if (prevMax != scaledMax) {
-                        ruler.animateScale(ratio, scaledMax, checkedCount, prevCheckedCOunt);
+                        ruler.animateScale(ratio, scaledMax, checkedCount, prevCheckedCOunt, 208);
                         prevMax = scaledMax;
                     }
 //                    drawAndSwap();
@@ -1003,7 +1003,7 @@ public class ChartViewGL extends TextureView {
 //            }
             if (prevMax != scaledMax) {
                 if (rulerInitDone) {
-                    ruler.animateScale(ratio, scaledMax, checkedCount,checkedCount);
+                    ruler.animateScale(ratio, scaledMax, checkedCount,checkedCount, 256);
                 }
                 prevMax = scaledMax;
             }
