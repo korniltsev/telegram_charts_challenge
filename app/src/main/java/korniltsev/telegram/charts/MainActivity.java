@@ -37,6 +37,7 @@ import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -423,22 +424,55 @@ public class MainActivity extends Activity {
 
 
     public List<ChartData> readData() {
-        InputStream inputStream = getResources().openRawResource(R.raw.data);
-        try {
-            byte[] bytes = readAll(inputStream);
-            String s = new String(bytes, "UTF-8");
-            JSONArray o = new JSONArray(s);
-            return ChartData.parseMany(o);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        } finally {
+        List<ChartData> res = new ArrayList<>();
+        boolean parseOld = false;
+        if (parseOld) {
+            InputStream inputStream = getResources().openRawResource(R.raw.data);
             try {
-                inputStream.close();
+                byte[] bytes = readAll(inputStream);
+                String s = new String(bytes, "UTF-8");
+                JSONArray o = new JSONArray(s);
+                ArrayList<ChartData> prev = ChartData.parseMany(o);
+                res.addAll(prev);
             } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                }
             }
         }
+        int[] ds = new int[]{
+                R.raw.d1,
+                R.raw.d2,
+                R.raw.d3,
+                R.raw.d4,
+                R.raw.d5,
+        };
+        for (int d : ds) {
+            InputStream inputStream = getResources().openRawResource(d);
+            try {
+                byte[] bytes = readAll(inputStream);
+                String s = new String(bytes, "UTF-8");
+                JSONObject o = new JSONObject(s);
+                ChartData it= ChartData.pareOne(o);
+                res.add(it);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                }
+            }
+
+        }
+        return res;
     }
 
     public static byte[] readAll(InputStream stream) throws IOException {
