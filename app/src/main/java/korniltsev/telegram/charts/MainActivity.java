@@ -425,8 +425,8 @@ public class MainActivity extends Activity {
 
     public List<ChartData> readData() {
         List<ChartData> res = new ArrayList<>();
-        boolean parseOld = true;
-        boolean parseNew = false;
+        boolean parseOld = false;
+        boolean parseNew = true;
         if (parseOld) {
             InputStream inputStream = getResources().openRawResource(R.raw.data);
             try {

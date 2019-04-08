@@ -45,7 +45,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 /*
 
 
-    - A line chart with 2 lines, exactly like in Stage 1 (Screenshot 1).
+
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
     - 3. A stacked bar chart with 7 data types (Screenshots 5-6).
     - 4. A daily bar chart with single data type (Screenshot 7).
