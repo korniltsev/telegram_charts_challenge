@@ -74,7 +74,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     alpha animation blending - render to fbo
     [?] optimize minmax animation, introduce step?, do not cancel animations or try to continue?
     - don't draw x lablel if the label is offscreen - lazy textures are required
-
+    - проверить цвета в колоночных графиках day/night
 
 
 
@@ -426,7 +426,7 @@ public class ChartViewGL extends TextureView {
                 checked[i - 1] = true;
             }
 
-
+            BarChartProgram.MyShader barShader = null;
             boolean barSingle = this.data.type == ColumnData.Type.bar && data.length == 2;
             if (this.data.type == ColumnData.Type.line) {
 
@@ -446,11 +446,12 @@ public class ChartViewGL extends TextureView {
                     it.minValue = min;
                 }
             } else if (barSingle) {
-                scrollbar_bars = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, true, simple);
+                barShader = new BarChartProgram.MyShader();
+                scrollbar_bars = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, true, barShader);
             }
 
             if (barSingle) {
-                chartBar = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, false, simple);
+                chartBar = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, false, barShader);
             } else {
                 chartLines = new GLChartProgram[data.length - 1];
                 for (int i = 1, dataLength = data.length; i < dataLength; i++) {
@@ -1179,6 +1180,9 @@ public class ChartViewGL extends TextureView {
                                 glChartProgram.setTooltipIndex(finali);
                             }
                         }
+                    }
+                    if (r.chartBar != null) {
+                        r.chartBar.setTooltipIndex(finali);
                     }
 //                    r.drawAndSwap();
                     r.invalidateRender();

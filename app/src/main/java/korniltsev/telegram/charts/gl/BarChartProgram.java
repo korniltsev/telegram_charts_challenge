@@ -1,6 +1,5 @@
 package korniltsev.telegram.charts.gl;
 
-import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
@@ -27,20 +26,21 @@ public class BarChartProgram {
     private final int[] vbos;
     private final int vbo;
 
-    private final SimpleShader shader;
+    private final MyShader shader;
     public float zoom;
     public float left;
     float max;
     private MyAnimation.Float maxAnim;
+    private int tooltipIndex = -1;
 
-    public BarChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, SimpleShader simple) {
+    public BarChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader) {
         this.column = column;
         this.w = w;
         this.h = h;
         this.dimen = dimen;
         this.root = root;
         this.scrollbar = scrollbar;
-        this.shader = simple;
+        this.shader = shader;
 
 
         long[] values = column.values;
@@ -99,7 +99,8 @@ public class BarChartProgram {
         }
         return invalidate;
     }
-    public void prepare(float []PROJ) {
+
+    public void prepare(float[] PROJ) {
         float hpadding = dimen.dpf(16);
         float maxx = vertices[vertices.length - 2];
 
@@ -124,7 +125,6 @@ public class BarChartProgram {
             final float max = this.max;
 
 
-
             final int ypx = dimen.dpi(80) + root.checkboxesHeight;
 
             final float w = this.w - 2 * hpadding;
@@ -142,10 +142,10 @@ public class BarChartProgram {
         }
 
     }
+
     public void draw(long t) {
 
         shader.use();
-
 
 
         MyColor.set(colors, column.color);
@@ -153,6 +153,7 @@ public class BarChartProgram {
         GLES20.glEnableVertexAttribArray(shader.positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
         GLES20.glVertexAttribPointer(shader.positionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
+        GLES20.glUniform1f(shader.u_selected_index, 5);
 
         GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.length / 2);
@@ -167,5 +168,65 @@ public class BarChartProgram {
             maxAnim = null;
         }
 
+    }
+
+    public void setTooltipIndex(int finali) {
+        tooltipIndex = finali;
+    }
+
+    public static final class MyShader {
+        final String vertexShader =
+                "uniform mat4 u_MVPMatrix;\n" +
+                        "uniform float u_selected_index;\n" +
+                        "attribute vec2 a_Position;\n" +
+                        "uniform vec4 u_color;\n" +
+                        "varying vec4 v_color;\n" +
+                        "void main()\n" +
+                        "{\n" +
+                        "   if (u_selected_index >= 0.0) {\n" +
+                        "        if (0.0 == u_selected_index) {\n" +
+                        "            v_color = u_color;\n" +
+                        "        } else {\n" +
+                        "            v_color = vec4(u_color.xyz, 0.5);\n" +
+                        "        }\n" +
+                        "   } else {\n" +
+                        "        v_color = u_color;\n" +
+                        "   }\n" +
+                        "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);\n" +
+                        "}\n";
+        final String fragmentShader =
+                "precision mediump float;       \n"
+                        + "varying vec4 v_color;       \n"
+                        + "void main()                    \n"
+                        + "{                              \n"
+                        + "   gl_FragColor = v_color;     \n"
+                        + "}                              \n";
+        public final int MVPHandle;
+        public final int positionHandle;
+        public final int program;
+        public final int colorHandle;
+        public final int u_selected_index;
+        private boolean released;
+
+        public MyShader() {
+
+            program = MyGL.createProgram(vertexShader, fragmentShader);
+            MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
+            u_selected_index = GLES20.glGetUniformLocation(program, "u_selected_index");
+            positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
+            colorHandle = GLES20.glGetUniformLocation(program, "u_color");
+        }
+
+        public final void use() {
+            GLES20.glUseProgram(program);
+        }
+
+        public void release() {
+            if (released) {
+                return;
+            }
+            released = true;
+            GLES20.glDeleteProgram(program);
+        }
     }
 }
