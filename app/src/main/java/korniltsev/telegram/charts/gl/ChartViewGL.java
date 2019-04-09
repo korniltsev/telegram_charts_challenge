@@ -48,8 +48,8 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
         + ruler
         + xvalues
         + цвет надписей
+        + max anim
         - сокращалка надписей + не анимировать надпись если округленная надпись одинаковая
-        - max anim
         - tooltip
         + спрятать чекбокс
 
@@ -612,6 +612,7 @@ public class ChartViewGL extends TextureView {
                     }
                 }
                 if (chartBar != null) {
+                    chartBar.animateMinMax(viewportMax, false, 0);
                     calculateChartBarMax(r.overlay.left, r.overlay.right);
                     ruler.init(0, viewportMax);
                     prevMax = viewportMax;
@@ -712,8 +713,9 @@ public class ChartViewGL extends TextureView {
                 }
                 MyGL.checkGlError2();
             } else if (scrollbar_bars != null) {
+                boolean it_invalidated = scrollbar_bars.animate(t);
                 scrollbar_bars.prepare(PROJ);
-                boolean it_invalidated = scrollbar_bars.draw(t);
+                scrollbar_bars.draw(t);
                 invalidated = invalidated || it_invalidated;
             }
             return invalidated;
@@ -770,8 +772,9 @@ public class ChartViewGL extends TextureView {
                     this.tooltip.drawTooltip(PROJ);
                 }
             } else if (chartBar != null) {
+                boolean it_invalidated = chartBar.animate(t);
                 chartBar.prepare(PROJ);
-                boolean it_invalidated = chartBar.draw(t);
+                chartBar.draw(t);
                 invalidated = it_invalidated || invalidated;
             }
             return invalidated;
@@ -968,7 +971,7 @@ public class ChartViewGL extends TextureView {
                     }
                 }
                 ruler.setLeftRight(left, right, scale);
-                firstLeftRightUpdate = false;
+
                 if (prevMax != viewportMax || prevMin != viewportMin) {
                     if (rulerInitDone) {
                         float ratio = prevMax / (float) viewportMax;
@@ -983,8 +986,9 @@ public class ChartViewGL extends TextureView {
                 chartBar.zoom = scale;
                 chartBar.left = left;
                 calculateChartBarMax(left, right);
-                if (prevMax != viewportMax || prevMin != viewportMin) {
+                if (prevMax != viewportMax) {
                     if (rulerInitDone) {
+                        chartBar.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
                         float ratio = prevMax / (float) viewportMax;
                         ruler.animateScale(ratio, 0, viewportMax, 1,1, 256);
                     }
@@ -992,6 +996,7 @@ public class ChartViewGL extends TextureView {
                     prevMin = viewportMin;
                 }
             }
+            firstLeftRightUpdate = false;
         }
     }
 

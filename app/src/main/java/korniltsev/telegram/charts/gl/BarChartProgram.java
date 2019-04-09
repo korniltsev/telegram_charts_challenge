@@ -10,6 +10,7 @@ import java.nio.FloatBuffer;
 
 import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.ui.Dimen;
+import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyColor;
 
 import static korniltsev.telegram.charts.gl.GLChartProgram.BYTES_PER_FLOAT;
@@ -29,6 +30,8 @@ public class BarChartProgram {
     private final SimpleShader shader;
     public float zoom;
     public float left;
+    float max;
+    private MyAnimation.Float maxAnim;
 
     public BarChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, SimpleShader simple) {
         this.column = column;
@@ -83,13 +86,27 @@ public class BarChartProgram {
     float[] colors = new float[4];
     float[] MVP = new float[16];
     float[] V = new float[16];
+
+    public boolean animate(long t) {
+        boolean invalidate = false;
+        if (maxAnim != null) {
+            max = maxAnim.tick(t);
+            if (maxAnim.ended) {
+                maxAnim = null;
+            } else {
+                invalidate = true;
+            }
+        }
+        return invalidate;
+    }
     public void prepare(float []PROJ) {
         float hpadding = dimen.dpf(16);
         float maxx = vertices[vertices.length - 2];
-        final long max = column.max;
+
 
         Matrix.setIdentityM(V, 0);
         if (scrollbar) {
+            final long max = column.max;
 //            hpadding += dimen.dpf(1);
 //            final float dip2 = dimen.dpf(2);
 
@@ -104,6 +121,8 @@ public class BarChartProgram {
             Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
             Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
         } else {
+            final float max = this.max;
+
 
 
             final int ypx = dimen.dpi(80) + root.checkboxesHeight;
@@ -123,7 +142,8 @@ public class BarChartProgram {
         }
 
     }
-    public boolean draw(long t) {
+    public void draw(long t) {
+
         shader.use();
 
 
@@ -137,6 +157,15 @@ public class BarChartProgram {
         GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.length / 2);
         MyGL.checkGlError2();
-        return false;
+    }
+
+    public void animateMinMax(long viewportMax, boolean animate, int druation) {
+        if (animate) {
+            maxAnim = new MyAnimation.Float(druation, max, viewportMax);
+        } else {
+            max = viewportMax;
+            maxAnim = null;
+        }
+
     }
 }

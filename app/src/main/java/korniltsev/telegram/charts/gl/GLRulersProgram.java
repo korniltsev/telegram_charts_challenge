@@ -32,35 +32,10 @@ public final class GLRulersProgram {
     private static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
     private static final int POSITION_DATA_SIZE = 2;
-//    public static final int BORDER_COLOR = 0x334b87b4;
 
-//    static final String vertexShader =
-//            "uniform mat4 u_MVPMatrix;      \n"
-//                    + "attribute vec2 a_Position;     \n"
-//                    + "void main()                    \n"
-//                    + "{                              \n"
-//                    + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
-//                    + "}                              \n";
-//
-//    static final String fragmentShader =
-//            "precision mediump float;       \n"
-//                    + "uniform vec4 u_color;       \n"
-//                    + "void main()                    \n"
-//                    + "{                              \n"
-//                    + "   gl_FragColor = u_color;     \n"
-//                    + "}                              \n";
-
-
-
-//    private final int lineMVPHandle;
-//    private final int linePositionHandle;
-//    private final int lineProgram;
     private final int lineVerticesVBO;
-//    private final int lineColorHandle;
     private final TextPaint paint;
-//    private final TextTex textZero;
 
-//    private final int texVerticesVBO;
     private final TexShader texShader;
 //    private final TextTex zero;
     private final SimpleShader simpleShader;
@@ -159,7 +134,7 @@ public final class GLRulersProgram {
     }
 
     public void init(long min, long max) {
-        Ruler r = new Ruler(min, max, 1.0f, paint);
+        Ruler r = new Ruler(min, max, 1.0f, paint, barChart);
         rs.add(r);
     }
 
@@ -493,7 +468,7 @@ public final class GLRulersProgram {
             r.toBeDeleted = true;
         }
         if (checkedCount != 0) {
-            Ruler e = new Ruler(minValue, maxValue, 1f/ratio, paint);
+            Ruler e = new Ruler(minValue, maxValue, 1f/ratio, paint, barChart);
             e.alpha = 0f;
             if (prevCheckedCOunt == 0) {
                 e.scale = 1f;
@@ -656,7 +631,7 @@ public final class GLRulersProgram {
         boolean toBeDeleted = false;
         public final List<TextTex> values = new ArrayList<>();
 
-        public Ruler(long minValue, long maxValue, float scale, TextPaint p) {
+        public Ruler(long minValue, long maxValue, float scale, TextPaint p, boolean minZero) {
             this.scale = scale;
 //            int dy = 50;
 //            int max = 280;
@@ -664,12 +639,20 @@ public final class GLRulersProgram {
             long step = diff / 5;
             long from = minValue;
             for (int i = 0; i < 6; i++) {
-//                float s = (float)dy / max;
-//                long v = (long) (maxValue * s);
-                String text = String.valueOf(from);
-//                String format = numberFormat.format(v);
+                String text;
+                if (minZero) {
+                    if (from < 1000) {
+                        text = String.valueOf(from);
+                    } else if (from < 1000000) {
+                        text = String.valueOf(from/1000) + "K";
+                    } else  {
+                        text = String.valueOf(from/1000000) + "M";
+                    }
+                } else {
+                    // todo shorten
+                    text = String.valueOf(from);
+                }
                 values.add(new TextTex(text, p));
-//                dy += 50;
                 from += step;
             }
         }
