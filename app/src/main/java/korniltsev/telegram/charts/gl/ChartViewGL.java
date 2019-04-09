@@ -59,19 +59,24 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     - в bar графике линейка показывает 25M, а tooltip 23m
 
 ---------------------------------------
+оптимизации
+    - не рисовать треугольники в баре за пределами экрана
+    - не рисовать линии в линиях за пределами экрана
+    - ленивые x надписи
+    - глобальный кеш текстур надписей
+
+---------
     - в баре тултип показывать около значения а не вверху
+    - когда скейлишь x левую надпись пидорасит
     [ ? ] Matrix -> MyMatrix for inlining? test if it does something
 
 
     разобраться что с цветами, 0xff222222 не рисуется
     4.1 крашится на выходе
 
-
-    сократить цифры на лейблах
+    сократить цифры на лейблах на линейных графиках
     tooltip animation
     alpha animation blending - render to fbo
-    [?] optimize minmax animation, introduce step?, do not cancel animations or try to continue?
-    - don't draw x lablel if the label is offscreen - lazy textures are required
     - проверить цвета в колоночных графиках day/night
 
 
