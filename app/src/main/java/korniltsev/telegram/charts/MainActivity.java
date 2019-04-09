@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
 
 
     public static final String TAG = "tg.ch";
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = BuildConfig.DEBUG;
     public static final boolean TRACE = false;
     public static final boolean USE_RIPPLE = true;
     public static final boolean LOGGING = false;
@@ -524,6 +524,9 @@ public class MainActivity extends Activity {
         for (ChartViewGL c : charts) {
             c.release();
         }
+//        for (ChartViewGL c : charts) {
+//            c.join();
+//        }
     }
 
     public static class MyContentRoot extends LinearLayout {

@@ -6,6 +6,7 @@ import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -24,6 +25,7 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
+import korniltsev.telegram.charts.BuildConfig;
 import korniltsev.telegram.charts.MainActivity;
 import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.data.ColumnData;
@@ -38,6 +40,7 @@ import static android.opengl.GLES10.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES10.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES10.glClear;
 import static android.opengl.GLES10.glClearColor;
+import static korniltsev.telegram.charts.MainActivity.DEBUG;
 import static korniltsev.telegram.charts.MainActivity.LOGGING;
 import static korniltsev.telegram.charts.MainActivity.TAG;
 
@@ -114,7 +117,7 @@ public class ChartViewGL extends TextureView {
     public final int initial_scroller_dith;
     public final int resize_touch_area2;
     public final int touchSlop;
-//    public final int rulerColor;
+    //    public final int rulerColor;
     public final ColorSet init_colors;
     public final ChartData data;
     public final ColumnData xColumn;
@@ -204,8 +207,8 @@ public class ChartViewGL extends TextureView {
             setOverlayPos(true);
         }
 
-        chartBottom =  bottom - dimen.dpi(CHART_BOTTOM_DIP)-checkboxesHeight;
-        chartTop =  chartBottom - dimen.dpi(280);
+        chartBottom = bottom - dimen.dpi(CHART_BOTTOM_DIP) - checkboxesHeight;
+        chartTop = chartBottom - dimen.dpi(280);
 //        chartTop = dimen.dpi(80);
     }
 
@@ -225,6 +228,7 @@ public class ChartViewGL extends TextureView {
     }
 
     public static int counter;
+
     class Render extends HandlerThread implements TextureView.SurfaceTextureListener {
 
         public int id = ++counter;
@@ -264,10 +268,9 @@ public class ChartViewGL extends TextureView {
         public GLRulersProgram ruler;
 
         public SimpleShader simple;
-//        public GLChartProgram.Shader chartShader;
+        //        public GLChartProgram.Shader chartShader;
         public MyCircles.Shader joiningShader;
         private ArrayList<MyRect> debugRects;
-
 
 
         public Render(ChartData column) {
@@ -368,7 +371,11 @@ public class ChartViewGL extends TextureView {
                         e.printStackTrace();
                     }
 
-                    surface.release();
+                    if (Build.VERSION.SDK_INT <= 19) {
+
+                    } else {
+                        surface.release();
+                    }
 
                     quit();
                 }
@@ -412,13 +419,14 @@ public class ChartViewGL extends TextureView {
 //            }
 //        }
 
-//        @Override
+        //        @Override
 //        public void run() {
 //
 //
 //
 //        }
         public boolean released = false;
+
         public void initPrograms() {
             joiningShader = new MyCircles.Shader(6);
             simple = new SimpleShader();
@@ -463,13 +471,11 @@ public class ChartViewGL extends TextureView {
             }
 
 
-
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay, simple);
             boolean differentXYAxisColors = barSingle;//todo
             ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors, simple, xColumn, differentXYAxisColors);
 
             Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
-
 
 
             debugRects = new ArrayList<>();
@@ -570,7 +576,7 @@ public class ChartViewGL extends TextureView {
                             }
                         }
                         if (prevMax != viewportMax || prevMin != viewportMin) {
-                            ruler.animateScale(ratio,viewportMin, viewportMax, checkedCount, prevCheckedCOunt, 208);
+                            ruler.animateScale(ratio, viewportMin, viewportMax, checkedCount, prevCheckedCOunt, 208);
                             prevMax = viewportMax;
                             prevMin = viewportMin;
                         }
@@ -587,8 +593,9 @@ public class ChartViewGL extends TextureView {
             postToRender(setCheckedOnRenderThread);
         }
 
-//        public final BlockingQueue<Runnable> actionQueue = new ArrayBlockingQueue<Runnable>(100);
+        //        public final BlockingQueue<Runnable> actionQueue = new ArrayBlockingQueue<Runnable>(100);
         DrawFrame drawFrame_ = new DrawFrame();
+
         class DrawFrame implements Runnable {
 
             @Override
@@ -654,7 +661,7 @@ public class ChartViewGL extends TextureView {
 //                long t4 = System.nanoTime();
             boolean rulerInvalidated = ruler.animationTick(t);
             invalidated = rulerInvalidated | invalidated;
-            GLES20.glScissor(0,h-chartBottom- dimen.dpi(1), w, chartBottom-chartTop);
+            GLES20.glScissor(0, h - chartBottom - dimen.dpi(1), w, chartBottom - chartTop);
 
             MyGL.checkGlError2();
             if (r.chartLines != null) {
@@ -687,6 +694,7 @@ public class ChartViewGL extends TextureView {
         }
 
         boolean rendererInvalidated = false;
+
         public final void invalidateRender() {
             if (rendererInvalidated) {
                 return;
@@ -766,8 +774,8 @@ public class ChartViewGL extends TextureView {
                 MyGL.checkGlError2();
                 for (GLChartProgram c : chartLines) {
                     if (c.goodCircle != null) {
-    //                    c.goodCircle.shader.use();
-    //
+                        //                    c.goodCircle.shader.use();
+                        //
                         c.step4();
                     }
                 }
@@ -822,8 +830,16 @@ public class ChartViewGL extends TextureView {
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-            //todo
-            return false;
+            if (Build.VERSION.SDK_INT <= 19) {
+                try {
+                    r.join(3000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                return true;
+            } else {
+                return false;
+            }
         }
 
         @Override
@@ -969,6 +985,7 @@ public class ChartViewGL extends TextureView {
         }
 
         boolean firstLeftRightUpdate = true;
+
         public void updateLeftRight(float left, float right, float scale) {
             overlay.setLeftRight(left, right);
 //                long t = SystemClock.elapsedRealtimeNanos();
@@ -993,7 +1010,7 @@ public class ChartViewGL extends TextureView {
                 if (prevMax != viewportMax || prevMin != viewportMin) {
                     if (rulerInitDone) {
                         float ratio = prevMax / (float) viewportMax;
-                        ruler.animateScale(ratio, viewportMin, viewportMax, checkedCount,checkedCount, 256);
+                        ruler.animateScale(ratio, viewportMin, viewportMax, checkedCount, checkedCount, 256);
                     }
                     prevMax = viewportMax;
                     prevMin = viewportMin;
@@ -1008,7 +1025,7 @@ public class ChartViewGL extends TextureView {
                     if (rulerInitDone) {
                         chartBar.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
                         float ratio = prevMax / (float) viewportMax;
-                        ruler.animateScale(ratio, 0, viewportMax, 1,1, 256);
+                        ruler.animateScale(ratio, 0, viewportMax, 1, 1, 256);
                     }
                     prevMax = viewportMax;
                     prevMin = viewportMin;
@@ -1027,7 +1044,7 @@ public class ChartViewGL extends TextureView {
     static final int DOWN_RESIZE_RIGHT = 2;
     static final int DOWN_TOOLTIP = 3;
     float last_x = -1f;
-//    int resze_scroller_right = -1;
+    //    int resze_scroller_right = -1;
     int down_target = -1;
     boolean dragging;
 
@@ -1110,8 +1127,8 @@ public class ChartViewGL extends TextureView {
                                 scroller__right = this.scrollbarPos.right;
                             }
                             // check the scrollbar is not too small
-                            if (scroller__right - scroller_left < initial_scroller_dith/2) {
-                                scroller__right = scroller_left + initial_scroller_dith/2;
+                            if (scroller__right - scroller_left < initial_scroller_dith / 2) {
+                                scroller__right = scroller_left + initial_scroller_dith / 2;
                             }
                             setOverlayPos(false);
 //                            invalidate();
@@ -1121,9 +1138,9 @@ public class ChartViewGL extends TextureView {
                                 scroller_left = this.scrollbarPos.left;
                             }
 //                            scroller_width = resze_scroller_right - scroller_left;
-                            if (scroller__right - scroller_left < initial_scroller_dith/2) {
+                            if (scroller__right - scroller_left < initial_scroller_dith / 2) {
 //                                scroller_left = initial_scroller_dith;
-                                scroller_left = scroller__right - initial_scroller_dith/2;
+                                scroller_left = scroller__right - initial_scroller_dith / 2;
                             }
                             setOverlayPos(false);
 //                            invalidate();
@@ -1151,7 +1168,7 @@ public class ChartViewGL extends TextureView {
                         dispatchTouchDownChart(x);
                     }
                 }
-                if (LOGGING) Log.d("tg.chart", "dragging = false " );
+                if (LOGGING) Log.d("tg.chart", "dragging = false ");
                 last_x = -1;
                 dragging = false;
                 break;
@@ -1168,7 +1185,7 @@ public class ChartViewGL extends TextureView {
             float swindow = (x - scrollbarPos.left) / scrollbarPos.width();
             if (swindow > 0.97) {
                 swindow = 1f;
-            }else  if (swindow < 0.03) {
+            } else if (swindow < 0.03) {
                 swindow = 0;
             }
             final float finalswindow = swindow;
@@ -1177,12 +1194,12 @@ public class ChartViewGL extends TextureView {
                 public void run() {
                     float sdataset = r.overlay.left + finalswindow * (r.overlay.right - r.overlay.left);
                     int n = r.data.data[0].values.length;
-                    int i = (int) (Math.round(n-1) * sdataset);
+                    int i = (int) (Math.round(n - 1) * sdataset);
                     if (i < 0) {
                         i = 0;
                     }
                     if (i >= n) {
-                        i = n-1;
+                        i = n - 1;
                     }
                     final int finali = i;
                     int checkedCount = 0;
@@ -1255,8 +1272,8 @@ public class ChartViewGL extends TextureView {
             long max = Long.MIN_VALUE;
             long min = Long.MAX_VALUE;
             int len = r.chartLines[0].column.values.length;
-            int from = Math.max(0, (int)Math.ceil(len * (left-0.02f)));
-            int to = Math.min(len, (int)Math.ceil(len * (right+0.02f)));
+            int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
+            int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
             for (GLChartProgram glChartProgram : r.chartLines) {
                 if (glChartProgram.checked) {
                     long[] values = glChartProgram.column.values;
@@ -1271,22 +1288,23 @@ public class ChartViewGL extends TextureView {
             this.viewportMax = max;
         }
     }
+
     public final void calculateChartBarMax(float left, float right) {
         if (r.chartBar != null) {
 
             long max = Long.MIN_VALUE;
             long min = Long.MAX_VALUE;
             int len = r.chartBar.column.values.length;
-            int from = Math.max(0, (int)Math.ceil(len * (left-0.02f)));
-            int to = Math.min(len, (int)Math.ceil(len * (right+0.02f)));
+            int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
+            int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
 //            for (GLChartProgram glChartProgram : r.chartLines) {
 //                if (glChartProgram.checked) {
-                    long[] values = r.chartBar.column.values;
-                    for (int i = from; i < to; i++) {
-                        long value = values[i];
-                        max = (max >= value) ? max : value;
-                        min = Math.min(min, value);
-                    }
+            long[] values = r.chartBar.column.values;
+            for (int i = from; i < to; i++) {
+                long value = values[i];
+                max = (max >= value) ? max : value;
+                min = Math.min(min, value);
+            }
 //                }
 //            }
             this.viewportMin = min;
@@ -1323,15 +1341,30 @@ public class ChartViewGL extends TextureView {
 
     public void release() {
         r.release();
-
     }
 
-//    @Override
+    @Override
+    protected void onDetachedFromWindow() {
+        try {
+            super.onDetachedFromWindow();
+        } catch (Exception e) {
+            if (DEBUG) {
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+                    throw new AssertionError();
+                } else {
+                    Log.e(TAG, "detach error", e);
+                }
+            }
+
+        }
+    }
+
+        //    @Override
 //    public void invalidate() {
 //        super.invalidate();
 //    }
 
-    //    class MyMotionEvent implements Runnable {
+        //    class MyMotionEvent implements Runnable {
 //        float left;
 //        float scale;
 //        float right;
@@ -1346,4 +1379,15 @@ public class ChartViewGL extends TextureView {
 //            motionEvents.offer(this);
 //        }
 //    }
+    static {
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                if (DEBUG) {
+                    Log.e(TAG, "err", e);
+                    System.exit(0);
+                }
+            }
+        });
+        }
 }
