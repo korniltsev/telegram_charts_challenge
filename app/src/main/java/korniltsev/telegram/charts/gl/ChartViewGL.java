@@ -65,6 +65,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     - дизайн скролбара
     - дизайн чекбоксов
     - придумать как исправить лаг когда скролишь и мин/макс меняется каждые пару фреймов
+    - в bar графике линейка показывает 25M, а tooltip 23m
 ---------------------------------------
     [ ? ] Matrix -> MyMatrix for inlining? test if it does something
 
