@@ -61,6 +61,11 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
     - A long tap on any data filter should uncheck all other filters.
 
+    - дизайн тултипа
+    - дизайн скролбара
+    - дизайн чекбоксов
+    - придумать как исправить лаг когда скролишь и мин/макс меняется каждые пару фреймов
+---------------------------------------
     [ ? ] Matrix -> MyMatrix for inlining? test if it does something
 
 
@@ -69,7 +74,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 
     сократить цифры на лейблах
-    fix touch (laggy, hard to select)
     tooltip animation
     alpha animation blending - render to fbo
     [?] optimize minmax animation, introduce step?, do not cancel animations or try to continue?
@@ -573,8 +577,10 @@ public class ChartViewGL extends TextureView {
                         }
                     }
                     if (chartBar != null) {
+                        chartBar.setTooltipIndex(-1);
                         //todo for 7 types
                     }
+
 //                    drawAndSwap();
                     invalidateRender();
                 }
@@ -1224,6 +1230,9 @@ public class ChartViewGL extends TextureView {
             for (GLChartProgram glChartProgram : r.chartLines) {
                 glChartProgram.setTooltipIndex(-1);
             }
+        }
+        if (r.chartBar != null) {
+            r.chartBar.setTooltipIndex(-1);
         }
 //                r.drawAndSwap();
         r.invalidateRender();

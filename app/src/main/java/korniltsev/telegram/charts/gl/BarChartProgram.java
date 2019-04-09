@@ -47,26 +47,32 @@ public class BarChartProgram {
 
         int n = values.length;
 //        int n = values.length/20;
-        vertices = new float[n * 12];
+        vertices = new float[n * 18];
         for (int i = 0, valuesLength = n; i < valuesLength; i++) {
             long value = values[i];
-            vertices[12 * i] = i;
-            vertices[12 * i + 1] = 0;
+            vertices[18 * i ] = i;
+            vertices[18 * i + 1] = 0;
+            vertices[18 * i + 2] = i;
 
-            vertices[12 * i + 2] = i;
-            vertices[12 * i + 3] = value;
+            vertices[18 * i + 3] = i;
+            vertices[18 * i + 4] = value;
+            vertices[18 * i + 5] = i;
 
-            vertices[12 * i + 4] = i + 1;
-            vertices[12 * i + 5] = 0;
+            vertices[18 * i + 6] = i + 1;
+            vertices[18 * i + 7] = 0;
+            vertices[18 * i + 8] = i;
 
-            vertices[12 * i + 6] = i + 1;
-            vertices[12 * i + 7] = 0;
+            vertices[18 * i + 9] = i + 1;
+            vertices[18 * i + 10] = 0;
+            vertices[18 * i + 11] = i;
 
-            vertices[12 * i + 8] = i;
-            vertices[12 * i + 9] = value;
+            vertices[18 * i + 12] = i;
+            vertices[18 * i + 13] = value;
+            vertices[18 * i + 14] = i;
 
-            vertices[12 * i + 10] = i + 1;
-            vertices[12 * i + 11] = value;
+            vertices[18 * i + 15] = i + 1;
+            vertices[18 * i + 16] = value;
+            vertices[18 * i + 17] = i;
         }
         FloatBuffer buf1 = ByteBuffer.allocateDirect(vertices.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
@@ -102,7 +108,7 @@ public class BarChartProgram {
 
     public void prepare(float[] PROJ) {
         float hpadding = dimen.dpf(16);
-        float maxx = vertices[vertices.length - 2];
+        float maxx = vertices[vertices.length - 3];
 
 
         Matrix.setIdentityM(V, 0);
@@ -152,11 +158,11 @@ public class BarChartProgram {
         GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
         GLES20.glEnableVertexAttribArray(shader.positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-        GLES20.glVertexAttribPointer(shader.positionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
-        GLES20.glUniform1f(shader.u_selected_index, 5);
+        GLES20.glVertexAttribPointer(shader.positionHandle, 3, GLES20.GL_FLOAT, false, 12, 0);
+        GLES20.glUniform1f(shader.u_selected_index, tooltipIndex);
 
         GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.length / 2);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.length / 3);
         MyGL.checkGlError2();
     }
 
@@ -178,13 +184,13 @@ public class BarChartProgram {
         final String vertexShader =
                 "uniform mat4 u_MVPMatrix;\n" +
                         "uniform float u_selected_index;\n" +
-                        "attribute vec2 a_Position;\n" +
+                        "attribute vec3 a_Position;\n" +
                         "uniform vec4 u_color;\n" +
                         "varying vec4 v_color;\n" +
                         "void main()\n" +
                         "{\n" +
                         "   if (u_selected_index >= 0.0) {\n" +
-                        "        if (0.0 == u_selected_index) {\n" +
+                        "        if (a_Position.z == u_selected_index) {\n" +
                         "            v_color = u_color;\n" +
                         "        } else {\n" +
                         "            v_color = vec4(u_color.xyz, 0.5);\n" +
