@@ -779,9 +779,19 @@ public class ChartViewGL extends TextureView {
                     this.tooltip.drawTooltip(PROJ);
                 }
             } else if (chartBar != null) {
+                int tooltipIndex = chartBar.getTooltipIndex();
+                if (tooltipIndex != -1) {
+                    if (this.tooltip == null) {
+                        this.tooltip = new Tooltip(dimen, w, h, currentColors, data, simple, ChartViewGL.this);
+                    }
+                }
                 boolean it_invalidated = chartBar.animate(t);
                 chartBar.prepare(PROJ);
                 chartBar.draw(t);
+                if (tooltipIndex != -1) {
+                    this.tooltip.animationTick(t, tooltipIndex, checked);
+                    this.tooltip.drawTooltip(PROJ);
+                }
                 invalidated = it_invalidated || invalidated;
             }
             return invalidated;

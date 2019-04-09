@@ -180,6 +180,10 @@ public class BarChartProgram {
         tooltipIndex = finali;
     }
 
+    public int getTooltipIndex() {
+        return tooltipIndex;
+    }
+
     public static final class MyShader {
         final String vertexShader =
                 "uniform mat4 u_MVPMatrix;\n" +

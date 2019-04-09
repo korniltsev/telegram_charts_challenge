@@ -121,7 +121,7 @@ class TooltipFramebuffer {
 
         int check = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER);
         if (check == GLES20.GL_FRAMEBUFFER_COMPLETE) {
-            System.out.println(check);
+//            System.out.println(check);
         }
 //        drawTooltip(text);
 
