@@ -47,7 +47,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     - 4. A daily bar chart with single data type (Screenshot 7).
         + ruler
         + xvalues
-        - цвет надписей
+        + цвет надписей
         - сокращалка надписей + не анимировать надпись если округленная надпись одинаковая
         - max anim
         - tooltip
