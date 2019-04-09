@@ -46,12 +46,13 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
     - 4. A daily bar chart with single data type (Screenshot 7).
         + ruler
-        - xvalues
-        - max anim
-        - tooltip
+        + xvalues
         - цвет надписей
         - сокращалка надписей + не анимировать надпись если округленная надпись одинаковая
+        - max anim
+        - tooltip
         + спрятать чекбокс
+
     - 3. A stacked bar chart with 7 data types (Screenshots 5-6).
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
         - fix bug with wrong ruler position
@@ -977,6 +978,7 @@ public class ChartViewGL extends TextureView {
                 }
             }
             if (chartBar != null) {
+                ruler.setLeftRight(left, right, scale);
                 chartBar.zoom = scale;
                 chartBar.left = left;
                 calculateChartBarMax(left, right);
