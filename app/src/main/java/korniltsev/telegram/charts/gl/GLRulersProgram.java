@@ -14,7 +14,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.TimeZone;
 
 import korniltsev.telegram.charts.MainActivity;
@@ -90,23 +89,27 @@ public final class GLRulersProgram {
 
 
     int lineColor;
-    int textColor;
+
+    int axisYColor;
+    int axisXColor;
     private MyAnimation.Color colorAnim;
 
 
 
     private final ArrayList<Ruler> rs = new ArrayList<>();
     private float[] colorParts = new float[4];
-    private MyAnimation.Color textColorAnim;
+    private MyAnimation.Color textColorXAnim;
+    private MyAnimation.Color textColorYAnim;
     private float left;
     private float strideChangeLabelWidth
             ;
     private boolean released;
+    private final boolean barChart;
 
-
-    public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, ColorSet colors, SimpleShader s, ColumnData xColumn) {
+    public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, ColorSet colors, SimpleShader s, ColumnData xColumn, boolean barChart) {
         this.colors = colors;
         this.xColumn = xColumn;
+        this.barChart = barChart;
 
         texShader = new TexShader(true, true);
         this.canvasW = canvasW;
@@ -114,7 +117,13 @@ public final class GLRulersProgram {
         this.dimen = dimen;
         this.root = root;
         this.lineColor = colors.ruler;
-        this.textColor = colors.rulerLabelColor;
+        if (barChart) {
+            axisYColor = colors.messagesYAxisText;
+            axisXColor = colors.messagesXAxisText;
+        } else {
+            axisYColor = colors.rulerLabelColor;
+            axisXColor = colors.rulerLabelColor;
+        }
         this.simpleShader = s;
 //        lineProgram = MyGL.createProgram(vertexShader, fragmentShader);
 //        lineMVPHandle = GLES20.glGetUniformLocation(lineProgram, "u_MVPMatrix");
@@ -157,7 +166,13 @@ public final class GLRulersProgram {
     public void animate(ColorSet colors, long duration) {
         this.colors = colors;
         colorAnim = new MyAnimation.Color(duration, lineColor, colors.ruler);
-        textColorAnim = new MyAnimation.Color(duration, textColor, colors.rulerLabelColor);
+        if (barChart) {
+            textColorXAnim = new MyAnimation.Color(duration, axisXColor, colors.messagesXAxisText);
+            textColorYAnim = new MyAnimation.Color(duration, axisYColor, colors.messagesYAxisText);
+        } else {
+            textColorXAnim = new MyAnimation.Color(duration, axisXColor, colors.rulerLabelColor);
+            textColorYAnim = new MyAnimation.Color(duration, axisYColor, colors.rulerLabelColor);
+        }
     }
 
 
@@ -277,10 +292,15 @@ public final class GLRulersProgram {
         GLES20.glVertexAttribPointer(texShader.texPositionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
         GLES20.glUniformMatrix4fv(texShader.texMVPHandle, 1, false, MVP, 0);
 
-        GLES20.glUniform1f(texShader.texAlphaHandle, alpha);
 
-        MyColor.set(colorParts, textColor);
+        float colorAlpha = (axisXColor >>> 24) / 255f;
+        colorParts[0] = ((axisXColor >> 16) & 0xFF) / 255f;
+        colorParts[1] = ((axisXColor >> 8) & 0xFF) / 255f;
+        colorParts[2] = (axisXColor & 0xFF) / 255f;
+        colorParts[3] = colorAlpha;
+
         GLES20.glUniform4fv(texShader.u_color, 1, colorParts, 0);
+        GLES20.glUniform1f(texShader.texAlphaHandle, alpha * colorAlpha);
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, xValue.tex.tex[0]);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, TexShader.texVertices.length / 2);
@@ -299,10 +319,18 @@ public final class GLRulersProgram {
                 invalidate = true;
             }
         }
-        if (textColorAnim != null) {
-            textColor = textColorAnim.tick(t);
-            if (textColorAnim.ended) {
-                textColorAnim = null;
+        if (textColorXAnim != null) {
+            axisXColor = textColorXAnim.tick(t);
+            if (textColorXAnim.ended) {
+                textColorXAnim = null;
+            } else {
+                invalidate = true;
+            }
+        }
+        if (textColorYAnim != null) {
+            axisYColor = textColorYAnim.tick(t);
+            if (textColorYAnim.ended) {
+                textColorYAnim = null;
             } else {
                 invalidate = true;
             }
@@ -380,9 +408,6 @@ public final class GLRulersProgram {
 
 //        GLES20.glUniform4fv(texColorHandle, 1, DEBUG_COLOR_PARTS, 0);//todo try to bind only once
 
-
-
-
         final float scalex = 2.0f / canvasW;
         final float scaley = 2.0f / canvasH;
         Matrix.setIdentityM(MVP, 0);
@@ -397,14 +422,20 @@ public final class GLRulersProgram {
 
         GLES20.glUseProgram(texShader.texProgram);
         MyGL.checkGlError2();
+        float colorAlpha = (axisYColor >>> 24) / 255f;
+        colorParts[0] = ((axisYColor >> 16) & 0xFF) / 255f;
+        colorParts[1] = ((axisYColor >> 8) & 0xFF) / 255f;
+        colorParts[2] = (axisYColor & 0xFF) / 255f;
+        colorParts[3] = colorAlpha;
+        GLES20.glUniform4fv(texShader.u_color, 1, colorParts, 0);
+
         GLES20.glEnableVertexAttribArray(texShader.texPositionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, texShader.texVerticesVBO);
         GLES20.glVertexAttribPointer(texShader.texPositionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
         GLES20.glUniformMatrix4fv(texShader.texMVPHandle, 1, false, MVP, 0);
-        GLES20.glUniform1f(texShader.texAlphaHandle, alpha);
+        GLES20.glUniform1f(texShader.texAlphaHandle, alpha * colorAlpha);
 
-        MyColor.set(colorParts, textColor);
-        GLES20.glUniform4fv(texShader.u_color, 1, colorParts, 0);
+
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textZero.tex[0]);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, TexShader.texVertices.length / 2);

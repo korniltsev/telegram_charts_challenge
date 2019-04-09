@@ -1,6 +1,8 @@
 package korniltsev.telegram.charts.ui;
 
 
+import android.graphics.Color;
+
 public class ColorSet {
         public static final ColorSet DAY = new ColorSet(0xff517DA2,
             0xffF0F0F0,
@@ -15,7 +17,9 @@ public class ColorSet {
                 0xff96A2AA,
                 0xff222222,
                 0xffdedede,
-                0xffE4E4E4);
+                0xffE4E4E4,
+                0x7f252529, 0x7f252529
+        );
     public static final ColorSet NIGHT = new ColorSet(
             0xff212D3B,
             0xff161E27,
@@ -31,7 +35,8 @@ public class ColorSet {
             0xff506372,
             0xffffffff,
             0xff253242,
-            0xff1A232D);
+            0xff1A232D,
+            0x7fECF2F8, 0x99A3B1C2);
     public final int toolbar;
     public final int darkBackground;
     public final int lightBackground;
@@ -50,7 +55,10 @@ public class ColorSet {
     public final int listButtonPressedColor;
     public final int tooltipFakeSHadowColor;
 
-    public ColorSet(int toolbar, int darkBackground, int lightBackground, int ruler, int pressedButton, int legendTitle, int scrollbarOverlay, int scrollbarBorder, int statusbar, int tooltipVerticalLine, int tooltipTitleColor, int tooltipBGColor, int rulerLabelColor, int textColor, int listButtonPressedColor, int tooltipFakeSHadowColor) {
+    public final int messagesYAxisText;
+    public final int messagesXAxisText;
+
+    public ColorSet(int toolbar, int darkBackground, int lightBackground, int ruler, int pressedButton, int legendTitle, int scrollbarOverlay, int scrollbarBorder, int statusbar, int tooltipVerticalLine, int tooltipTitleColor, int tooltipBGColor, int rulerLabelColor, int textColor, int listButtonPressedColor, int tooltipFakeSHadowColor, int messagesYAxisText, int messagesXAxisText) {
         this.toolbar = toolbar;
         this.darkBackground = darkBackground;
         this.lightBackground = lightBackground;
@@ -67,5 +75,7 @@ public class ColorSet {
         this.textColor = textColor;
         this.listButtonPressedColor = listButtonPressedColor;
         this.tooltipFakeSHadowColor = tooltipFakeSHadowColor;
+        this.messagesYAxisText = messagesYAxisText;
+        this.messagesXAxisText = messagesXAxisText;
     }
 }

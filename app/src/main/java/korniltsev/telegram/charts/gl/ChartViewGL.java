@@ -461,7 +461,8 @@ public class ChartViewGL extends TextureView {
 
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay, simple);
-            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors, simple, xColumn);
+            boolean differentXYAxisColors = barSingle;//todo
+            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors, simple, xColumn, differentXYAxisColors);
 
             Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
 
