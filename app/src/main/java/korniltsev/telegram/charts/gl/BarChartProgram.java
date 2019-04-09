@@ -13,9 +13,10 @@ import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyColor;
 
 import static korniltsev.telegram.charts.gl.GLChartProgram.BYTES_PER_FLOAT;
+import static korniltsev.telegram.charts.gl.GLChartProgram.CHART_HEIGHT;
 
 public class BarChartProgram {
-    private final ColumnData column;
+    public final ColumnData column;
     private final int w;
     private final int h;
     private final Dimen dimen;
@@ -26,6 +27,9 @@ public class BarChartProgram {
     private final int vbo;
 
     private final SimpleShader shader;
+    public float zoom;
+    public float left;
+
     public BarChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, SimpleShader simple) {
         this.column = column;
         this.w = w;
@@ -82,6 +86,7 @@ public class BarChartProgram {
     public void prepare(float []PROJ) {
         float hpadding = dimen.dpf(16);
         float maxx = vertices[vertices.length - 2];
+        final long max = column.max;
 
         Matrix.setIdentityM(V, 0);
         if (scrollbar) {
@@ -90,7 +95,8 @@ public class BarChartProgram {
 
             final float w = this.w - 2 * hpadding;
             final float h = root.dimen_scrollbar_height;
-            final float yscale = h / (column.max - 0);
+
+            final float yscale = h / (max - 0);
             final float dy = -yscale * 0;
 
             Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + root.checkboxesHeight, 0);
@@ -98,7 +104,22 @@ public class BarChartProgram {
             Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
             Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
         } else {
-            throw new AssertionError("unimplemented");
+
+
+            final int ypx = dimen.dpi(80) + root.checkboxesHeight;
+
+            final float w = this.w - 2 * hpadding;
+            final float h = dimen.dpf(CHART_HEIGHT);
+            final float xdiff = maxx;
+            final float ws = w / xdiff / zoom;
+            final float hs = h / (max - 0);
+            final float dy = -hs * 0;
+            Matrix.translateM(V, 0, hpadding, ypx, 0);
+            Matrix.translateM(V, 0, 0, dy, 0);
+            Matrix.scaleM(V, 0, ws, hs, 1.0f);
+            Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
+
+            Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
         }
 
     }

@@ -178,55 +178,59 @@ public class MainActivity extends Activity {
 
 
         ColumnData[] data1 = datum.data;
-        LinearLayout checkboxlist = new LinearLayout(this);
-        checkboxlist.setOrientation(LinearLayout.VERTICAL);
+        if (datum.type == ColumnData.Type.bar && datum.data.length == 2) {
+
+        } else {
+            LinearLayout checkboxlist = new LinearLayout(this);
+            checkboxlist.setOrientation(LinearLayout.VERTICAL);
 //        MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground);
 //        ds.add(d);
 //        checkboxlist.setBackgroundDrawable(d);
-        for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
-            final ColumnData c = data1[i];
-            if (c.id.equals(ChartData.COLUMN_ID_X)) {
-                continue;
-            }
-            if (i != 1) {
-                View divider = new View(this){
-                    @Override
-                    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-                        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-                    }
-
-
-                };
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(ChartViewGL.CHECKBOX_DIVIDER_HIEIGHT));
-                lp.leftMargin = dimen.dpi(56);
-                lp.gravity = Gravity.BOTTOM;
-                divider.setBackgroundColor(currentColorSet.ruler);
-                checkboxlist.addView(divider, lp);
-                dividers.add(divider);
-            }
-            MyCheckBox cb = new MyCheckBox(this, dimen, c.name, c.color);
-            cb.setPadding(dimen.dpi(56), 0, dimen.dpi(32), 0);
-            cb.setTextColor(textColor);
-            cb.setText(c.name);
-            cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    newChart.setChecked(c.id, isChecked);
+            for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
+                final ColumnData c = data1[i];
+                if (c.id.equals(ChartData.COLUMN_ID_X)) {
+                    continue;
                 }
-            });
-            LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(ChartViewGL.CHECKBOX_HEIGHT_DPI));
+                if (i != 1) {
+                    View divider = new View(this){
+                        @Override
+                        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+                        }
+
+
+                    };
+                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(ChartViewGL.CHECKBOX_DIVIDER_HIEIGHT));
+                    lp.leftMargin = dimen.dpi(56);
+                    lp.gravity = Gravity.BOTTOM;
+                    divider.setBackgroundColor(currentColorSet.ruler);
+                    checkboxlist.addView(divider, lp);
+                    dividers.add(divider);
+                }
+                MyCheckBox cb = new MyCheckBox(this, dimen, c.name, c.color);
+                cb.setPadding(dimen.dpi(56), 0, dimen.dpi(32), 0);
+                cb.setTextColor(textColor);
+                cb.setText(c.name);
+                cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        newChart.setChecked(c.id, isChecked);
+                    }
+                });
+                LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(ChartViewGL.CHECKBOX_HEIGHT_DPI));
+                cblp.gravity = Gravity.BOTTOM;
+                cb.setLayoutParams(cblp);
+
+                checkboxlist.addView(cb);
+
+                checkboxes.add(cb);
+
+            }
+
+            FrameLayout.LayoutParams cblp = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
             cblp.gravity = Gravity.BOTTOM;
-            cb.setLayoutParams(cblp);
-
-            checkboxlist.addView(cb);
-
-            checkboxes.add(cb);
-
+            list.addView(checkboxlist, cblp);
         }
-
-        FrameLayout.LayoutParams cblp = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-        cblp.gravity = Gravity.BOTTOM;
-        list.addView(checkboxlist, cblp);
         chartsRoots.add(list);
         return list;
     }

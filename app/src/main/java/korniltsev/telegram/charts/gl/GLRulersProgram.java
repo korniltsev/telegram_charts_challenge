@@ -314,6 +314,8 @@ public final class GLRulersProgram {
                 r.scale = r.scaleAnim.tick(t);
                 if (r.scaleAnim.ended) {
                     r.scaleAnim = null;
+                } else {
+                    invalidate = true;
                 }
             }
             if (r.alphaAnim != null) {
