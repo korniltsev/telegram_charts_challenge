@@ -44,15 +44,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 /*
 
 
-    - 4. A daily bar chart with single data type (Screenshot 7).
-        + ruler
-        + xvalues
-        + цвет надписей
-        + max anim
-        + сокращалка надписей + не анимировать надпись если округленная надпись одинаковая
-        - tooltip
-        + спрятать чекбокс
-
     - 3. A stacked bar chart with 7 data types (Screenshots 5-6).
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
         - fix bug with wrong ruler position
@@ -66,7 +57,9 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     - дизайн чекбоксов
     - придумать как исправить лаг когда скролишь и мин/макс меняется каждые пару фреймов
     - в bar графике линейка показывает 25M, а tooltip 23m
+
 ---------------------------------------
+    - в баре тултип показывать около значения а не вверху
     [ ? ] Matrix -> MyMatrix for inlining? test if it does something
 
 
@@ -751,6 +744,7 @@ public class ChartViewGL extends TextureView {
 
                 if (tooltipIndex != -1) {
                     this.tooltip.animationTick(t, tooltipIndex, checked);
+                    this.tooltip.calcPos(chartLines[0].MVP, tooltipIndex);
                     this.tooltip.drawVLine(PROJ, chartLines[0].MVP, tooltipIndex);
                 }
 
@@ -791,6 +785,7 @@ public class ChartViewGL extends TextureView {
                 chartBar.draw(t);
                 if (tooltipIndex != -1) {
                     this.tooltip.animationTick(t, tooltipIndex, checked);
+                    this.tooltip.calcPos(chartBar.MVP, tooltipIndex);
                     this.tooltip.drawTooltip(PROJ);
                 }
                 invalidated = it_invalidated || invalidated;

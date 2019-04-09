@@ -220,11 +220,7 @@ public class Tooltip {
     }
 
     public void drawVLine(float[] proj, float[] chartMVP, int index) {
-        // calc vline pos
-        vec1[0] = index;
-        vec1[3] = 1;
-        Matrix.multiplyMV(vec2, 0, chartMVP, 0, vec1, 0);
-        ndcx = (vec2[0] + 1f) / 2f;
+
 
         // draw wline
         Matrix.setIdentityM(VIEW, 0);
@@ -242,6 +238,14 @@ public class Tooltip {
         GLES20.glLineWidth(dimen.dpf(1f));
         GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, lineVertices.length / 2);
+    }
+
+    public void calcPos(float[] chartMVP, int index) {
+        // calc vline pos
+        vec1[0] = index;
+        vec1[3] = 1;
+        Matrix.multiplyMV(vec2, 0, chartMVP, 0, vec1, 0);
+        ndcx = (vec2[0] + 1f) / 2f;
     }
 
     public void rlease() {
