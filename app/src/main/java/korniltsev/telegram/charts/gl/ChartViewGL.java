@@ -76,7 +76,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 
     разобраться что с цветами, 0xff222222 не рисуется
-    4.1 крашится на выходе
+
 
     сократить цифры на лейблах на линейных графиках
     tooltip animation
