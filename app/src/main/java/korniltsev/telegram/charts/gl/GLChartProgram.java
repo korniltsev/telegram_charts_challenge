@@ -16,7 +16,7 @@ import korniltsev.telegram.charts.ui.MyColor;
 
 public final class GLChartProgram {
 
-    private static final int BYTES_PER_FLOAT = 4;
+    public static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
     private static final int POSITION_DATA_SIZE = 2;
     public static final int CHART_HEIGHT = 280;

@@ -239,6 +239,7 @@ public class ChartViewGL extends TextureView {
 
         public Tooltip tooltip;
         public GLChartProgram[] scrollbar_lines;
+        private BarChartProgram scrollbar_bars;
         public GLChartProgram[] chart;
         public GLScrollbarOverlayProgram overlay;
         public GLRulersProgram ruler;
@@ -247,6 +248,7 @@ public class ChartViewGL extends TextureView {
 //        public GLChartProgram.Shader chartShader;
         public MyCircles.Shader joiningShader;
         private ArrayList<MyRect> debugRects;
+
 
         public Render(ChartData column) {
             super("ChartViewGLRender", Process.getThreadPriority(Process.myTid()));
@@ -403,6 +405,7 @@ public class ChartViewGL extends TextureView {
 
 
             ColumnData[] data = this.data.data;
+            boolean barSingle = this.data.type == ColumnData.Type.bar && data.length == 2;
             if (this.data.type == ColumnData.Type.line) {
 
                 scrollbar_lines = new GLChartProgram[data.length - 1];
@@ -420,6 +423,8 @@ public class ChartViewGL extends TextureView {
                     it.maxValue = max;
                     it.minValue = min;
                 }
+            } else if (barSingle) {
+                scrollbar_bars = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, true, simple);
             }
 //            long scrollbar = SystemClock.elapsedRealtimeNanos();
 
@@ -429,6 +434,7 @@ public class ChartViewGL extends TextureView {
                 chart[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground, simple, joiningShader);
                 checked[i - 1] = true;
             }
+
 //            long chart = SystemClock.elapsedRealtimeNanos();
 
 
@@ -662,25 +668,28 @@ public class ChartViewGL extends TextureView {
         }
 
         public boolean drawScrollbar(boolean invalidated, long t) {
-            if (scrollbar_lines == null) {
-                return false;
-            }
-            for (GLChartProgram chartProgram : scrollbar_lines ) {
-                boolean it_invalid = chartProgram.animateionTick(t);
-                invalidated = invalidated || it_invalid;
-            }
-            for (GLChartProgram chartProgram : scrollbar_lines ) {
-                chartProgram.step1(PROJ);
-            }
-            MyGL.checkGlError2();
-            for (GLChartProgram chartProgram : scrollbar_lines ) {
-                chartProgram.shader.use();//todo use only once!
-                chartProgram.step2();
+            if (scrollbar_lines != null) {
+                for (GLChartProgram chartProgram : scrollbar_lines) {
+                    boolean it_invalid = chartProgram.animateionTick(t);
+                    invalidated = invalidated || it_invalid;
+                }
+                for (GLChartProgram chartProgram : scrollbar_lines) {
+                    chartProgram.step1(PROJ);
+                }
+                MyGL.checkGlError2();
+                for (GLChartProgram chartProgram : scrollbar_lines) {
+                    chartProgram.shader.use();//todo use only once!
+                    chartProgram.step2();
 
-                chartProgram.lineJoining.shader.use();
-                chartProgram.step3();
+                    chartProgram.lineJoining.shader.use();
+                    chartProgram.step3();
+                }
+                MyGL.checkGlError2();
+            } else if (scrollbar_bars != null) {
+                scrollbar_bars.prepare(PROJ);
+                boolean it_invalidated = scrollbar_bars.draw(t);
+                invalidated = invalidated || it_invalidated;
             }
-            MyGL.checkGlError2();
             return invalidated;
         }
 
