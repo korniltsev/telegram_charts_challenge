@@ -49,6 +49,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 /*
 
     - 5. A percentage stacked area chart with 6 data types (Screenshots 9, 10).
+        - ruler
 
     - линейка
         - стак проценты : сотню не правильно показывает
@@ -292,6 +293,7 @@ public class ChartViewGL extends TextureView {
         public GLChartProgram[] scrollbar_lines;
         private BarChartProgram scrollbar_bars;
         private Bar7ChartProgram scrollbar_bar7;
+        private PercentStackedChartProgram scrollbar_stacked_percent;
 
         public GLChartProgram[] chartLines;
         private BarChartProgram chartBar;
@@ -473,6 +475,8 @@ public class ChartViewGL extends TextureView {
 
             BarChartProgram.MyShader barShader = null;
             Bar7ChartProgram.MyShader bar7Shader = null;
+            PercentStackedChartProgram.MyShader stackPercentShader = null;
+
 
             boolean barSingle = this.data.type == ColumnData.Type.bar && data.length == 2;
             boolean bar7 = this.data.type == ColumnData.Type.bar && data.length == 8;
@@ -503,6 +507,10 @@ public class ChartViewGL extends TextureView {
                 scrollbar_bar7 = new Bar7ChartProgram(cs, w, h, dimen, ChartViewGL.this, true, bar7Shader);
                 long m = calculateBar7Max(data, 0, 1);
                 scrollbar_bar7.animateMinMax(m, false, 0);
+            } else if (stacked_percent) {
+                stackPercentShader = new PercentStackedChartProgram.MyShader();
+                List<ColumnData> cs = Arrays.asList(data).subList(1, 7);
+                scrollbar_stacked_percent = new PercentStackedChartProgram(cs, w, h, dimen, ChartViewGL.this, true, stackPercentShader);
             }
 
             if (barSingle) {
@@ -512,8 +520,7 @@ public class ChartViewGL extends TextureView {
                 chartBar7 =  new Bar7ChartProgram(cs, w, h, dimen, ChartViewGL.this, false, bar7Shader);
             } else if (stacked_percent) {
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 7);
-                PercentStackedChartProgram.MyShader s = new PercentStackedChartProgram.MyShader();
-                chartStackedPercent = new PercentStackedChartProgram(cs, w, h, dimen, ChartViewGL.this, false, s);
+                chartStackedPercent = new PercentStackedChartProgram(cs, w, h, dimen, ChartViewGL.this, false, stackPercentShader);
             } else {
                 chartLines = new GLChartProgram[data.length - 1];
                 for (int i = 1, dataLength = data.length; i < dataLength; i++) {
@@ -613,6 +620,12 @@ public class ChartViewGL extends TextureView {
                             scrollbar_bar7.animateFade(foundIndex, isChecked, 208);
                         }
                     }
+                    if (scrollbar_stacked_percent != null) {
+                        if (foundIndex != -1) {
+                            scrollbar_stacked_percent.animateFade(foundIndex, isChecked, 208);
+                        }
+                    }
+
                     if (chartLines != null) {
 
                         for (GLChartProgram c : chartLines) {
@@ -850,6 +863,11 @@ public class ChartViewGL extends TextureView {
                 boolean it_inv = scrollbar_bar7.animate(t);
                 scrollbar_bar7.prepare(PROJ);
                 scrollbar_bar7.draw(t, PROJ);
+                invalidated = it_inv || invalidated;
+            } else if (scrollbar_stacked_percent != null) {
+                boolean it_inv = scrollbar_stacked_percent.animate(t);
+                scrollbar_stacked_percent.prepare(PROJ);
+                scrollbar_stacked_percent.draw(t, PROJ);
                 invalidated = it_inv || invalidated;
             }
             return invalidated;

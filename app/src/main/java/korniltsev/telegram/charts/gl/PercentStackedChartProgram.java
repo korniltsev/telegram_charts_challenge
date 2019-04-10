@@ -200,6 +200,9 @@ public class PercentStackedChartProgram {
 
 
         for (int i = 0; i < 6; i++) {
+            if (visibility[i] == 0f) {
+                continue;
+            }
 
             MyGL.checkGlError2();
             GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[i]);
