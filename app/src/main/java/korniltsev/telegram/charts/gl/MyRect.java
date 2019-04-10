@@ -83,10 +83,10 @@ public class MyRect {
 
         GLES20.glUseProgram(program);
         float[] colors = new float[]{
-                MyColor.red(color),
-                MyColor.green(color),
-                MyColor.blue(color),
-                MyColor.alpha(color),
+                MyColor.red(color)/255f,
+                MyColor.green(color)/255f,
+                MyColor.blue(color)/255f,
+                MyColor.alpha(color)/255f,
         };
         GLES20.glUniform4fv(colorHandle, 1, colors, 0);//todo try to bind only once
 

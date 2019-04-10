@@ -80,9 +80,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     [ ? ] Matrix -> MyMatrix for inlining? test if it does something
 
 
-    разобраться что с цветами, 0xff222222 не рисуется
-
-
     сократить цифры на лейблах на линейных графиках
     tooltip animation
     alpha animation blending - render to fbo
@@ -522,7 +519,7 @@ public class ChartViewGL extends TextureView {
 
 
             debugRects = new ArrayList<>();
-//            debugRects.add(new MyRect(w, dimen.dpf(CHART_HEIGHT), 0, dimen.dpf(CHART_BOTTOM_DPI), Color.BLUE, w, h));
+//            debugRects.add(new MyRect(w, dimen.dpf(CHART_HEIGHT), 0, dimen.dpf(CHART_BOTTOM_DPI), 0xffffffff, w, h));
         }
 
 
