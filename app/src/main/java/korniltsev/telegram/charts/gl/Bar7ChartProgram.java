@@ -212,6 +212,7 @@ public class Bar7ChartProgram {
             GLES20.glEnableVertexAttribArray(shader.a_v6);
             GLES20.glEnableVertexAttribArray(shader.a_x);
             GLES20.glEnableVertexAttribArray(shader.a_zeroOrValue);
+            GLES20.glEnableVertexAttribArray(shader.a_xNo);
             MyGL.checkGlError2();
             GLES20.glVertexAttribPointer(shader.a_v0, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 0);
             GLES20.glVertexAttribPointer(shader.a_v1, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 1);
@@ -222,6 +223,7 @@ public class Bar7ChartProgram {
             GLES20.glVertexAttribPointer(shader.a_v6, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 6);
             GLES20.glVertexAttribPointer(shader.a_x, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 7);
             GLES20.glVertexAttribPointer(shader.a_zeroOrValue, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 8);
+            GLES20.glVertexAttribPointer(shader.a_xNo, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 9);
             MyGL.checkGlError2();
 
             MyColor.set(colors, column.get(i).color);
