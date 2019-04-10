@@ -79,6 +79,7 @@ public class MainActivity extends Activity {
 
     private LinearLayout toolbar;
     private MyColorDrawable bgToolbar;
+    private List<MyColorDrawable> lightBackgrounds = new ArrayList<>();
     private TextView title;
     private ImageView imageButton;
     private List<ChartViewGL> charts = new ArrayList<>();
@@ -110,7 +111,7 @@ public class MainActivity extends Activity {
 //
 //            }
 //        });
-        currentColorSet = ColorSet.DAY;
+        currentColorSet = ColorSet.NIGHT;
         textColor = currentColorSet.textColor;
         dividerColor = currentColorSet.ruler;
         dimen = new Dimen(this);
@@ -150,7 +151,7 @@ public class MainActivity extends Activity {
 
 
     private View createChart(ChartData datum) {
-        FrameLayout.LayoutParams legendLP = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+        LinearLayout.LayoutParams legendLP = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         final TextView legend = new TextView(this);
         legend.setPadding(dimen.dpi(16), dimen.dpi(16), 0, dimen.dpi(8));
         legend.setTextSize(16f);
@@ -168,16 +169,19 @@ public class MainActivity extends Activity {
 
 
         ScrollView.LayoutParams listLP = new ScrollView.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-        FrameLayout list = new FrameLayout(this){
+        LinearLayout list = new LinearLayout(this){
             @Override
             public boolean isOpaque() {
                 return true;
             }
         };
-//        list.setOrientation(LinearLayout.VERTICAL);
+        MyColorDrawable background = new MyColorDrawable(currentColorSet.lightBackground);
+        lightBackgrounds.add(background);
+        list.setBackgroundDrawable(background);
+        list.setOrientation(LinearLayout.VERTICAL);
         list.setLayoutParams(listLP);
-        list.addView(newChart);
         list.addView(legend);
+        list.addView(newChart);
 
 
 
@@ -231,7 +235,7 @@ public class MainActivity extends Activity {
 
             }
 
-            FrameLayout.LayoutParams cblp = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+            LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
             cblp.gravity = Gravity.BOTTOM;
             list.addView(checkboxlist, cblp);
         }
@@ -329,7 +333,7 @@ public class MainActivity extends Activity {
         final boolean animateDayNight = Build.VERSION.SDK_INT >= 21;
         final int colorAnimationDuration;
         if (animateDayNight) {
-            colorAnimationDuration = MyAnimation.ANIM_DRATION;
+            colorAnimationDuration = 0;
         } else {
             colorAnimationDuration = 0;
         }
@@ -384,6 +388,9 @@ public class MainActivity extends Activity {
         }
 
         if (animateUI) {
+            for (MyColorDrawable b : lightBackgrounds) {
+                b.animate(currentColorSet.lightBackground, colorAnimationDuration);
+            }
             textColorAnim = new MyAnimation.Color(colorAnimationDuration, textColor, currentColorSet.textColor);
             dividerAnim = new MyAnimation.Color(colorAnimationDuration, dividerColor, currentColorSet.ruler);
             Runnable r = new Runnable() {

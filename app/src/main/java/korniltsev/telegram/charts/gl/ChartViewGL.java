@@ -1,6 +1,7 @@
 package korniltsev.telegram.charts.gl;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
@@ -112,6 +113,8 @@ public class ChartViewGL extends TextureView {
     public static final int CHECKBOX_HEIGHT_DPI = 50;
     public static final int CHECKBOX_DIVIDER_HIEIGHT = 1;
     public static final int CHART_BOTTOM_DIP = 80;//relative to checkboxes
+    public static final int CHART_HEIGHT = 280;
+    public static final int CHART_BOTTOM_DPI = 80;
     public final Dimen dimen;
 
     public final int dimen_v_padding8;
@@ -153,7 +156,8 @@ public class ChartViewGL extends TextureView {
         currentColors = currentColorsSet;
         this.dimen = dimen;
         this.data = c;
-        legend_height = dimen.dpi(46);
+//        legend_height = dimen.dpi(46);
+        legend_height = 0;
         dimen_v_padding8 = dimen.dpi(8);
         dimen_chart_height = dimen.dpi(300);
         dimen_scrollbar_height = dimen.dpi(38);
@@ -164,13 +168,13 @@ public class ChartViewGL extends TextureView {
 //        r.start();
         setSurfaceTextureListener(r);
 
-        if (data.type == ColumnData.Type.bar && data.data.length == 2) {
-            checkboxesHeight = 0;
-        } else {
-            int checkboxesCount = c.data.length - 1;
-            int dividersCount = checkboxesCount - 1;
-            checkboxesHeight = checkboxesCount * dimen.dpi(CHECKBOX_HEIGHT_DPI) + dividersCount * dimen.dpi(CHECKBOX_DIVIDER_HIEIGHT);
-        }
+        checkboxesHeight = 0;
+//        if (data.type == ColumnData.Type.bar && data.data.length == 2) {
+//        } else {
+//            int checkboxesCount = c.data.length - 1;
+//            int dividersCount = checkboxesCount - 1;
+//            checkboxesHeight = checkboxesCount * dimen.dpi(CHECKBOX_HEIGHT_DPI) + dividersCount * dimen.dpi(CHECKBOX_DIVIDER_HIEIGHT);
+//        }
 
         hpadding = dimen.dpi(16);
         h = dimen_v_padding8
@@ -213,7 +217,7 @@ public class ChartViewGL extends TextureView {
         }
 
         chartBottom = bottom - dimen.dpi(CHART_BOTTOM_DIP) - checkboxesHeight;
-        chartTop = chartBottom - dimen.dpi(280);
+        chartTop = chartBottom - dimen.dpi(CHART_HEIGHT);
 //        chartTop = dimen.dpi(80);
     }
 
@@ -518,7 +522,7 @@ public class ChartViewGL extends TextureView {
 
 
             debugRects = new ArrayList<>();
-//            debugRects.add(new MyRect(w, chartBottom-chartTop, 0, h-chartBottom, Color.BLUE, w, h));
+//            debugRects.add(new MyRect(w, dimen.dpf(CHART_HEIGHT), 0, dimen.dpf(CHART_BOTTOM_DPI), Color.BLUE, w, h));
         }
 
 
@@ -744,7 +748,8 @@ public class ChartViewGL extends TextureView {
 //                long t4 = System.nanoTime();
             boolean rulerInvalidated = ruler.animationTick(t);
             invalidated = rulerInvalidated | invalidated;
-            GLES20.glScissor(0, h - chartBottom - dimen.dpi(1), w, chartBottom - chartTop);
+            GLES20.glScissor(0, dimen.dpi(CHART_BOTTOM_DPI) - dimen.dpi(1), w, dimen.dpi(CHART_HEIGHT));
+//            GLES20.glScissor(0, chartTop, w, Math.abs(chartTop - chartBottom));
 
             MyGL.checkGlError2();
             if (r.chartLines != null) {
