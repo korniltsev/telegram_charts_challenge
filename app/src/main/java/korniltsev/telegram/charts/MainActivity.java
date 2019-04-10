@@ -112,7 +112,8 @@ public class MainActivity extends Activity {
         dividerColor = currentColorSet.ruler;
         dimen = new Dimen(this);
 
-        data = readData();
+//        data = readData();
+        data = readData().subList(2, 5);
         prepareRootView();
 
         ScrollView scrollView = new ScrollView(this);

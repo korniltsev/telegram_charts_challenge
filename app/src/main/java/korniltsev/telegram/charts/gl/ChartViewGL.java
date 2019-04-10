@@ -264,6 +264,7 @@ public class ChartViewGL extends TextureView {
         public Tooltip tooltip;
         public GLChartProgram[] scrollbar_lines;
         private BarChartProgram scrollbar_bars;
+        private MultiBarChartProgram scrollbar_bar7;
 
         public GLChartProgram[] chartLines;
         private BarChartProgram chartBar;
@@ -443,6 +444,7 @@ public class ChartViewGL extends TextureView {
 
             BarChartProgram.MyShader barShader = null;
             boolean barSingle = this.data.type == ColumnData.Type.bar && data.length == 2;
+            boolean bar7 = this.data.type == ColumnData.Type.bar && data.length == 8;
             if (this.data.type == ColumnData.Type.line) {
 
                 scrollbar_lines = new GLChartProgram[data.length - 1];
@@ -463,6 +465,10 @@ public class ChartViewGL extends TextureView {
             } else if (barSingle) {
                 barShader = new BarChartProgram.MyShader();
                 scrollbar_bars = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, true, barShader);
+            } else if (bar7) {
+//                BarChartProgram barChartProgram = new BarChartProgram();
+                MultiBarChartProgram.MyShader shader = new MultiBarChartProgram.MyShader();
+                scrollbar_bar7 = new MultiBarChartProgram(data[1], w, h, dimen, ChartViewGL.this, true, shader);
             }
 
             if (barSingle) {
@@ -735,6 +741,11 @@ public class ChartViewGL extends TextureView {
                 scrollbar_bars.prepare(PROJ);
                 scrollbar_bars.draw(t);
                 invalidated = invalidated || it_invalidated;
+            } else if (scrollbar_bar7 != null) {
+                boolean it_inv = scrollbar_bar7.animate(t);
+                scrollbar_bar7.prepare(PROJ);
+                scrollbar_bar7.draw(t, PROJ);
+                invalidated = it_inv || invalidated;
             }
             return invalidated;
         }
