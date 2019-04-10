@@ -1,13 +1,11 @@
 package korniltsev.telegram.charts.gl;
 
-import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,10 +16,9 @@ import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyColor;
 
-import static korniltsev.telegram.charts.gl.GLChartProgram.BYTES_PER_FLOAT;
 import static korniltsev.telegram.charts.gl.GLChartProgram.CHART_HEIGHT;
 
-public class MultiBarChartProgram {
+public class Bar7ChartProgram {
     public final List<ColumnData> column;// excluding x
     private final int w;
     private final int h;
@@ -45,7 +42,7 @@ public class MultiBarChartProgram {
     private int tooltipIndex = -1;
 
 
-    public MultiBarChartProgram.Vx set(int i, Vx v) {
+    public Bar7ChartProgram.Vx set(int i, Vx v) {
         List<ColumnData> cs = column;
         v.v0 = cs.get(0).values[i];
         v.v1 = cs.get(1).values[i];
@@ -57,7 +54,7 @@ public class MultiBarChartProgram {
         return v;
     }
 
-    public MultiBarChartProgram(List<ColumnData> columns, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader) {
+    public Bar7ChartProgram(List<ColumnData> columns, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader) {
         this.column = columns;
         for (int i = 0; i < visibility.length; i++) {
             visibility[i] = 1f;

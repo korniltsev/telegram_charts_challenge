@@ -27,7 +27,6 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
-import korniltsev.telegram.charts.BuildConfig;
 import korniltsev.telegram.charts.MainActivity;
 import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.data.ColumnData;
@@ -52,7 +51,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     - 3. A stacked bar chart with 7 data types (Screenshots 5-6).
         + график
         + ruler text colors fix
-        - viewport minmax anim
+        + viewport minmax anim
         - tooltip
         - запретить пустые графики везде
     - 5. A percentage stacked area chart with 6 data types (Screenshots 9, 10).
@@ -273,11 +272,11 @@ public class ChartViewGL extends TextureView {
         public Tooltip tooltip;
         public GLChartProgram[] scrollbar_lines;
         private BarChartProgram scrollbar_bars;
-        private MultiBarChartProgram scrollbar_bar7;
+        private Bar7ChartProgram scrollbar_bar7;
 
         public GLChartProgram[] chartLines;
         private BarChartProgram chartBar;
-        private MultiBarChartProgram chartBar7;
+        private Bar7ChartProgram chartBar7;
 
         public GLScrollbarOverlayProgram overlay;
         public GLRulersProgram ruler;
@@ -453,7 +452,7 @@ public class ChartViewGL extends TextureView {
             }
 
             BarChartProgram.MyShader barShader = null;
-            MultiBarChartProgram.MyShader bar7Shader = null;
+            Bar7ChartProgram.MyShader bar7Shader = null;
 
             boolean barSingle = this.data.type == ColumnData.Type.bar && data.length == 2;
             boolean bar7 = this.data.type == ColumnData.Type.bar && data.length == 8;
@@ -478,9 +477,9 @@ public class ChartViewGL extends TextureView {
                 barShader = new BarChartProgram.MyShader();
                 scrollbar_bars = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, true, barShader);
             } else if (bar7) {
-                bar7Shader = new MultiBarChartProgram.MyShader();
+                bar7Shader = new Bar7ChartProgram.MyShader();
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
-                scrollbar_bar7 = new MultiBarChartProgram(cs, w, h, dimen, ChartViewGL.this, true, bar7Shader);
+                scrollbar_bar7 = new Bar7ChartProgram(cs, w, h, dimen, ChartViewGL.this, true, bar7Shader);
                 long m = calculateBar7Max(data, 0, 1);
                 scrollbar_bar7.animateMinMax(m, false, 0);
             }
@@ -489,7 +488,7 @@ public class ChartViewGL extends TextureView {
                 chartBar = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, false, barShader);
             } else if (bar7) {
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
-                chartBar7 =  new MultiBarChartProgram(cs, w, h, dimen, ChartViewGL.this, false, bar7Shader);
+                chartBar7 =  new Bar7ChartProgram(cs, w, h, dimen, ChartViewGL.this, false, bar7Shader);
             } else {
                 chartLines = new GLChartProgram[data.length - 1];
                 for (int i = 1, dataLength = data.length; i < dataLength; i++) {
