@@ -481,7 +481,7 @@ public class ChartViewGL extends TextureView {
                 bar7Shader = new MultiBarChartProgram.MyShader();
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
                 scrollbar_bar7 = new MultiBarChartProgram(cs, w, h, dimen, ChartViewGL.this, true, bar7Shader);
-                long m = calculateBar7Max(data);
+                long m = calculateBar7Max(data, 0, 1);
                 scrollbar_bar7.animateMinMax(m, false, 0);
             }
 
@@ -490,8 +490,6 @@ public class ChartViewGL extends TextureView {
             } else if (bar7) {
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
                 chartBar7 =  new MultiBarChartProgram(cs, w, h, dimen, ChartViewGL.this, false, bar7Shader);
-                long m = calculateBar7Max(data);
-                chartBar7.animateMinMax(m, false, 0);
             } else {
                 chartLines = new GLChartProgram[data.length - 1];
                 for (int i = 1, dataLength = data.length; i < dataLength; i++) {
@@ -585,7 +583,7 @@ public class ChartViewGL extends TextureView {
                         }
                     }
                     if (scrollbar_bar7 != null) {
-                        long max = calculateBar7Max(data1);
+                        long max = calculateBar7Max(data1, 0, 1);
                         scrollbar_bar7.animateMinMax(max, true, 208);
                         if (foundIndex != -1) {
                             scrollbar_bar7.animateFade(foundIndex, isChecked, 208);
@@ -618,15 +616,17 @@ public class ChartViewGL extends TextureView {
                             prevMin = viewportMin;
                         }
                     }
-                    if (chartBar != null) {
-                        chartBar.setTooltipIndex(-1);
-                    }
                     if (chartBar7 != null) {
                         chartBar7.setTooltipIndex(-1);
-                        long max = calculateBar7Max(data1);
-                        chartBar7.animateMinMax(max, true, 208);
+                        viewportMax = calculateBar7Max(data1, r.overlay.left, r.overlay.right);
+                        chartBar7.animateMinMax(viewportMax, true, 208);
                         if (foundIndex != -1) {
                             chartBar7.animateFade(foundIndex, isChecked, 208);
+                        }
+                        float ratio = prevMax / (float) viewportMax;
+                        if (prevMax != viewportMax) {
+                            ruler.animateScale(ratio, 0, viewportMax, checkedCount, prevCheckedCOunt, 208);
+                            prevMax = viewportMax;
                         }
                     }
 
@@ -637,11 +637,15 @@ public class ChartViewGL extends TextureView {
             postToRender(setCheckedOnRenderThread);
         }
 
-        private long calculateBar7Max(ColumnData[] data1) {
+        private long calculateBar7Max(ColumnData[] data1, float left, float right) {
+
+            int len = data1[0].values.length;
+            int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
+            int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
+
             long max;
             max = Long.MIN_VALUE;
-            int n = data1[0].values.length;
-            for (int i = 0; i < n; i++) {
+            for (int i = from; i < to; i++) {
                 int sum = 0;
                 for (int i1 = 0; i1 < checked.length; i1++) {
                     if (checked[i1]) {
@@ -687,15 +691,16 @@ public class ChartViewGL extends TextureView {
                     }
                 }
                 if (chartBar != null) {
-                    chartBar.animateMinMax(viewportMax, false, 0);
                     calculateChartBarMax(r.overlay.left, r.overlay.right);
+                    chartBar.animateMinMax(viewportMax, false, 0);
                     ruler.init(0, viewportMax);
                     prevMax = viewportMax;
                 }
                 if (chartBar7 != null) {
-                    long m = calculateBar7Max(data.data);
-                    ruler.init(0, m);
-                    prevMax = m;
+                    viewportMax = calculateBar7Max(data.data, r.overlay.left, r.overlay.right);
+                    chartBar7.animateMinMax(viewportMax, false, 0);
+                    ruler.init(0, viewportMax);
+                    prevMax = viewportMax;
                 }
                 rulerInitDone = true;
             }
@@ -1123,6 +1128,15 @@ public class ChartViewGL extends TextureView {
                 ruler.setLeftRight(left, right, scale);
                 chartBar7.zoom = scale;
                 chartBar7.left = left;
+                viewportMax = calculateBar7Max(data.data, r.overlay.left, r.overlay.right);
+                if (prevMax != viewportMax) {
+                    if (rulerInitDone) {
+                        chartBar7.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
+                        float ratio = prevMax / (float) viewportMax;
+                        ruler.animateScale(ratio, 0, viewportMax, 1, 1, 256);
+                    }
+                    prevMax = viewportMax;
+                }
                 //todo
             }
             firstLeftRightUpdate = false;
