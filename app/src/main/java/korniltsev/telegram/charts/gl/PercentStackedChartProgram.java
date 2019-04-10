@@ -84,19 +84,19 @@ public class PercentStackedChartProgram {
 
             List<Vx> vs = new ArrayList<>();
             int columnNo = j;
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < n-1; i++) {
 //            long value = values[i];
                 vs.add(set(i, new Vx(i, 0, i)));
 
                 vs.add(set(i, new Vx(i, 1, i)));
 
-                vs.add(set(i, new Vx(i + 1, 0, i)));
+                vs.add(set(i+1, new Vx(i + 1, 0, i)));
 
-                vs.add(set(i, new Vx(i + 1, 0, i)));
+                vs.add(set(i+1, new Vx(i + 1, 0, i)));
 
                 vs.add(set(i, new Vx(i, 1, i)));
 
-                vs.add(set(i, new Vx(i + 1, 1, i)));
+                vs.add(set(i+1, new Vx(i + 1, 1, i)));
             }
             ByteBuffer buf1 = ByteBuffer.allocateDirect(vs.size() * Vx.SIZE)
                     .order(ByteOrder.nativeOrder());
@@ -153,7 +153,7 @@ public class PercentStackedChartProgram {
 
     public void prepare(float[] PROJ) {
         float hpadding = dimen.dpf(16);
-        float maxx = n ;
+        float maxx = n-1;
 
 
         Matrix.setIdentityM(V, 0);
