@@ -48,13 +48,13 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 /*
 
-    - 5. A percentage stacked area chart with 6 data types (Screenshots 9, 10).
-        - ruler
 
     - линейка
         - стак проценты : сотню не правильно показывает
         - bar графике линейка показывает 25M, а tooltip 23m
         - цвет горизонтальной линии линейки
+        - линейка рисуется поверх тултипа
+        - цвет линейки вертикальной
     ----------------
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
 
@@ -970,6 +970,7 @@ public class ChartViewGL extends TextureView {
                 if (tooltipIndex != -1) {
                     this.tooltip.animationTick(t, tooltipIndex, checked);
                     this.tooltip.calcPos(chartStackedPercent.MVP, tooltipIndex);
+                    this.tooltip.drawVLine(PROJ, chartStackedPercent.MVP, tooltipIndex);
                     this.tooltip.drawTooltip(PROJ);
                 }
                 invalidated = it_invalidated || invalidated;
@@ -1423,6 +1424,9 @@ public class ChartViewGL extends TextureView {
                     if (r.chartBar7 != null) {
                         r.chartBar7.setTooltipIndex(finali);
                     }
+                    if (r.chartStackedPercent != null) {
+                        r.chartStackedPercent.setTooltipIndex(finali);
+                    }
 //                    r.drawAndSwap();
                     r.invalidateRender();
                 }
@@ -1469,6 +1473,9 @@ public class ChartViewGL extends TextureView {
         }
         if (r.chartBar7 != null) {
             r.chartBar7.setTooltipIndex(-1);
+        }
+        if (r.chartStackedPercent != null) {
+            r.chartStackedPercent.setTooltipIndex(-1);
         }
 //                r.drawAndSwap();
         r.invalidateRender();

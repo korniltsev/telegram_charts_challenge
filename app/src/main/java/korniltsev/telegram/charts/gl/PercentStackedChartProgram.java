@@ -86,17 +86,17 @@ public class PercentStackedChartProgram {
             int columnNo = j;
             for (int i = 0; i < n-1; i++) {
 //            long value = values[i];
-                vs.add(set(i, new Vx(i, 0, i)));
+                vs.add(set(i, new Vx(i, 0)));
 
-                vs.add(set(i, new Vx(i, 1, i)));
+                vs.add(set(i, new Vx(i, 1)));
 
-                vs.add(set(i+1, new Vx(i + 1, 0, i)));
+                vs.add(set(i+1, new Vx(i + 1, 0)));
 
-                vs.add(set(i+1, new Vx(i + 1, 0, i)));
+                vs.add(set(i+1, new Vx(i + 1, 0)));
 
-                vs.add(set(i, new Vx(i, 1, i)));
+                vs.add(set(i, new Vx(i, 1)));
 
-                vs.add(set(i+1, new Vx(i + 1, 1, i)));
+                vs.add(set(i+1, new Vx(i + 1, 1)));
             }
             ByteBuffer buf1 = ByteBuffer.allocateDirect(vs.size() * Vx.SIZE)
                     .order(ByteOrder.nativeOrder());
@@ -110,7 +110,7 @@ public class PercentStackedChartProgram {
 //                buf1.putFloat(v.v6);
                 buf1.putFloat(v.x);
                 buf1.putFloat(v.zeroOrValue);
-                buf1.putFloat(v.xNo);
+//                buf1.putFloat(v.xNo);
             }
             vxCount = vs.size();
             buf1.position(0);
@@ -207,16 +207,24 @@ public class PercentStackedChartProgram {
             MyGL.checkGlError2();
             GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[i]);
             GLES20.glEnableVertexAttribArray(shader.a_v0);
+            MyGL.checkGlError2();
             GLES20.glEnableVertexAttribArray(shader.a_v1);
+            MyGL.checkGlError2();
             GLES20.glEnableVertexAttribArray(shader.a_v2);
+            MyGL.checkGlError2();
             GLES20.glEnableVertexAttribArray(shader.a_v3);
+            MyGL.checkGlError2();
             GLES20.glEnableVertexAttribArray(shader.a_v4);
+            MyGL.checkGlError2();
             GLES20.glEnableVertexAttribArray(shader.a_v5);
 //            GLES20.glEnableVertexAttribArray(shader.a_v6);
-            GLES20.glEnableVertexAttribArray(shader.a_x);
-            GLES20.glEnableVertexAttribArray(shader.a_zeroOrValue);
-            GLES20.glEnableVertexAttribArray(shader.a_xNo);
             MyGL.checkGlError2();
+            GLES20.glEnableVertexAttribArray(shader.a_x);
+            MyGL.checkGlError2();
+            GLES20.glEnableVertexAttribArray(shader.a_zeroOrValue);
+            MyGL.checkGlError2();
+//            GLES20.glEnableVertexAttribArray(shader.a_xNo);
+//            MyGL.checkGlError2();
             GLES20.glVertexAttribPointer(shader.a_v0, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 0);
             GLES20.glVertexAttribPointer(shader.a_v1, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 1);
             GLES20.glVertexAttribPointer(shader.a_v2, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 2);
@@ -226,12 +234,12 @@ public class PercentStackedChartProgram {
 //            GLES20.glVertexAttribPointer(shader.a_v6, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 6);
             GLES20.glVertexAttribPointer(shader.a_x, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 6);
             GLES20.glVertexAttribPointer(shader.a_zeroOrValue, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 7);
-            GLES20.glVertexAttribPointer(shader.a_xNo, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 8);
+//            GLES20.glVertexAttribPointer(shader.a_xNo, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 8);
             MyGL.checkGlError2();
 
             MyColor.set(colors, column.get(i).color);
             GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
-            GLES20.glUniform1f(shader.u_selected_index, tooltipIndex);
+//            GLES20.glUniform1f(shader.u_selected_index, tooltipIndex);
             GLES20.glUniform1f(shader.u_columnNo, i);
             GLES20.glUniformMatrix4fv(shader.u_P, 1, false, PROJ, 0);
             GLES20.glUniformMatrix4fv(shader.u_V, 1, false, V, 0);
@@ -272,7 +280,7 @@ public class PercentStackedChartProgram {
     }
 
     static class Vx {
-        public static final int SIZE = 9 * 4;
+        public static final int SIZE = 8 * 4;
         float v0;
         float v1;
         float v2;
@@ -282,12 +290,12 @@ public class PercentStackedChartProgram {
 //        float v6;
         float x;
         float zeroOrValue;// zero or value
-        float xNo;
+//        float xNo;
 
-        public Vx(float x, float zeroOrValue, float xNo) {
+        public Vx(float x, float zeroOrValue) {
             this.x = x;
             this.zeroOrValue = zeroOrValue;
-            this.xNo = xNo;
+//            this.xNo = xNo;
         }
     }
 
@@ -295,7 +303,7 @@ public class PercentStackedChartProgram {
 
         public final int program;
         public final int colorHandle;
-        public final int u_selected_index;
+//        public final int u_selected_index;
         public final int u_V;
         public final int u_P;
         public final int u_columnNo;
@@ -308,7 +316,7 @@ public class PercentStackedChartProgram {
 //        public final int a_v6;
         public final int a_x;
         public final int a_zeroOrValue;
-        public final int a_xNo;
+//        public final int a_xNo;
 
         public final int u_v0;
         public final int u_v1;
@@ -330,7 +338,7 @@ public class PercentStackedChartProgram {
             }
             u_V = GLES20.glGetUniformLocation(program, "u_V");
             u_P = GLES20.glGetUniformLocation(program, "u_P");
-            u_selected_index = GLES20.glGetUniformLocation(program, "u_selected_index");
+//            u_selected_index = GLES20.glGetUniformLocation(program, "u_selected_index");
             a_v0 = GLES20.glGetAttribLocation(program, "a_v0");
             a_v1 = GLES20.glGetAttribLocation(program, "a_v1");
             a_v2 = GLES20.glGetAttribLocation(program, "a_v2");
@@ -340,7 +348,7 @@ public class PercentStackedChartProgram {
 //            a_v6 = GLES20.glGetAttribLocation(program, "a_v6");
             a_x = GLES20.glGetAttribLocation(program, "a_x");
             a_zeroOrValue = GLES20.glGetAttribLocation(program, "a_zeroOrValue");
-            a_xNo = GLES20.glGetAttribLocation(program, "a_xNo");
+//            a_xNo = GLES20.glGetAttribLocation(program, "a_xNo");
             colorHandle = GLES20.glGetUniformLocation(program, "u_color");
             u_columnNo = GLES20.glGetUniformLocation(program, "u_columnNo");
             u_v0 = GLES20.glGetUniformLocation(program, "u_v0");
