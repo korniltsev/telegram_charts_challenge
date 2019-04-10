@@ -156,7 +156,7 @@ public class MultiBarChartProgram {
 
     public void prepare(float[] PROJ) {
         float hpadding = dimen.dpf(16);
-        float maxx = n + 1;
+        float maxx = n ;
 
 
         Matrix.setIdentityM(V, 0);
