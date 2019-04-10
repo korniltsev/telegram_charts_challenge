@@ -292,6 +292,7 @@ public class ChartViewGL extends TextureView {
         public GLChartProgram[] chartLines;
         private BarChartProgram chartBar;
         private Bar7ChartProgram chartBar7;
+        private PercentStackedChartProgram chartStackedPercent;
 
         public GLScrollbarOverlayProgram overlay;
         public GLRulersProgram ruler;
@@ -471,6 +472,7 @@ public class ChartViewGL extends TextureView {
 
             boolean barSingle = this.data.type == ColumnData.Type.bar && data.length == 2;
             boolean bar7 = this.data.type == ColumnData.Type.bar && data.length == 8;
+            boolean stacked_percent = this.data.stacked && this.data.percentage;
             if (this.data.type == ColumnData.Type.line) {
 
                 scrollbar_lines = new GLChartProgram[data.length - 1];
@@ -504,6 +506,10 @@ public class ChartViewGL extends TextureView {
             } else if (bar7) {
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
                 chartBar7 =  new Bar7ChartProgram(cs, w, h, dimen, ChartViewGL.this, false, bar7Shader);
+            } else if (stacked_percent) {
+                List<ColumnData> cs = Arrays.asList(data).subList(1, 7);
+                PercentStackedChartProgram.MyShader s = new PercentStackedChartProgram.MyShader();
+                chartStackedPercent = new PercentStackedChartProgram(cs, w, h, dimen, ChartViewGL.this, false, s);
             } else {
                 chartLines = new GLChartProgram[data.length - 1];
                 for (int i = 1, dataLength = data.length; i < dataLength; i++) {
@@ -643,6 +649,19 @@ public class ChartViewGL extends TextureView {
                             prevMax = viewportMax;
                         }
                     }
+                    if (chartStackedPercent != null) {
+                        chartStackedPercent.setTooltipIndex(-1);
+                        viewportMax = calculateBar7Max(data1, r.overlay.left, r.overlay.right);
+                        chartStackedPercent.animateMinMax(viewportMax, true, 208);
+                        if (foundIndex != -1) {
+                            chartStackedPercent.animateFade(foundIndex, isChecked, 208);
+                        }
+                        float ratio = prevMax / (float) viewportMax;
+                        if (prevMax != viewportMax) {
+                            ruler.animateScale(ratio, 0, viewportMax, checkedCount, prevCheckedCOunt, 208);
+                            prevMax = viewportMax;
+                        }
+                    }
 
 //                    drawAndSwap();
                     invalidateRender();
@@ -713,6 +732,12 @@ public class ChartViewGL extends TextureView {
                 if (chartBar7 != null) {
                     viewportMax = calculateBar7Max(data.data, r.overlay.left, r.overlay.right);
                     chartBar7.animateMinMax(viewportMax, false, 0);
+                    ruler.init(0, viewportMax);
+                    prevMax = viewportMax;
+                }
+                if (chartStackedPercent != null) {
+                    viewportMax = calculateBar7Max(data.data, r.overlay.left, r.overlay.right);
+                    chartStackedPercent.animateMinMax(viewportMax, false, 0);
                     ruler.init(0, viewportMax);
                     prevMax = viewportMax;
                 }
@@ -906,6 +931,23 @@ public class ChartViewGL extends TextureView {
                 if (tooltipIndex != -1) {
                     this.tooltip.animationTick(t, tooltipIndex, checked);
                     this.tooltip.calcPos(chartBar7.MVP, tooltipIndex);
+                    this.tooltip.drawTooltip(PROJ);
+                }
+                invalidated = it_invalidated || invalidated;
+
+            } else if (chartStackedPercent != null) {
+                int tooltipIndex = chartStackedPercent.getTooltipIndex();
+                if (tooltipIndex != -1) {
+                    if (this.tooltip == null) {
+                        this.tooltip = new Tooltip(dimen, w, h, currentColors, data, simple, ChartViewGL.this);
+                    }
+                }
+                boolean it_invalidated = chartStackedPercent.animate(t);
+                chartStackedPercent.prepare(PROJ);
+                chartStackedPercent.draw(t, PROJ);
+                if (tooltipIndex != -1) {
+                    this.tooltip.animationTick(t, tooltipIndex, checked);
+                    this.tooltip.calcPos(chartStackedPercent.MVP, tooltipIndex);
                     this.tooltip.drawTooltip(PROJ);
                 }
                 invalidated = it_invalidated || invalidated;
@@ -1147,6 +1189,21 @@ public class ChartViewGL extends TextureView {
                 if (prevMax != viewportMax) {
                     if (rulerInitDone) {
                         chartBar7.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
+                        float ratio = prevMax / (float) viewportMax;
+                        ruler.animateScale(ratio, 0, viewportMax, 1, 1, 256);
+                    }
+                    prevMax = viewportMax;
+                }
+                //todo
+            }
+            if (chartStackedPercent != null) {
+                ruler.setLeftRight(left, right, scale);
+                chartStackedPercent.zoom = scale;
+                chartStackedPercent.left = left;
+                viewportMax = calculateBar7Max(data.data, r.overlay.left, r.overlay.right);
+                if (prevMax != viewportMax) {
+                    if (rulerInitDone) {
+                        chartStackedPercent.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
                         float ratio = prevMax / (float) viewportMax;
                         ruler.animateScale(ratio, 0, viewportMax, 1, 1, 256);
                     }
@@ -1508,15 +1565,15 @@ public class ChartViewGL extends TextureView {
 //            motionEvents.offer(this);
 //        }
 //    }
-    static {
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                if (DEBUG) {
-                    Log.e(TAG, "err", e);
-                    System.exit(0);
-                }
-            }
-        });
+        static {
+//            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+//                @Override
+//                public void uncaughtException(Thread t, Throwable e) {
+//                    if (DEBUG) {
+//                        Log.e(TAG, "err", e);
+//                        System.exit(0);
+//                    }
+//                }
+//            });
         }
 }
