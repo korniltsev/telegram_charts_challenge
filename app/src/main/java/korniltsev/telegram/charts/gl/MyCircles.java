@@ -210,12 +210,11 @@ public class MyCircles {
         GLES20.glUniform1f(shader.u_radtioHandle, 1/ratio);
         GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
 
-        GLES20.glEnableVertexAttribArray(shader.positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, pointsVBO);
+        GLES20.glEnableVertexAttribArray(shader.positionHandle);
         GLES20.glVertexAttribPointer(shader.positionHandle, 2, GLES20.GL_FLOAT, false, 12, 0);
 
         GLES20.glEnableVertexAttribArray(shader.attributeNoHandle);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, pointsVBO);
         GLES20.glVertexAttribPointer(shader.attributeNoHandle, 1, GLES20.GL_FLOAT, false, 12, 8);
 
         GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);

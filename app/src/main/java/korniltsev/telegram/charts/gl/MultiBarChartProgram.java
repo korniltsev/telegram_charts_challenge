@@ -1,12 +1,18 @@
 package korniltsev.telegram.charts.gl;
 
+import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
+import korniltsev.telegram.charts.MainActivity;
+import korniltsev.telegram.charts.R;
 import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
@@ -16,25 +22,43 @@ import static korniltsev.telegram.charts.gl.GLChartProgram.BYTES_PER_FLOAT;
 import static korniltsev.telegram.charts.gl.GLChartProgram.CHART_HEIGHT;
 
 public class MultiBarChartProgram {
-    public final ColumnData column;
+    public final List<ColumnData> column;// excluding x
     private final int w;
     private final int h;
     private final Dimen dimen;
     private final ChartViewGL root;
     private final boolean scrollbar;
-    private final float[] vertices;
+    //    private final float[] vertices;
     private final int[] vbos;
-    private final int vbo;
+//    private final int vbo;
 
     private final MyShader shader;
+    private final int n;
+    private int vxCount;
     public float zoom;
     public float left;
     float max;
     private MyAnimation.Float maxAnim;
     private int tooltipIndex = -1;
 
-    public MultiBarChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader) {
-        this.column = column;
+
+    public MultiBarChartProgram.Vx set(int i, Vx v) {
+        List<ColumnData> cs = column;
+        v.v0 = cs.get(0).values[i];
+        v.v1 = cs.get(1).values[i];
+        v.v2 = cs.get(2).values[i];
+        v.v3 = cs.get(3).values[i];
+        v.v4 = cs.get(4).values[i];
+        v.v5 = cs.get(5).values[i];
+        v.v6 = cs.get(6).values[i];
+        return v;
+    }
+
+    public MultiBarChartProgram(List<ColumnData> columns, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader) {
+        this.column = columns;
+        if (columns.size() != 7) {
+            throw new AssertionError();
+        }
         this.w = w;
         this.h = h;
         this.dimen = dimen;
@@ -43,49 +67,56 @@ public class MultiBarChartProgram {
         this.shader = shader;
 
 
-        long[] values = column.values;
+        vbos = new int[7];
+        GLES20.glGenBuffers(7, vbos, 0);
+        MyGL.checkGlError2();
 
-        int n = values.length;
+//        long[] values = column.values;
+
+        n = columns.get(0).values.length;
 //        int n = values.length/20;
-        vertices = new float[n * 18];
-        for (int i = 0, valuesLength = n; i < valuesLength; i++) {
-            long value = values[i];
-            vertices[18 * i ] = i;
-            vertices[18 * i + 1] = 0;
-            vertices[18 * i + 2] = i;
+//        vertices = new float[n * 18];
 
-            vertices[18 * i + 3] = i;
-            vertices[18 * i + 4] = value;
-            vertices[18 * i + 5] = i;
+        for (int j = 0; j < 7; j++) {
 
-            vertices[18 * i + 6] = i + 1;
-            vertices[18 * i + 7] = 0;
-            vertices[18 * i + 8] = i;
+            List<Vx> vs = new ArrayList<>();
+            int columnNo = j;
+            for (int i = 0; i < n; i++) {
+//            long value = values[i];
+                vs.add(set(i, new Vx(i, 0, i)));
 
-            vertices[18 * i + 9] = i + 1;
-            vertices[18 * i + 10] = 0;
-            vertices[18 * i + 11] = i;
+                vs.add(set(i, new Vx(i, 1, i)));
 
-            vertices[18 * i + 12] = i;
-            vertices[18 * i + 13] = value;
-            vertices[18 * i + 14] = i;
+                vs.add(set(i, new Vx(i + 1, 0, i)));
 
-            vertices[18 * i + 15] = i + 1;
-            vertices[18 * i + 16] = value;
-            vertices[18 * i + 17] = i;
+                vs.add(set(i, new Vx(i + 1, 0, i)));
+
+                vs.add(set(i, new Vx(i, 1, i)));
+
+                vs.add(set(i, new Vx(i + 1, 1, i)));
+            }
+            ByteBuffer buf1 = ByteBuffer.allocateDirect(vs.size() * Vx.SIZE)
+                    .order(ByteOrder.nativeOrder());
+            for (Vx v : vs) {
+                buf1.putFloat(v.v0);
+                buf1.putFloat(v.v1);
+                buf1.putFloat(v.v2);
+                buf1.putFloat(v.v3);
+                buf1.putFloat(v.v4);
+                buf1.putFloat(v.v5);
+                buf1.putFloat(v.v6);
+                buf1.putFloat(v.x);
+                buf1.putFloat(v.zeroOrValue);
+                buf1.putFloat(v.xNo);
+            }
+            vxCount = vs.size();
+            buf1.position(0);
+
+
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[j]);
+            GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, buf1.capacity(), buf1, GLES20.GL_STATIC_DRAW);
+            MyGL.checkGlError2();
         }
-        FloatBuffer buf1 = ByteBuffer.allocateDirect(vertices.length * BYTES_PER_FLOAT)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
-        buf1.put(vertices);
-        buf1.position(0);
-
-
-        vbos = new int[1];
-        GLES20.glGenBuffers(1, vbos, 0);
-        vbo = vbos[0];
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * BYTES_PER_FLOAT, buf1, GLES20.GL_STATIC_DRAW);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
     }
 
@@ -108,12 +139,12 @@ public class MultiBarChartProgram {
 
     public void prepare(float[] PROJ) {
         float hpadding = dimen.dpf(16);
-        float maxx = vertices[vertices.length - 3];
+        float maxx = n + 1;
 
 
         Matrix.setIdentityM(V, 0);
         if (scrollbar) {
-            final long max = column.max;
+            final long max = column.get(0).max;
 //            hpadding += dimen.dpf(1);
 //            final float dip2 = dimen.dpf(2);
 
@@ -149,22 +180,53 @@ public class MultiBarChartProgram {
 
     }
 
-    public void draw(long t, float[]PROJ) {
+    public void draw(long t, float[] PROJ) {
 
         shader.use();
 
 
-        MyColor.set(colors, column.color);
-        GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
-        GLES20.glEnableVertexAttribArray(shader.positionHandle);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
-        GLES20.glVertexAttribPointer(shader.positionHandle, 3, GLES20.GL_FLOAT, false, 12, 0);
-        GLES20.glUniform1f(shader.u_selected_index, tooltipIndex);
+        for (int i = 0; i < 2; i++) {
 
-        GLES20.glUniformMatrix4fv(shader.u_P, 1, false, PROJ, 0);
-        GLES20.glUniformMatrix4fv(shader.u_V, 1, false, V, 0);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.length / 3);
-        MyGL.checkGlError2();
+            MyGL.checkGlError2();
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[i]);
+            MyGL.checkGlError2();
+            GLES20.glEnableVertexAttribArray(shader.a_v0);
+            MyGL.checkGlError2();
+            GLES20.glEnableVertexAttribArray(shader.a_v1);
+            MyGL.checkGlError2();
+            GLES20.glEnableVertexAttribArray(shader.a_x);
+            MyGL.checkGlError2();
+            GLES20.glEnableVertexAttribArray(shader.a_zeroOrValue);
+            MyGL.checkGlError2();
+            GLES20.glVertexAttribPointer(shader.a_v0, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 0);
+            MyGL.checkGlError2();
+            GLES20.glVertexAttribPointer(shader.a_v1, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 1);
+            MyGL.checkGlError2();
+//        GLES20.glVertexAttribPointer(shader.a_v2, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 2);
+//        GLES20.glVertexAttribPointer(shader.a_v3, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 3);
+//        GLES20.glVertexAttribPointer(shader.a_v4, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 4);
+//        GLES20.glVertexAttribPointer(shader.a_v5, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 5);
+//        GLES20.glVertexAttribPointer(shader.a_v6, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 6);
+            MyGL.checkGlError2();
+            GLES20.glVertexAttribPointer(shader.a_x, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 7);
+            MyGL.checkGlError2();
+            GLES20.glVertexAttribPointer(shader.a_zeroOrValue, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 8);
+//        GLES20.glVertexAttribPointer(shader.a_columnNo, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 9);
+//
+            MyGL.checkGlError2();
+            MyColor.set(colors, column.get(i).color);
+            GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
+            GLES20.glUniform1f(shader.u_selected_index, tooltipIndex);
+            MyGL.checkGlError2();
+            GLES20.glUniform1f(shader.u_columnNo, i);
+            MyGL.checkGlError2();
+            GLES20.glUniformMatrix4fv(shader.u_P, 1, false, PROJ, 0);
+            MyGL.checkGlError2();
+            GLES20.glUniformMatrix4fv(shader.u_V, 1, false, V, 0);
+            MyGL.checkGlError2();
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vxCount);
+            MyGL.checkGlError2();
+        }
     }
 
     public void animateMinMax(long viewportMax, boolean animate, int druation) {
@@ -185,51 +247,69 @@ public class MultiBarChartProgram {
         return tooltipIndex;
     }
 
+    static class Vx {
+        public static final int SIZE = 10 * 4;
+        float v0;
+        float v1;
+        float v2;
+        float v3;
+        float v4;
+        float v5;
+        float v6;
+        float x;
+        float zeroOrValue;// zero or value
+        float xNo;
+
+        public Vx(float x, float zeroOrValue, float xNo) {
+            this.x = x;
+            this.zeroOrValue = zeroOrValue;
+            this.xNo = xNo;
+        }
+    }
+
     public static final class MyShader {
-        final String vertexShader =
-                "uniform mat4 u_V;\n" +
-                        "uniform mat4 u_P;\n" +
-                        "uniform float u_selected_index;\n" +
-                        "attribute vec3 a_Position;\n" +
-                        "uniform vec4 u_color;\n" +
-                        "varying vec4 v_color;\n" +
-                        "void main()\n" +
-                        "{\n" +
-                        "   if (u_selected_index >= 0.0) {\n" +
-                        "        if (a_Position.z == u_selected_index) {\n" +
-                        "            v_color = u_color;\n" +
-                        "        } else {\n" +
-                        "            v_color = vec4(u_color.xyz, 0.5);\n" +
-                        "        }\n" +
-                        "   } else {\n" +
-                        "        v_color = u_color;\n" +
-                        "   }\n" +
-                        "   mat4 MVP = u_P * u_V;\n" +
-                        "   gl_Position = MVP * vec4(a_Position.xy, 0.0, 1.0);\n" +
-                        "}\n";
-        final String fragmentShader =
-                "precision mediump float;       \n"
-                        + "varying vec4 v_color;       \n"
-                        + "void main()                    \n"
-                        + "{                              \n"
-                        + "   gl_FragColor = v_color;     \n"
-                        + "}                              \n";
-        public final int positionHandle;
+
         public final int program;
         public final int colorHandle;
         public final int u_selected_index;
-        private final int u_V;
-        private final int u_P;
+        public final int u_V;
+        public final int u_P;
+        public final int u_columnNo;
+        public final int a_v0;
+        public final int a_v1;
+        public final int a_v2;
+        public final int a_v3;
+        public final int a_v4;
+        public final int a_v5;
+        public final int a_v6;
+        public final int a_x;
+        public final int a_zeroOrValue;
+        public final int a_xNo;
         private boolean released;
 
         public MyShader() {
-
-            program = MyGL.createProgram(vertexShader, fragmentShader);
+            try {
+                byte[] fragment = MainActivity.readAll(MainActivity.ctx.getResources().openRawResource(R.raw.bar7_fragment));
+                byte[] vertex = MainActivity.readAll(MainActivity.ctx.getResources().openRawResource(R.raw.bar7_vertex));
+                program = MyGL.createProgram(new String(vertex, "UTF-8"), new String(fragment, "UTF-8"));
+            } catch (IOException e) {
+                throw new AssertionError();
+            }
             u_V = GLES20.glGetUniformLocation(program, "u_V");
             u_P = GLES20.glGetUniformLocation(program, "u_P");
             u_selected_index = GLES20.glGetUniformLocation(program, "u_selected_index");
-            positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
+            a_v0 = GLES20.glGetAttribLocation(program, "a_v0");
+            a_v1 = GLES20.glGetAttribLocation(program, "a_v1");
+            a_v2 = GLES20.glGetAttribLocation(program, "a_v2");
+            a_v3 = GLES20.glGetAttribLocation(program, "a_v3");
+            a_v4 = GLES20.glGetAttribLocation(program, "a_v4");
+            a_v5 = GLES20.glGetAttribLocation(program, "a_v5");
+            a_v6 = GLES20.glGetAttribLocation(program, "a_v6");
+            a_x = GLES20.glGetAttribLocation(program, "a_x");
+            a_zeroOrValue = GLES20.glGetAttribLocation(program, "a_zeroOrValue");
+            a_xNo = GLES20.glGetAttribLocation(program, "a_xNo");
             colorHandle = GLES20.glGetUniformLocation(program, "u_color");
+            u_columnNo = GLES20.glGetUniformLocation(program, "u_columnNo");
         }
 
         public final void use() {

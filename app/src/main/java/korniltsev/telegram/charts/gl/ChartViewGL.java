@@ -18,6 +18,8 @@ import android.view.TextureView;
 import android.view.ViewConfiguration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -468,7 +470,8 @@ public class ChartViewGL extends TextureView {
             } else if (bar7) {
 //                BarChartProgram barChartProgram = new BarChartProgram();
                 MultiBarChartProgram.MyShader shader = new MultiBarChartProgram.MyShader();
-                scrollbar_bar7 = new MultiBarChartProgram(data[1], w, h, dimen, ChartViewGL.this, true, shader);
+                List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
+                scrollbar_bar7 = new MultiBarChartProgram(cs, w, h, dimen, ChartViewGL.this, true, shader);
             }
 
             if (barSingle) {

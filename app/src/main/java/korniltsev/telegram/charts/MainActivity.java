@@ -2,6 +2,7 @@ package korniltsev.telegram.charts;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.Application;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Canvas;
@@ -97,9 +98,11 @@ public class MainActivity extends Activity {
     private int dividerColor;
     private MyAnimation.Color dividerAnim;
     private List<View> dividers = new ArrayList<>();
+    public static Application ctx;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ctx = getApplication();
         super.onCreate(savedInstanceState);
 //        Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
 //            @Override
