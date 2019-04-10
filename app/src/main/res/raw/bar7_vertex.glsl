@@ -55,6 +55,12 @@ void main() {
         } else {
             y = a_v0 + a_v1;
         }
+    } else if (u_columnNo == 2.0) {
+        if (a_zeroOrValue == 0.0) {
+            y = a_v0 + a_v1;
+        } else {
+            y = a_v0 + a_v1 + a_v2;
+        }
     }
     gl_Position = MVP * vec4(a_x, y, 0.0, 1.0);
 }
