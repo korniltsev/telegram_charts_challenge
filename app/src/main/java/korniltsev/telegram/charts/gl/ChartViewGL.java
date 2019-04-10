@@ -50,11 +50,9 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 
     - 3. A stacked bar chart with 7 data types (Screenshots 5-6).
--- до обеда
     - 5. A percentage stacked area chart with 6 data types (Screenshots 9, 10).
--- до 6
+    ----------------
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
--- до 12
 
 
 
