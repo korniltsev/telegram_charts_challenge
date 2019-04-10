@@ -185,7 +185,7 @@ public class MultiBarChartProgram {
         shader.use();
 
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 7; i++) {
 
             MyGL.checkGlError2();
             GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[i]);
@@ -193,6 +193,9 @@ public class MultiBarChartProgram {
             GLES20.glEnableVertexAttribArray(shader.a_v1);
             GLES20.glEnableVertexAttribArray(shader.a_v2);
             GLES20.glEnableVertexAttribArray(shader.a_v3);
+            GLES20.glEnableVertexAttribArray(shader.a_v4);
+            GLES20.glEnableVertexAttribArray(shader.a_v5);
+            GLES20.glEnableVertexAttribArray(shader.a_v6);
             GLES20.glEnableVertexAttribArray(shader.a_x);
             GLES20.glEnableVertexAttribArray(shader.a_zeroOrValue);
             MyGL.checkGlError2();
@@ -200,9 +203,9 @@ public class MultiBarChartProgram {
             GLES20.glVertexAttribPointer(shader.a_v1, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 1);
             GLES20.glVertexAttribPointer(shader.a_v2, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 2);
             GLES20.glVertexAttribPointer(shader.a_v3, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 3);
-//        GLES20.glVertexAttribPointer(shader.a_v4, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 4);
-//        GLES20.glVertexAttribPointer(shader.a_v5, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 5);
-//        GLES20.glVertexAttribPointer(shader.a_v6, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 6);
+            GLES20.glVertexAttribPointer(shader.a_v4, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 4);
+            GLES20.glVertexAttribPointer(shader.a_v5, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 5);
+            GLES20.glVertexAttribPointer(shader.a_v6, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 6);
             GLES20.glVertexAttribPointer(shader.a_x, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 7);
             GLES20.glVertexAttribPointer(shader.a_zeroOrValue, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 8);
             MyGL.checkGlError2();

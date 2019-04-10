@@ -67,6 +67,24 @@ void main() {
         } else {
             y = a_v0 + a_v1 + a_v2 + a_v3;
         }
+    } else if (u_columnNo == 4.0) {
+        if (a_zeroOrValue == 0.0) {
+            y = a_v0 + a_v1 + a_v2 + a_v3;
+        } else {
+            y = a_v0 + a_v1 + a_v2 + a_v3 + a_v4;
+        }
+    } else if (u_columnNo == 5.0) {
+        if (a_zeroOrValue == 0.0) {
+            y = a_v0 + a_v1 + a_v2 + a_v3 + a_v4;
+        } else {
+            y = a_v0 + a_v1 + a_v2 + a_v3 + a_v4 + a_v5;
+        }
+    } else if (u_columnNo == 6.0) {
+        if (a_zeroOrValue == 0.0) {
+            y = a_v0 + a_v1 + a_v2 + a_v3 + a_v4 + a_v5;
+        } else {
+            y = a_v0 + a_v1 + a_v2 + a_v3 + a_v4 + a_v5 + a_v6;
+        }
     }
     gl_Position = MVP * vec4(a_x, y, 0.0, 1.0);
 }
