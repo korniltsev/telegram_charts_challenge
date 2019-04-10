@@ -39,6 +39,9 @@ public class MultiBarChartProgram {
     public float left;
     float max;
     private MyAnimation.Float maxAnim;
+    float[]visibility = new float[7];
+    private MyAnimation.Float[] visibilityANim = new MyAnimation.Float[7];
+
     private int tooltipIndex = -1;
 
 
@@ -56,6 +59,9 @@ public class MultiBarChartProgram {
 
     public MultiBarChartProgram(List<ColumnData> columns, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader) {
         this.column = columns;
+        for (int i = 0; i < visibility.length; i++) {
+            visibility[i] = 1f;
+        }
         if (columns.size() != 7) {
             throw new AssertionError();
         }
@@ -134,6 +140,17 @@ public class MultiBarChartProgram {
                 invalidate = true;
             }
         }
+        for (int i = 0; i < 7; i++) {
+            MyAnimation.Float it = visibilityANim[i];
+            if (it != null) {
+                visibility[i] = it.tick(t);
+                if (it.ended) {
+                    visibilityANim[i] = null;
+                } else {
+                    invalidate = true;
+                }
+            }
+        }
         return invalidate;
     }
 
@@ -144,7 +161,7 @@ public class MultiBarChartProgram {
 
         Matrix.setIdentityM(V, 0);
         if (scrollbar) {
-            final long max = column.get(0).max;
+            final float max = this.max;
 //            hpadding += dimen.dpf(1);
 //            final float dip2 = dimen.dpf(2);
 
@@ -213,12 +230,16 @@ public class MultiBarChartProgram {
             MyColor.set(colors, column.get(i).color);
             GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
             GLES20.glUniform1f(shader.u_selected_index, tooltipIndex);
-            MyGL.checkGlError2();
             GLES20.glUniform1f(shader.u_columnNo, i);
-            MyGL.checkGlError2();
             GLES20.glUniformMatrix4fv(shader.u_P, 1, false, PROJ, 0);
-            MyGL.checkGlError2();
             GLES20.glUniformMatrix4fv(shader.u_V, 1, false, V, 0);
+            GLES20.glUniform1f(shader.u_v0, visibility[0]);
+            GLES20.glUniform1f(shader.u_v1, visibility[1]);
+            GLES20.glUniform1f(shader.u_v2, visibility[2]);
+            GLES20.glUniform1f(shader.u_v3, visibility[3]);
+            GLES20.glUniform1f(shader.u_v4, visibility[4]);
+            GLES20.glUniform1f(shader.u_v5, visibility[5]);
+            GLES20.glUniform1f(shader.u_v6, visibility[6]);
             MyGL.checkGlError2();
             GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vxCount);
             MyGL.checkGlError2();
@@ -241,6 +262,10 @@ public class MultiBarChartProgram {
 
     public int getTooltipIndex() {
         return tooltipIndex;
+    }
+
+    public void animateFade(int foundIndex, boolean isChecked, long duration) {
+        visibilityANim[foundIndex] = new MyAnimation.Float(duration, visibility[foundIndex], isChecked ? 1f : 0f);
     }
 
     static class Vx {
@@ -281,6 +306,14 @@ public class MultiBarChartProgram {
         public final int a_x;
         public final int a_zeroOrValue;
         public final int a_xNo;
+
+        public final int u_v0;
+        public final int u_v1;
+        public final int u_v2;
+        public final int u_v3;
+        public final int u_v4;
+        public final int u_v5;
+        public final int u_v6;
         private boolean released;
 
         public MyShader() {
@@ -306,6 +339,13 @@ public class MultiBarChartProgram {
             a_xNo = GLES20.glGetAttribLocation(program, "a_xNo");
             colorHandle = GLES20.glGetUniformLocation(program, "u_color");
             u_columnNo = GLES20.glGetUniformLocation(program, "u_columnNo");
+            u_v0 = GLES20.glGetUniformLocation(program, "u_v0");
+            u_v1 = GLES20.glGetUniformLocation(program, "u_v1");
+            u_v2 = GLES20.glGetUniformLocation(program, "u_v2");
+            u_v3 = GLES20.glGetUniformLocation(program, "u_v3");
+            u_v4 = GLES20.glGetUniformLocation(program, "u_v4");
+            u_v5 = GLES20.glGetUniformLocation(program, "u_v5");
+            u_v6 = GLES20.glGetUniformLocation(program, "u_v6");
         }
 
         public final void use() {

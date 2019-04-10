@@ -72,6 +72,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     - глобальный кеш текстур надписей
     - когда скроллбар не меняется - отрендерить его во фреймбуффер
     - попробовать отрендерить все на SurfaceView
+    - мб сначала создать один график, потом остальные
 
 ---------
     - в баре тултип показывать около значения а не вверху
@@ -471,6 +472,8 @@ public class ChartViewGL extends TextureView {
                 MultiBarChartProgram.MyShader shader = new MultiBarChartProgram.MyShader();
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
                 scrollbar_bar7 = new MultiBarChartProgram(cs, w, h, dimen, ChartViewGL.this, true, shader);
+                long m = calculateBar7Max(data);
+                scrollbar_bar7.animateMinMax(m, false, 0);
             }
 
             if (barSingle) {
@@ -527,10 +530,12 @@ public class ChartViewGL extends TextureView {
                         }
                     }
                     ColumnData[] data1 = data.data;
+                    int foundIndex = -1;
                     for (int i = 1; i < data1.length; i++) {
                         ColumnData datum = data1[i];
                         if (datum.id.equals(id)) {
                             checked[i - 1] = isChecked;
+                            foundIndex = i - 1;
                         }
                     }
                     int checkedCount = 0;
@@ -554,7 +559,6 @@ public class ChartViewGL extends TextureView {
                                 c.animateAlpha(isChecked);
                             }
                             if (c.checked) {
-                                checkedCount++;
                                 max = Math.max(c.column.max, max);
                                 min = Math.min(c.column.min, min);
                             }
@@ -564,6 +568,13 @@ public class ChartViewGL extends TextureView {
                             } else {
                                 c.animateMinMax(min, max, true, 208);
                             }
+                        }
+                    }
+                    if (scrollbar_bar7 != null) {
+                        long max = calculateBar7Max(data1);
+                        scrollbar_bar7.animateMinMax(max, true, 208);
+                        if (foundIndex != -1) {
+                            scrollbar_bar7.animateFade(foundIndex, isChecked, 208);
                         }
                     }
                     if (chartLines != null) {
@@ -603,6 +614,24 @@ public class ChartViewGL extends TextureView {
                 }
             };
             postToRender(setCheckedOnRenderThread);
+        }
+
+        private long calculateBar7Max(ColumnData[] data1) {
+            long max;
+            max = Long.MIN_VALUE;
+            int n = data1[0].values.length;
+            for (int i = 0; i < n; i++) {
+                int sum = 0;
+                for (int i1 = 0; i1 < checked.length; i1++) {
+                    if (checked[i1]) {
+                        ColumnData d = data1[i1 + 1];
+                        long v = d.values[i];
+                        sum += v;
+                    }
+                }
+                max = Math.max(max, sum);
+            }
+            return max;
         }
 
         //        public final BlockingQueue<Runnable> actionQueue = new ArrayBlockingQueue<Runnable>(100);
