@@ -48,7 +48,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 /*
 
-
     - линейка
         - стак проценты : сотню не правильно показывает
         - bar графике линейка показывает 25M, а tooltip 23m
