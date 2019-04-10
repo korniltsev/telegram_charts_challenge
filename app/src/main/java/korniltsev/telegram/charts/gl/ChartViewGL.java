@@ -50,7 +50,8 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 
     - 3. A stacked bar chart with 7 data types (Screenshots 5-6).
-        - график
+        + график
+        + ruler text colors fix
         - viewport minmax anim
         - tooltip
         - запретить пустые графики везде
@@ -71,6 +72,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 ---------------------------------------
 оптимизации
     - не рисовать треугольники в баре за пределами экрана
+    - left right - сразуже рисовать
     - не рисовать линии в линиях за пределами экрана
     - ленивые x надписи
     - глобальный кеш текстур надписей
@@ -274,6 +276,7 @@ public class ChartViewGL extends TextureView {
 
         public GLChartProgram[] chartLines;
         private BarChartProgram chartBar;
+        private MultiBarChartProgram chartBar7;
 
         public GLScrollbarOverlayProgram overlay;
         public GLRulersProgram ruler;
@@ -449,6 +452,8 @@ public class ChartViewGL extends TextureView {
             }
 
             BarChartProgram.MyShader barShader = null;
+            MultiBarChartProgram.MyShader bar7Shader = null;
+
             boolean barSingle = this.data.type == ColumnData.Type.bar && data.length == 2;
             boolean bar7 = this.data.type == ColumnData.Type.bar && data.length == 8;
             if (this.data.type == ColumnData.Type.line) {
@@ -472,16 +477,20 @@ public class ChartViewGL extends TextureView {
                 barShader = new BarChartProgram.MyShader();
                 scrollbar_bars = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, true, barShader);
             } else if (bar7) {
-//                BarChartProgram barChartProgram = new BarChartProgram();
-                MultiBarChartProgram.MyShader shader = new MultiBarChartProgram.MyShader();
+                bar7Shader = new MultiBarChartProgram.MyShader();
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
-                scrollbar_bar7 = new MultiBarChartProgram(cs, w, h, dimen, ChartViewGL.this, true, shader);
+                scrollbar_bar7 = new MultiBarChartProgram(cs, w, h, dimen, ChartViewGL.this, true, bar7Shader);
                 long m = calculateBar7Max(data);
                 scrollbar_bar7.animateMinMax(m, false, 0);
             }
 
             if (barSingle) {
                 chartBar = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, false, barShader);
+            } else if (bar7) {
+                List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
+                chartBar7 =  new MultiBarChartProgram(cs, w, h, dimen, ChartViewGL.this, false, bar7Shader);
+                long m = calculateBar7Max(data);
+                chartBar7.animateMinMax(m, false, 0);
             } else {
                 chartLines = new GLChartProgram[data.length - 1];
                 for (int i = 1, dataLength = data.length; i < dataLength; i++) {
@@ -491,7 +500,7 @@ public class ChartViewGL extends TextureView {
 
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay, simple);
-            boolean differentXYAxisColors = barSingle;//todo
+            boolean differentXYAxisColors = barSingle || bar7;//todo
             ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors, simple, xColumn, differentXYAxisColors);
 
             Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
@@ -610,7 +619,14 @@ public class ChartViewGL extends TextureView {
                     }
                     if (chartBar != null) {
                         chartBar.setTooltipIndex(-1);
-                        //todo for 7 types
+                    }
+                    if (chartBar7 != null) {
+                        chartBar7.setTooltipIndex(-1);
+                        long max = calculateBar7Max(data1);
+                        chartBar7.animateMinMax(max, true, 208);
+                        if (foundIndex != -1) {
+                            chartBar7.animateFade(foundIndex, isChecked, 208);
+                        }
                     }
 
 //                    drawAndSwap();
@@ -674,7 +690,11 @@ public class ChartViewGL extends TextureView {
                     calculateChartBarMax(r.overlay.left, r.overlay.right);
                     ruler.init(0, viewportMax);
                     prevMax = viewportMax;
-                    prevMin = viewportMin;
+                }
+                if (chartBar7 != null) {
+                    long m = calculateBar7Max(data.data);
+                    ruler.init(0, m);
+                    prevMax = m;
                 }
                 rulerInitDone = true;
             }
@@ -852,6 +872,23 @@ public class ChartViewGL extends TextureView {
                     this.tooltip.drawTooltip(PROJ);
                 }
                 invalidated = it_invalidated || invalidated;
+            } else if (chartBar7 != null) {
+                int tooltipIndex = chartBar7.getTooltipIndex();
+                if (tooltipIndex != -1) {
+                    if (this.tooltip == null) {
+                        this.tooltip = new Tooltip(dimen, w, h, currentColors, data, simple, ChartViewGL.this);
+                    }
+                }
+                boolean it_invalidated = chartBar7.animate(t);
+                chartBar7.prepare(PROJ);
+                chartBar7.draw(t, PROJ);
+                if (tooltipIndex != -1) {
+                    this.tooltip.animationTick(t, tooltipIndex, checked);
+                    this.tooltip.calcPos(chartBar7.MVP, tooltipIndex);
+                    this.tooltip.drawTooltip(PROJ);
+                }
+                invalidated = it_invalidated || invalidated;
+
             }
             return invalidated;
         }
@@ -1081,6 +1118,12 @@ public class ChartViewGL extends TextureView {
                     prevMin = viewportMin;
                 }
             }
+            if (chartBar7 != null) {
+                ruler.setLeftRight(left, right, scale);
+                chartBar7.zoom = scale;
+                chartBar7.left = left;
+                //todo
+            }
             firstLeftRightUpdate = false;
         }
     }
@@ -1268,6 +1311,9 @@ public class ChartViewGL extends TextureView {
                     if (r.chartBar != null) {
                         r.chartBar.setTooltipIndex(finali);
                     }
+                    if (r.chartBar7 != null) {
+                        r.chartBar7.setTooltipIndex(finali);
+                    }
 //                    r.drawAndSwap();
                     r.invalidateRender();
                 }
@@ -1311,6 +1357,9 @@ public class ChartViewGL extends TextureView {
         }
         if (r.chartBar != null) {
             r.chartBar.setTooltipIndex(-1);
+        }
+        if (r.chartBar7 != null) {
+            r.chartBar7.setTooltipIndex(-1);
         }
 //                r.drawAndSwap();
         r.invalidateRender();
