@@ -34,8 +34,8 @@ public class PercentStackedChartProgram {
     private int vxCount;
     public float zoom;
     public float left;
-    float max;
-    private MyAnimation.Float maxAnim;
+//    float max;
+//    private MyAnimation.Float maxAnim;
     float[]visibility = new float[7];
     private MyAnimation.Float[] visibilityANim = new MyAnimation.Float[7];
 
@@ -129,14 +129,14 @@ public class PercentStackedChartProgram {
 
     public boolean animate(long t) {
         boolean invalidate = false;
-        if (maxAnim != null) {
-            max = maxAnim.tick(t);
-            if (maxAnim.ended) {
-                maxAnim = null;
-            } else {
-                invalidate = true;
-            }
-        }
+//        if (maxAnim != null) {
+//            max = maxAnim.tick(t);
+//            if (maxAnim.ended) {
+//                maxAnim = null;
+//            } else {
+//                invalidate = true;
+//            }
+//        }
         for (int i = 0; i < 7; i++) {
             MyAnimation.Float it = visibilityANim[i];
             if (it != null) {
@@ -158,14 +158,14 @@ public class PercentStackedChartProgram {
 
         Matrix.setIdentityM(V, 0);
         if (scrollbar) {
-            final float max = this.max;
+//            final float max = this.max;
 //            hpadding += dimen.dpf(1);
 //            final float dip2 = dimen.dpf(2);
 
             final float w = this.w - 2 * hpadding;
             final float h = root.dimen_scrollbar_height;
 
-            final float yscale = h / (max - 0);
+            final float yscale = h ;
             final float dy = -yscale * 0;
 
             Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + root.checkboxesHeight, 0);
@@ -173,7 +173,7 @@ public class PercentStackedChartProgram {
             Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
             Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
         } else {
-            final float max = this.max;
+//            final float max = this.max;
 
 
             final int ypx = dimen.dpi(80) + root.checkboxesHeight;
@@ -182,7 +182,7 @@ public class PercentStackedChartProgram {
             final float h = dimen.dpf(CHART_HEIGHT);
             final float xdiff = maxx;
             final float ws = w / xdiff / zoom;
-            final float hs = h / (max - 0);
+            final float hs = h ;
             final float dy = -hs * 0;
             Matrix.translateM(V, 0, hpadding, ypx, 0);
             Matrix.translateM(V, 0, 0, dy, 0);
@@ -246,15 +246,15 @@ public class PercentStackedChartProgram {
         }
     }
 
-    public void animateMinMax(long viewportMax, boolean animate, int druation) {
-        if (animate) {
-            maxAnim = new MyAnimation.Float(druation, max, viewportMax);
-        } else {
-            max = viewportMax;
-            maxAnim = null;
-        }
-
-    }
+//    public void animateMinMax(long viewportMax, boolean animate, int druation) {
+//        if (animate) {
+//            maxAnim = new MyAnimation.Float(druation, max, viewportMax);
+//        } else {
+//            max = viewportMax;
+//            maxAnim = null;
+//        }
+//
+//    }
 
     public void setTooltipIndex(int finali) {
         tooltipIndex = finali;

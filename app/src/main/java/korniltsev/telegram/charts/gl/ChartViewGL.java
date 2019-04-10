@@ -49,6 +49,11 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 /*
 
     - 5. A percentage stacked area chart with 6 data types (Screenshots 9, 10).
+
+    - линейка
+        - стак проценты : сотню не правильно показывает
+        - bar графике линейка показывает 25M, а tooltip 23m
+        - цвет горизонтальной линии линейки
     ----------------
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
 
@@ -60,8 +65,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     - дизайн скролбара
     - дизайн чекбоксов
     - придумать как исправить лаг когда скролишь и мин/макс меняется каждые пару фреймов
-    - в bar графике линейка показывает 25M, а tooltip 23m
-    - цвет горизонтальной линии линейки
+
 
     - сокращалка в бар7: выбрать apricots, pears - показывает 3k несколько раз
 ---------------------------------------
@@ -519,7 +523,7 @@ public class ChartViewGL extends TextureView {
 
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay, simple);
-            boolean differentXYAxisColors = barSingle || bar7;//todo
+            boolean differentXYAxisColors = barSingle || bar7 || stacked_percent;//todo
             ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors, simple, xColumn, differentXYAxisColors);
 
             Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
@@ -651,16 +655,16 @@ public class ChartViewGL extends TextureView {
                     }
                     if (chartStackedPercent != null) {
                         chartStackedPercent.setTooltipIndex(-1);
-                        viewportMax = calculateBar7Max(data1, r.overlay.left, r.overlay.right);
-                        chartStackedPercent.animateMinMax(viewportMax, true, 208);
+//                        viewportMax = calculateBar7Max(data1, r.overlay.left, r.overlay.right);
+//                        chartStackedPercent.animateMinMax(viewportMax, true, 208);
                         if (foundIndex != -1) {
                             chartStackedPercent.animateFade(foundIndex, isChecked, 208);
                         }
-                        float ratio = prevMax / (float) viewportMax;
-                        if (prevMax != viewportMax) {
-                            ruler.animateScale(ratio, 0, viewportMax, checkedCount, prevCheckedCOunt, 208);
-                            prevMax = viewportMax;
-                        }
+//                        float ratio = prevMax / (float) viewportMax;
+//                        if (prevMax != viewportMax) {
+//                            ruler.animateScale(ratio, 0, viewportMax, checkedCount, prevCheckedCOunt, 208);
+//                            prevMax = viewportMax;
+//                        }
                     }
 
 //                    drawAndSwap();
@@ -736,9 +740,9 @@ public class ChartViewGL extends TextureView {
                     prevMax = viewportMax;
                 }
                 if (chartStackedPercent != null) {
-                    viewportMax = calculateBar7Max(data.data, r.overlay.left, r.overlay.right);
-                    chartStackedPercent.animateMinMax(viewportMax, false, 0);
-                    ruler.init(0, viewportMax);
+//                    viewportMax = calculateBar7Max(data.data, r.overlay.left, r.overlay.right);
+//                    chartStackedPercent.animateMinMax(viewportMax, false, 0);
+                    ruler.init(0, 100);
                     prevMax = viewportMax;
                 }
                 rulerInitDone = true;
@@ -1200,15 +1204,15 @@ public class ChartViewGL extends TextureView {
                 ruler.setLeftRight(left, right, scale);
                 chartStackedPercent.zoom = scale;
                 chartStackedPercent.left = left;
-                viewportMax = calculateBar7Max(data.data, r.overlay.left, r.overlay.right);
-                if (prevMax != viewportMax) {
-                    if (rulerInitDone) {
-                        chartStackedPercent.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
-                        float ratio = prevMax / (float) viewportMax;
-                        ruler.animateScale(ratio, 0, viewportMax, 1, 1, 256);
-                    }
-                    prevMax = viewportMax;
-                }
+//                viewportMax = calculateBar7Max(data.data, r.overlay.left, r.overlay.right);
+//                if (prevMax != viewportMax) {
+//                    if (rulerInitDone) {
+//                        chartStackedPercent.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
+//                        float ratio = prevMax / (float) viewportMax;
+//                        ruler.animateScale(ratio, 0, viewportMax, 1, 1, 256);
+//                    }
+//                    prevMax = viewportMax;
+//                }
                 //todo
             }
             firstLeftRightUpdate = false;

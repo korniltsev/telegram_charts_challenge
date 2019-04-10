@@ -52,37 +52,37 @@ void main() {
         if (a_zeroOrValue == 0.0) {
             y = 0.0;
         } else {
-            y = a_v0 * u_v0;
+            y = (v0)/sum;
         }
     } else if (u_columnNo == 1.0) {
         if (a_zeroOrValue == 0.0) {
-            y = a_v0 * u_v0;
+            y = v0/sum;
         } else {
-            y = a_v0 * u_v0 + a_v1 * u_v1;
+            y = (v0+v1)/sum;
         }
     } else if (u_columnNo == 2.0) {
         if (a_zeroOrValue == 0.0) {
-            y = a_v0 * u_v0 + a_v1 * u_v1;
+            y = (v0+v1)/sum;
         } else {
-            y = a_v0 * u_v0 + a_v1 * u_v1 + a_v2 * u_v2;
+            y = (v0+v1+v2)/sum;
         }
     } else if (u_columnNo == 3.0) {
         if (a_zeroOrValue == 0.0) {
-            y = a_v0 * u_v0 + a_v1 * u_v1 + a_v2 * u_v2;
+            y = (v0+v1+v2)/sum;
         } else {
-            y = a_v0 * u_v0 + a_v1 * u_v1 + a_v2 * u_v2 + a_v3 * u_v3;
+            y = (v0+v1+v2+v3)/sum;
         }
     } else if (u_columnNo == 4.0) {
         if (a_zeroOrValue == 0.0) {
-            y = a_v0 * u_v0 + a_v1 * u_v1 + a_v2 * u_v2 + a_v3 * u_v3;
+            y = (v0+v1+v2+v3)/sum;
         } else {
-            y = a_v0 * u_v0 + a_v1 * u_v1 + a_v2 * u_v2 + a_v3 * u_v3 + a_v4 * u_v4;
+            y = (v0+v1+v2+v3+v4)/sum;
         }
     } else if (u_columnNo == 5.0) {
         if (a_zeroOrValue == 0.0) {
-            y = a_v0 * u_v0 + a_v1 * u_v1 + a_v2 * u_v2 + a_v3 * u_v3 + a_v4 * u_v4;
+            y = (v0+v1+v2+v3+v4)/sum;
         } else {
-            y = a_v0 * u_v0 + a_v1 * u_v1 + a_v2 * u_v2 + a_v3 * u_v3 + a_v4 * u_v4 + a_v5 * u_v5;
+            y = (v0+v1+v2+v3+v4+v5)/sum;
         }
     }
     gl_Position = MVP * vec4(a_x, y, 0.0, 1.0);
