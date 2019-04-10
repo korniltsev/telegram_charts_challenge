@@ -48,15 +48,15 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 /*
 
+
+    - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
+
     - линейка
         - стак проценты : сотню не правильно показывает
         - bar графике линейка показывает 25M, а tooltip 23m
         - цвет горизонтальной линии линейки
         - линейка рисуется поверх тултипа
         - цвет линейки вертикальной
-    ----------------
-    - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
-
 
 
     - A long tap on any data filter should uncheck all other filters.
