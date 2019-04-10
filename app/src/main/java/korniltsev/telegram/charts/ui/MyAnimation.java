@@ -3,13 +3,15 @@ package korniltsev.telegram.charts.ui;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 
 //todo create more user friendly api
 public class MyAnimation {
     public static final int ANIM_DRATION = 160;
 
 
-    public static final AccelerateDecelerateInterpolator INTERPOLATOR = new AccelerateDecelerateInterpolator();
+//    public static final AccelerateDecelerateInterpolator INTERPOLATOR = new AccelerateDecelerateInterpolator();
+    public static final DecelerateInterpolator INTERPOLATOR = new DecelerateInterpolator();
     public static final class Float {
 
         final long startTime = SystemClock.uptimeMillis();
