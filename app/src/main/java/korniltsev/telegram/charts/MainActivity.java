@@ -215,10 +215,10 @@ public class MainActivity extends Activity {
                 cb.setPadding(dimen.dpi(56), 0, dimen.dpi(32), 0);
                 cb.setTextColor(textColor);
                 cb.setText(c.name);
-                cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                cb.setOnCheckedChangeListener(new MyCheckBox.OnCheckedChangeListener (){
                     @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        newChart.setChecked(c.id, isChecked);
+                    public boolean onCheckedChanged(boolean isChecked) {
+                        return newChart.setChecked(c.id, isChecked);
                     }
                 });
                 LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(ChartViewGL.CHECKBOX_HEIGHT_DPI));
@@ -636,7 +636,7 @@ public class MainActivity extends Activity {
         private MyAnimation.Float alphaanim;
         private final Handler h = new Handler(Looper.getMainLooper());
         private MyAnimationTick action;
-        private CompoundButton.OnCheckedChangeListener listener;
+        private OnCheckedChangeListener listener;
 
         public MyCheckBox(Context c, Dimen dimen, String str, int tint) {
             super(c);
@@ -678,6 +678,10 @@ public class MainActivity extends Activity {
 
         //        @Override
         public void setChecked(boolean checked) {
+            boolean stateChanged = listener.onCheckedChanged(checked);
+            if (!stateChanged) {
+                return;
+            }
             this.checked = checked;
             ic = checked ? icchecked : icNonChecked;
             if (action != null) {
@@ -688,7 +692,7 @@ public class MainActivity extends Activity {
             alphaanim = new MyAnimation.Float(d, myalpha, checked ? 1f : 0f);
             action = new MyAnimationTick();
             postOnAnimation(action);
-            listener.onCheckedChanged(null, checked);
+
         }
 
         @Override
@@ -700,7 +704,7 @@ public class MainActivity extends Activity {
             super.onDraw(canvas);
         }
 
-        public void setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
+        public void setOnCheckedChangeListener(OnCheckedChangeListener onCheckedChangeListener) {
             this.listener = onCheckedChangeListener;
         }
 
@@ -723,6 +727,11 @@ public class MainActivity extends Activity {
                     }
                 }
             }
+        }
+
+        public interface OnCheckedChangeListener {
+
+            boolean onCheckedChanged(boolean isChecked);
         }
     }
 

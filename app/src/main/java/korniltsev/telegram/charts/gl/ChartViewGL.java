@@ -224,9 +224,29 @@ public class ChartViewGL extends TextureView {
 //        chartTop = dimen.dpi(80);
     }
 
-    public void setChecked(String id, boolean isChecked) {
-        //todo maybe need to save to ChartViewGl if we will need RenderRestart
+    public boolean setChecked(String id, boolean isChecked) {
+        boolean[] checked = r.checked;
+        int checkedCount = 0;
+        ColumnData[] data1 = data.data;
+        int foundI = -1;
+        for (int i = 1; i < data1.length; i++) {
+            ColumnData datum = data1[i];
+            int ci = i - 1;
+            if (r.checked[ci]) {
+                checkedCount++;
+            }
+            if (datum.id.equals(id)) {
+                foundI = ci;
+            }
+        }
+        if (foundI == -1) {
+            return false;
+        }
+        if (checkedCount == 1 && r.checked[foundI] && !isChecked) {
+            return false;
+        }
         this.r.setChecked(id, isChecked);
+        return true;
     }
 
     public void invalidateRender() {
