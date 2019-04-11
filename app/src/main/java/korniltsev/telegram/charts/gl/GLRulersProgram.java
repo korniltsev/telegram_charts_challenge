@@ -433,7 +433,7 @@ public final class GLRulersProgram {
         LINE_COLOR_PARTS[0] = MyColor.red(lineColor) / 255f;
         LINE_COLOR_PARTS[1] = MyColor.green(lineColor) / 255f;
         LINE_COLOR_PARTS[2] = MyColor.blue(lineColor) / 255f;
-        LINE_COLOR_PARTS[3] = alpha;
+        LINE_COLOR_PARTS[3] = MyColor.alpha(lineColor) / 255f * alpha;
         GLES20.glUniform4fv(simpleShader.colorHandle, 1, LINE_COLOR_PARTS, 0);//todo try to bind only once
 
         GLES20.glEnableVertexAttribArray(simpleShader.positionHandle);

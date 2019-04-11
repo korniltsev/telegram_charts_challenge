@@ -63,7 +63,7 @@ public class Tooltip {
         this.dimen = dimen;
         this.w = w;
         this.h = h;
-        this.lineColor = colors.tooltipVerticalLine;
+        this.lineColor = colors.ruler;
         this.simple = simple;
         this.rot = rot;
 
@@ -92,7 +92,7 @@ public class Tooltip {
 
     public void animateTo(ColorSet colors, long duration) {
         this.colorsSet = colors;
-        lineANim = new MyAnimation.Color(duration, lineColor, colors.tooltipVerticalLine);
+        lineANim = new MyAnimation.Color(duration, lineColor, colors.ruler);
         if (framebuffer != null) {
             framebuffer.animateToColors(colors, duration);
         }
