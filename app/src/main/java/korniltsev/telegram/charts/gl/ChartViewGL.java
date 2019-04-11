@@ -633,7 +633,7 @@ public class ChartViewGL extends TextureView {
                             c.animateMinMax(viewportMin, viewportMax, true, 208);
                         }
                         if (prevMax != viewportMax || prevMin != viewportMin) {
-                            ruler.animateScale(ratio, viewportMin, viewportMax, 208);
+                            ruler.animateScale(viewportMin, viewportMax, 208);
                             prevMax = viewportMax;
                             prevMin = viewportMin;
                         }
@@ -647,7 +647,7 @@ public class ChartViewGL extends TextureView {
                         }
                         float ratio = prevMax / (float) viewportMax;
                         if (prevMax != viewportMax) {
-                            ruler.animateScale(ratio, 0, viewportMax, 208);
+                            ruler.animateScale(0, viewportMax, 208);
                             prevMax = viewportMax;
                         }
                     }
@@ -1161,7 +1161,7 @@ public class ChartViewGL extends TextureView {
                 if (prevMax != viewportMax || prevMin != viewportMin) {
                     if (rulerInitDone) {
                         float ratio = prevMax / (float) viewportMax;
-                        ruler.animateScale(ratio, viewportMin, viewportMax, 256);
+                        ruler.animateScale(viewportMin, viewportMax, 256);
                     }
                     prevMax = viewportMax;
                     prevMin = viewportMin;
@@ -1176,7 +1176,7 @@ public class ChartViewGL extends TextureView {
                     if (rulerInitDone) {
                         chartBar.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
                         float ratio = prevMax / (float) viewportMax;
-                        ruler.animateScale(ratio, 0, viewportMax, 256);
+                        ruler.animateScale(0, viewportMax, 256);
                     }
                     prevMax = viewportMax;
                     prevMin = viewportMin;
@@ -1191,7 +1191,7 @@ public class ChartViewGL extends TextureView {
                     if (rulerInitDone) {
                         chartBar7.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
                         float ratio = prevMax / (float) viewportMax;
-                        ruler.animateScale(ratio, 0, viewportMax, 256);
+                        ruler.animateScale(0, viewportMax, 256);
                     }
                     prevMax = viewportMax;
                 }

@@ -80,6 +80,8 @@ public final class GLRulersProgram {
     private boolean released;
     private final boolean barChart;
     private final boolean percents;
+    private MyAnimation.Float minAnim;
+    private MyAnimation.Float maxAnim;
 
     public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, ColorSet colors, SimpleShader s, ColumnData xColumn, boolean barChart, boolean percents) {
         this.colors = colors;
@@ -133,9 +135,13 @@ public final class GLRulersProgram {
         hpadding = dimen.dpf(16);
         wpx = canvasW - 2 * hpadding;
     }
+    float min;
+    float max;
 
     public void init(long min, long max) {
-        Ruler r = new Ruler(min, max, 1.0f, paint, barChart, percents);
+        this.min = min;
+        this.max = max;
+        Ruler r = new Ruler(min, max, paint, barChart, percents);
         rs.add(r);
     }
 
@@ -188,23 +194,29 @@ public final class GLRulersProgram {
             Ruler r = rs.get(0);
             float dy = 0;
             for (int i = 0; i < 5; ++i) {
-                drawLine(hpadding, zero + dy * r.scale, canvasW - 2 * hpadding, r.alpha);
-                drawText(r.values.get(i), hpadding, zero + dy * r.scale + vpaddingTextOverPadding, r.alpha);
+                drawLine(hpadding, zero + dy * 1f, canvasW - 2 * hpadding, r.alpha);
+                drawText(r.values.get(i), hpadding, zero + dy * 1f + vpaddingTextOverPadding, r.alpha);
                 dy += (root.dimen_chart_usefull_height - dimen.dpf(8)) / 4f;
             }
 
         } else {
             GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
-
+            final float diff = max - min;
+            final float fullh = max * root.dimen_chart_usefull_height / (max - min);
+            final float zeropx = zero + root.dimen_chart_usefull_height - fullh;
             for (int ruler_i = 0, rsSize = rs.size(); ruler_i < rsSize; ruler_i++) {
                 Ruler r = rs.get(ruler_i);
-                float dy = 0;
+//                float dy = 0;
+
                 for (int i = 0; i < 6; ++i) {
-                    drawLine(hpadding, zero + dy * r.scale, canvasW - 2 * hpadding, r.alpha);
+                    float value = r.rValues[i];
+                    float ratio = value / max;
+                    float ry = zeropx + ratio * fullh;
+                    drawLine(hpadding, ry, canvasW - 2 * hpadding, r.alpha);
+//
+                    drawText(r.values.get(i), hpadding, ry + vpaddingTextOverPadding, r.alpha);
 
-                    drawText(r.values.get(i), hpadding, zero + dy * r.scale + vpaddingTextOverPadding, r.alpha);
-
-                    dy += dip50;
+//                    dy += dip50;
                 }
             }
             GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
@@ -293,8 +305,23 @@ public final class GLRulersProgram {
     ;
 
     public final boolean animationTick(long t) {
-        //todo invalidate
         boolean invalidate = false;
+        if (minAnim != null) {
+            min = minAnim.tick(t);
+            if (minAnim.ended) {
+                minAnim = null;
+            } else {
+                invalidate = true;
+            }
+        }
+        if (maxAnim != null) {
+            max = maxAnim.tick(t);
+            if (maxAnim.ended) {
+                maxAnim = null;
+            } else {
+                invalidate = true;
+            }
+        }
         if (colorAnim != null) {
             lineColor = colorAnim.tick(t);
             if (colorAnim.ended) {
@@ -322,14 +349,6 @@ public final class GLRulersProgram {
         for (int i = rs.size() - 1; i >= 0; i--) {
             Ruler r = rs.get(i);
 
-            if (r.scaleAnim != null) {
-                r.scale = r.scaleAnim.tick(t);
-                if (r.scaleAnim.ended) {
-                    r.scaleAnim = null;
-                } else {
-                    invalidate = true;
-                }
-            }
             if (r.alphaAnim != null) {
                 r.alpha = r.alphaAnim.tick(t);
                 if (r.alphaAnim.ended) {
@@ -338,7 +357,7 @@ public final class GLRulersProgram {
                     invalidate = true;
                 }
             }
-            if (r.toBeDeleted && r.alphaAnim == null && r.scaleAnim == null) {
+            if (r.toBeDeleted && r.alphaAnim == null) {
                 List<TextTex> values = r.values;
                 try {
                     for (int i1 = 0, valuesSize = values.size(); i1 < valuesSize; i1++) {
@@ -462,19 +481,30 @@ public final class GLRulersProgram {
 //        Log.d("OVERLAY", " " + left + " " + right);
 //    }
 
-    public void animateScale(float ratio, long minValue, long maxValue, long duration) {
+    //todo delete ratio outside
+    public void animateScale(long minValue, long maxValue, long duration) {
+        if (this.min != minValue) {
+            this.minAnim = new MyAnimation.Float(duration, this.min, minValue);
+        } else {
+            this.minAnim = null;
+        }
+
+        if (this.max != minValue) {
+            this.maxAnim = new MyAnimation.Float(duration, this.max, maxValue);
+        } else {
+            this.maxAnim = null;
+        }
+
         for (int i = 0, rsSize = rs.size(); i < rsSize; i++) {
             Ruler r = rs.get(i);
             if (r.toBeDeleted) {
                 continue;
             }
-            r.scaleAnim = new MyAnimation.Float(duration, r.scale, ratio);
             r.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.alpha, 0f);
             r.toBeDeleted = true;
         }
-        Ruler e = new Ruler(minValue, maxValue, 1f/ratio, paint, barChart, percents);
+        Ruler e = new Ruler(minValue, maxValue, paint, barChart, percents);
         e.alpha = 0f;
-        e.scaleAnim = new MyAnimation.Float(duration, e.scale, 1f);
         e.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, e.alpha, 1f);
         rs.add(e);
     }
@@ -623,16 +653,17 @@ public final class GLRulersProgram {
 //    static final NumberFormat numberFormat = NumberFormat.getInstance(Locale.getDefault());
 
     public static final class Ruler {
-        float scale = 1f;
+//        float scale = 1f;
         float alpha = 1f;
-        MyAnimation.Float scaleAnim;
+//        MyAnimation.Float scaleAnim;
         MyAnimation.Float alphaAnim;
         boolean toBeDeleted = false;
         public final List<TextTex> values = new ArrayList<>();
+        public final float[] rValues;
         public final boolean percent;
 
-        public Ruler(long minValue, long maxValue, float scale, TextPaint p, boolean minZero, boolean percent) {
-            this.scale = scale;
+        public Ruler(long minValue, long maxValue, TextPaint p, boolean minZero, boolean percent) {
+//            this.scale = scale;
             this.percent = percent;
             if (percent) {
                 values.add(new TextTex("0", p));
@@ -640,7 +671,9 @@ public final class GLRulersProgram {
                 values.add(new TextTex("50", p));
                 values.add(new TextTex("75", p));
                 values.add(new TextTex("100", p));
+                rValues = null;
             } else {
+                rValues = new float[6];
 
 //            int dy = 50;
 //            int max = 280;
@@ -649,6 +682,7 @@ public final class GLRulersProgram {
                 float from = minValue;
                 for (int i = 0; i < 6; i++) {
                     String text;
+                    rValues[i] = from;
                     long ifrom = (long) from;
                     if (minZero) {
                         if (ifrom < 1000) {
