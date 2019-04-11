@@ -16,7 +16,6 @@ import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyColor;
 
-import static korniltsev.telegram.charts.gl.GLChartProgram.CHART_HEIGHT;
 
 public class PercentStackedChartProgram {
     public final List<ColumnData> column;// excluding x
@@ -179,7 +178,7 @@ public class PercentStackedChartProgram {
             final int ypx = dimen.dpi(80) + root.checkboxesHeight;
 
             final float w = this.w - 2 * hpadding;
-            final float h = dimen.dpf(CHART_HEIGHT);
+            final float h = root.dimen_chart_usefull_height - dimen.dpf(8);
             final float xdiff = maxx;
             final float ws = w / xdiff / zoom;
             final float hs = h ;
@@ -249,7 +248,6 @@ public class PercentStackedChartProgram {
             GLES20.glUniform1f(shader.u_v3, visibility[3]);
             GLES20.glUniform1f(shader.u_v4, visibility[4]);
             GLES20.glUniform1f(shader.u_v5, visibility[5]);
-            GLES20.glUniform1f(shader.u_chart_height, dimen.dpf(ChartViewGL.CHART_HEIGHT));
 //            GLES20.glUniform1f(shader.u_v6, visibility[6]);
             MyGL.checkGlError2();
             GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vxCount);
@@ -324,7 +322,6 @@ public class PercentStackedChartProgram {
         public final int u_v3;
         public final int u_v4;
         public final int u_v5;
-        public final int u_chart_height;
         //        public final int u_v6;
         private boolean released;
 
@@ -357,7 +354,6 @@ public class PercentStackedChartProgram {
             u_v3 = GLES20.glGetUniformLocation(program, "u_v3");
             u_v4 = GLES20.glGetUniformLocation(program, "u_v4");
             u_v5 = GLES20.glGetUniformLocation(program, "u_v5");
-            u_chart_height = GLES20.glGetUniformLocation(program, "u_chart_height");
 //            u_v6 = GLES20.glGetUniformLocation(program, "u_v6");
         }
 

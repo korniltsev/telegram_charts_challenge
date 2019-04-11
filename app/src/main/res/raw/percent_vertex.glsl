@@ -23,7 +23,6 @@ uniform float u_v3;
 uniform float u_v4;
 uniform float u_v5;
 
-uniform float u_chart_height;
 
 
 uniform vec4 u_color;

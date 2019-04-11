@@ -76,15 +76,16 @@ public final class GLRulersProgram {
     private MyAnimation.Color textColorXAnim;
     private MyAnimation.Color textColorYAnim;
     private float left;
-    private float strideChangeLabelWidth
             ;
     private boolean released;
     private final boolean barChart;
+    private final boolean percents;
 
-    public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, ColorSet colors, SimpleShader s, ColumnData xColumn, boolean barChart) {
+    public GLRulersProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, ColorSet colors, SimpleShader s, ColumnData xColumn, boolean barChart, boolean percents) {
         this.colors = colors;
         this.xColumn = xColumn;
         this.barChart = barChart;
+        this.percents = percents;
 
         texShader = new TexShader(true, true);
         this.canvasW = canvasW;
@@ -134,7 +135,7 @@ public final class GLRulersProgram {
     }
 
     public void init(long min, long max) {
-        Ruler r = new Ruler(min, max, 1.0f, paint, barChart);
+        Ruler r = new Ruler(min, max, 1.0f, paint, barChart, percents);
         rs.add(r);
     }
 
@@ -182,25 +183,33 @@ public final class GLRulersProgram {
 //        drawText(this.zero, hpadding, zero + vpaddingTextOverPadding, 1f);
 
         final float dip50 = dimen.dpf(50);
-        GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
 
-        for (int ruler_i = 0, rsSize = rs.size(); ruler_i < rsSize; ruler_i++) {
-            Ruler r = rs.get(ruler_i);
-
+        if (percents) {
+            Ruler r = rs.get(0);
             float dy = 0;
-
-            for (int i = 0; i < 6; ++i) {
-//                if (i != 0) {
-                    drawLine(hpadding, zero + dy * r.scale, canvasW - 2 * hpadding, r.alpha);
-//                }
-
+            for (int i = 0; i < 5; ++i) {
+                drawLine(hpadding, zero + dy * r.scale, canvasW - 2 * hpadding, r.alpha);
                 drawText(r.values.get(i), hpadding, zero + dy * r.scale + vpaddingTextOverPadding, r.alpha);
-
-                dy += dip50;
+                dy += (root.dimen_chart_usefull_height - dimen.dpf(8)) / 4f;
             }
-//            drawLine(hpadding, zero + root.dimen_chart_height-10, (canvasW - 2 * hpadding)/2, 1.0f);
+
+        } else {
+            GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+
+            for (int ruler_i = 0, rsSize = rs.size(); ruler_i < rsSize; ruler_i++) {
+                Ruler r = rs.get(ruler_i);
+                float dy = 0;
+                for (int i = 0; i < 6; ++i) {
+                    drawLine(hpadding, zero + dy * r.scale, canvasW - 2 * hpadding, r.alpha);
+
+                    drawText(r.values.get(i), hpadding, zero + dy * r.scale + vpaddingTextOverPadding, r.alpha);
+
+                    dy += dip50;
+                }
+            }
+            GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
         }
-        GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
+
 
         drawX(t);
     }
@@ -463,7 +472,7 @@ public final class GLRulersProgram {
             r.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.alpha, 0f);
             r.toBeDeleted = true;
         }
-        Ruler e = new Ruler(minValue, maxValue, 1f/ratio, paint, barChart);
+        Ruler e = new Ruler(minValue, maxValue, 1f/ratio, paint, barChart, percents);
         e.alpha = 0f;
         e.scaleAnim = new MyAnimation.Float(duration, e.scale, 1f);
         e.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, e.alpha, 1f);
@@ -620,30 +629,42 @@ public final class GLRulersProgram {
         MyAnimation.Float alphaAnim;
         boolean toBeDeleted = false;
         public final List<TextTex> values = new ArrayList<>();
+        public final boolean percent;
 
-        public Ruler(long minValue, long maxValue, float scale, TextPaint p, boolean minZero) {
+        public Ruler(long minValue, long maxValue, float scale, TextPaint p, boolean minZero, boolean percent) {
             this.scale = scale;
+            this.percent = percent;
+            if (percent) {
+                values.add(new TextTex("0", p));
+                values.add(new TextTex("25", p));
+                values.add(new TextTex("50", p));
+                values.add(new TextTex("75", p));
+                values.add(new TextTex("100", p));
+            } else {
+
 //            int dy = 50;
 //            int max = 280;
-            long diff = maxValue - minValue;
-            long step = diff / 5;
-            long from = minValue;
-            for (int i = 0; i < 6; i++) {
-                String text;
-                if (minZero) {
-                    if (from < 1000) {
-                        text = String.valueOf(from);
-                    } else if (from < 1000000) {
-                        text = String.valueOf(from/1000) + "K";
-                    } else  {
-                        text = String.valueOf(from/1000000) + "M";
+                long diff = maxValue - minValue;
+                float step = diff / 5.6f;
+                float from = minValue;
+                for (int i = 0; i < 6; i++) {
+                    String text;
+                    long ifrom = (long) from;
+                    if (minZero) {
+                        if (ifrom < 1000) {
+                            text = String.valueOf(ifrom);
+                        } else if (ifrom < 1000000) {
+                            text = String.valueOf(ifrom/1000) + "K";
+                        } else  {
+                            text = String.valueOf(ifrom/1000000) + "M";
+                        }
+                    } else {
+                        // todo shorten
+                        text = String.valueOf(ifrom);
                     }
-                } else {
-                    // todo shorten
-                    text = String.valueOf(from);
+                    values.add(new TextTex(text, p));
+                    from += step;
                 }
-                values.add(new TextTex(text, p));
-                from += step;
             }
         }
     }

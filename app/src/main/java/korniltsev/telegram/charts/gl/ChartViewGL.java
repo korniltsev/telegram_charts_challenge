@@ -48,15 +48,14 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 /*
 
 
-    - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
+
 
     - линейка
-        - стак проценты : сотню не правильно показывает
-        - bar графике линейка показывает 25M, а tooltip 23m
         - цвет горизонтальной линии линейки
         - линейка рисуется поверх тултипа
         - цвет линейки вертикальной
 
+    - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
 
     - A long tap on any data filter should uncheck all other filters.
 
@@ -115,12 +114,12 @@ public class ChartViewGL extends TextureView {
     public static final int CHECKBOX_HEIGHT_DPI = 50;
     public static final int CHECKBOX_DIVIDER_HIEIGHT = 1;
     public static final int CHART_BOTTOM_DIP = 80;//relative to checkboxes
-    public static final int CHART_HEIGHT = 280;
+//    public static final int CHART_HEIGHT = 280;
     public static final int CHART_BOTTOM_DPI = 80;
     public final Dimen dimen;
 
     public final int dimen_v_padding8;
-    public final int dimen_chart_height;
+    public final int dimen_chart_height_with_top_padding;// with top padding
     public final int dimen_scrollbar_height;
     public final int h;
     public final Render r;
@@ -133,6 +132,7 @@ public class ChartViewGL extends TextureView {
     public final ColumnData xColumn;
     public final int legend_height;
     public final int checkboxesHeight;
+    public final int dimen_chart_usefull_height;
     //    public final long initTime;
     public int bgColor;
     public MyAnimation.Color bgAnim = null;
@@ -161,7 +161,8 @@ public class ChartViewGL extends TextureView {
 //        legend_height = dimen.dpi(46);
         legend_height = 0;
         dimen_v_padding8 = dimen.dpi(8);
-        dimen_chart_height = dimen.dpi(300);
+        dimen_chart_height_with_top_padding = dimen.dpi(300);
+        dimen_chart_usefull_height = dimen.dpi(280);
         dimen_scrollbar_height = dimen.dpi(38);
 
         r = new Render(c);
@@ -181,7 +182,7 @@ public class ChartViewGL extends TextureView {
         hpadding = dimen.dpi(16);
         h = dimen_v_padding8
                 + legend_height
-                + dimen_chart_height
+                + dimen_chart_height_with_top_padding
                 + dimen_v_padding8
                 + dimen_v_padding8
                 + dimen_scrollbar_height
@@ -219,7 +220,7 @@ public class ChartViewGL extends TextureView {
         }
 
         chartBottom = bottom - dimen.dpi(CHART_BOTTOM_DIP) - checkboxesHeight;
-        chartTop = chartBottom - dimen.dpi(CHART_HEIGHT);
+        chartTop = chartBottom - dimen_chart_usefull_height;
 //        chartTop = dimen.dpi(80);
     }
 
@@ -530,13 +531,13 @@ public class ChartViewGL extends TextureView {
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay, simple);
             boolean differentXYAxisColors = barSingle || bar7 || stacked_percent;//todo
-            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors, simple, xColumn, differentXYAxisColors);
+            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors, simple, xColumn, differentXYAxisColors, stacked_percent);
 
             Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
 
 
             debugRects = new ArrayList<>();
-//            debugRects.add(new MyRect(w, dimen.dpf(CHART_HEIGHT), 0, dimen.dpf(CHART_BOTTOM_DPI), 0xffffffff, w, h));
+//            debugRects.add(new MyRect(w, dimen_chart_usefull_height, 0, dimen.dpf(CHART_BOTTOM_DPI), 0xffffffff, w, h));
         }
 
 
@@ -773,7 +774,7 @@ public class ChartViewGL extends TextureView {
 //                long t4 = System.nanoTime();
             boolean rulerInvalidated = ruler.animationTick(t);
             invalidated = rulerInvalidated | invalidated;
-            GLES20.glScissor(0, dimen.dpi(CHART_BOTTOM_DPI) - dimen.dpi(1), w, dimen.dpi(CHART_HEIGHT));
+            GLES20.glScissor(0, dimen.dpi(CHART_BOTTOM_DPI) - dimen.dpi(1), w, dimen_chart_usefull_height);
 //            GLES20.glScissor(0, chartTop, w, Math.abs(chartTop - chartBottom));
 
             MyGL.checkGlError2();

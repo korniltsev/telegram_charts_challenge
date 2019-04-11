@@ -19,7 +19,7 @@ public final class GLChartProgram {
     public static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
     private static final int POSITION_DATA_SIZE = 2;
-    public static final int CHART_HEIGHT = 280;
+//    public static final int CHART_HEIGHT = 280;
 
 
     private final int vbo;
@@ -168,7 +168,7 @@ public final class GLChartProgram {
             final int ypx = dimen.dpi(80) + root.checkboxesHeight;
 
             final float w = this.w - 2 * hpadding;
-            final int h = dimen.dpi(CHART_HEIGHT);
+            final int h = root.dimen_chart_usefull_height;
             final float xdiff = maxx;
             final float ws = w / xdiff / zoom;
             final float hs = h / (maxValue - minValue);

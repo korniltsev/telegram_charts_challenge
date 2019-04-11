@@ -13,7 +13,6 @@ import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyColor;
 
 import static korniltsev.telegram.charts.gl.GLChartProgram.BYTES_PER_FLOAT;
-import static korniltsev.telegram.charts.gl.GLChartProgram.CHART_HEIGHT;
 
 public class BarChartProgram {
     public final ColumnData column;
@@ -134,7 +133,7 @@ public class BarChartProgram {
             final int ypx = dimen.dpi(80) + root.checkboxesHeight;
 
             final float w = this.w - 2 * hpadding;
-            final float h = dimen.dpf(CHART_HEIGHT);
+            final float h = root.dimen_chart_usefull_height;
             final float xdiff = maxx;
             final float ws = w / xdiff / zoom;
             final float hs = h / (max - 0);
