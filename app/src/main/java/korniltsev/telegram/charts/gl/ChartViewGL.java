@@ -52,7 +52,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
     - линейка
         - цвет горизонтальной линии линейки
-        - линейка рисуется поверх тултипа
         - цвет линейки вертикальной
 
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
@@ -778,13 +777,7 @@ public class ChartViewGL extends TextureView {
 //            GLES20.glScissor(0, chartTop, w, Math.abs(chartTop - chartBottom));
 
             MyGL.checkGlError2();
-            if (r.chartLines != null) {
-                ruler.draw(t);
-                invalidated = drawChart(invalidated, t);
-            } else {
-                invalidated = drawChart(invalidated, t);
-                ruler.draw(t);
-            }
+            invalidated = drawChart(invalidated, t);
 
 //                long t6 = System.nanoTime();
             MyGL.checkGlError2();
@@ -860,8 +853,8 @@ public class ChartViewGL extends TextureView {
         }
 
         public boolean drawChart(boolean invalidated, long t) {
-
             if (chartLines != null) {
+                ruler.draw(t);
                 int tooltipIndex = chartLines[0].getTooltipIndex();
                 if (tooltipIndex != -1) {
                     if (this.tooltip == null) {
@@ -920,6 +913,7 @@ public class ChartViewGL extends TextureView {
                 boolean it_invalidated = chartBar.animate(t);
                 chartBar.prepare(PROJ);
                 chartBar.draw(t);
+                ruler.draw(t);
                 if (tooltipIndex != -1) {
                     this.tooltip.animationTick(t, tooltipIndex, checked);
                     this.tooltip.calcPos(chartBar.MVP, tooltipIndex);
@@ -936,6 +930,9 @@ public class ChartViewGL extends TextureView {
                 boolean it_invalidated = chartBar7.animate(t);
                 chartBar7.prepare(PROJ);
                 chartBar7.draw(t, PROJ);
+
+                ruler.draw(t);
+
                 if (tooltipIndex != -1) {
                     this.tooltip.animationTick(t, tooltipIndex, checked);
                     this.tooltip.calcPos(chartBar7.MVP, tooltipIndex);
@@ -953,6 +950,9 @@ public class ChartViewGL extends TextureView {
                 boolean it_invalidated = chartStackedPercent.animate(t);
                 chartStackedPercent.prepare(PROJ);
                 chartStackedPercent.draw(t, PROJ);
+
+                ruler.draw(t);
+
                 if (tooltipIndex != -1) {
                     this.tooltip.animationTick(t, tooltipIndex, checked);
                     this.tooltip.calcPos(chartStackedPercent.MVP, tooltipIndex);
