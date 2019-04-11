@@ -49,7 +49,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 
 high prio
-    - A long tap on any data filter should uncheck all other filters.
+
 
     - бонус зум для 1
     - бонус зум для 2
@@ -64,6 +64,7 @@ high prio
         - анимировать добавление элементов при setChecked? ( low prio )
     - дизайн скролбара
     - дизайн чекбоксов
+        - A long tap on any data filter should uncheck all other filters.
     - придумать как исправить лаг когда скролишь и мин/макс меняется каждые пару фреймов
 
     - сокращалка
