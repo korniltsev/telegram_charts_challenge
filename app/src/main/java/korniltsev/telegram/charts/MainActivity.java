@@ -90,7 +90,7 @@ public class MainActivity extends Activity {
     private View currentView;
     private List<ChartData> data;
 
-//    private View chartList;
+    //    private View chartList;
 //    private ArrayList<TextView> buttons;
 //    private boolean chartVisible;
     private int textColor;
@@ -105,13 +105,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         ctx = getApplication();
         super.onCreate(savedInstanceState);
-//        Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
-//            @Override
-//            public void doFrame(long frameTimeNanos) {
-//
-//            }
-//        });
-        currentColorSet = ColorSet.NIGHT;
+        currentColorSet = ColorSet.DAY;
         textColor = currentColorSet.textColor;
         dividerColor = currentColorSet.ruler;
         dimen = new Dimen(this);
@@ -133,9 +127,6 @@ public class MainActivity extends Activity {
             ChartData dataset1 = dataset;
             View chart = createChart(dataset1);
             LinearLayout.LayoutParams chartlp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-//            if (i != 0) {
-
-//            }
             list.addView(chart, chartlp);
 
             View shadow = new View(this);
@@ -158,9 +149,6 @@ public class MainActivity extends Activity {
         legend.setTextColor(currentColorSet.legendTitle);
         legend.setText("Followers");
         legend.setLayoutParams(legendLP);
-//        MyColorDrawable d1 = new MyColorDrawable(currentColorSet.lightBackground);
-//        ds.add(d1);
-//        legend.setBackgroundDrawable(d1);
 
 
         final ChartViewGL newChart = new ChartViewGL(this, datum, dimen, currentColorSet);
@@ -169,7 +157,7 @@ public class MainActivity extends Activity {
 
 
         ScrollView.LayoutParams listLP = new ScrollView.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-        LinearLayout list = new LinearLayout(this){
+        LinearLayout list = new LinearLayout(this) {
             @Override
             public boolean isOpaque() {
                 return true;
@@ -184,23 +172,19 @@ public class MainActivity extends Activity {
         list.addView(newChart);
 
 
-
         ColumnData[] data1 = datum.data;
         if (datum.type == ColumnData.Type.bar && datum.data.length == 2) {
 
         } else {
             LinearLayout checkboxlist = new LinearLayout(this);
             checkboxlist.setOrientation(LinearLayout.VERTICAL);
-//        MyColorDrawable d = new MyColorDrawable(currentColorSet.lightBackground);
-//        ds.add(d);
-//        checkboxlist.setBackgroundDrawable(d);
             for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
                 final ColumnData c = data1[i];
                 if (c.id.equals(ChartData.COLUMN_ID_X)) {
                     continue;
                 }
                 if (i != 1) {
-                    View divider = new View(this){
+                    View divider = new View(this) {
                         @Override
                         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
                             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -219,7 +203,7 @@ public class MainActivity extends Activity {
                 cb.setPadding(dimen.dpi(56), 0, dimen.dpi(32), 0);
                 cb.setTextColor(textColor);
                 cb.setText(c.name);
-                cb.setOnCheckedChangeListener(new MyCheckBox.OnCheckedChangeListener (){
+                cb.setOnCheckedChangeListener(new MyCheckBox.OnCheckedChangeListener() {
                     @Override
                     public boolean onCheckedChanged(boolean isChecked) {
                         return newChart.setChecked(c.id, isChecked);
@@ -283,7 +267,7 @@ public class MainActivity extends Activity {
 
         LinearLayout.LayoutParams toolbarLP = new LinearLayout.LayoutParams(MATCH_PARENT, toolbar_size);
         bgToolbar = new MyColorDrawable(currentColorSet.toolbar);
-        toolbar = new LinearLayout(this){
+        toolbar = new LinearLayout(this) {
             @Override
             public boolean isOpaque() {
                 return true;//a
@@ -349,27 +333,16 @@ public class MainActivity extends Activity {
                 View root = chartsRoots.get(i);
                 int top = root.getTop();
                 int bottom = root.getBottom();
-//                if (LOGGING) Log.d("Chart", "top" + top);
-                //todo do not animate if
                 ScrollView parent = (ScrollView) root.getParent().getParent();
                 int height = parent.getHeight();
                 int y = parent.getScrollY();
                 top -= y;
                 bottom -= y;
                 if (bottom < 0 || top > height) {
-//                    Log.d(TAG, "anim no op");
                     chart.animateToColors(currentColorSet, 0);
                 } else {
-//                    Log.d(TAG, "anim ");
                     chart.animateToColors(currentColorSet, colorAnimationDuration);
                 }
-//                boolean offscreen = top > parent.getHeight();
-//
-//                if (animateDayNight && !offscreen) {
-//
-//                } else {
-//
-//                }
             }
         }
         if (animateUI) {
@@ -476,7 +449,7 @@ public class MainActivity extends Activity {
                     byte[] bytes = readAll(inputStream);
                     String s = new String(bytes, "UTF-8");
                     JSONObject o = new JSONObject(s);
-                    ChartData it= ChartData.pareOne(o);
+                    ChartData it = ChartData.pareOne(o);
                     res.add(it);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -628,13 +601,13 @@ public class MainActivity extends Activity {
     }
 
     private static class MyCheckBox extends TextView {
-        private  final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Dimen dimen;
         private final float l;
         private final float t;
         private final float b;
         private final float r;
-//        private final ImageView img;
+        //        private final ImageView img;
 //        private final TextView text;
         private final Drawable icchecked;
         private final Drawable icNonChecked;
@@ -670,7 +643,7 @@ public class MainActivity extends Activity {
             l = icchecked.getBounds().left + pad;
             t = icchecked.getBounds().top + pad;
             b = icchecked.getBounds().bottom - pad;
-            r = icchecked.getBounds().right- pad;
+            r = icchecked.getBounds().right - pad;
 
 
             icchecked.setColorFilter(tint, PorterDuff.Mode.SRC_IN);
@@ -681,6 +654,7 @@ public class MainActivity extends Activity {
             setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
 //            setBackgroundColor(Color.RED);
         }
+
         boolean checked = true;
 
         //        @Override
@@ -717,6 +691,7 @@ public class MainActivity extends Activity {
 
         private class MyAnimationTick implements Runnable {
             boolean canceled = false;
+
             @Override
             public void run() {
                 if (canceled) {
@@ -741,7 +716,6 @@ public class MainActivity extends Activity {
             boolean onCheckedChanged(boolean isChecked);
         }
     }
-
 
 
 }
