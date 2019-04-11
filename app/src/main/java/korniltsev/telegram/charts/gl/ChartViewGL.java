@@ -50,13 +50,23 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 high prio
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
-        - split chart
-        - split scrollbar
+        - нарисовать надписи справа +  цвет надписей
 
     - A long tap on any data filter should uncheck all other filters.
-
     - зарелизить все новые графики
+        - посмотреть в профайлере что больашя часть памяти освобождается
+
+    - бонус зум для 1
+    - бонус зум для 2
+    - бонус зум для 3
+    - бонус зум для 4
+    - бонус зум для 5 ?
+
     - дизайн тултипа
+        - дизайн
+        - правильная позиция + анимирование позиции
+        - анимирование смены значений как на видосах
+        - анимировать добавление элементов при setChecked? ( low prio )
     - дизайн скролбара
     - дизайн чекбоксов
     - придумать как исправить лаг когда скролишь и мин/макс меняется каждые пару фреймов
@@ -487,19 +497,29 @@ public class ChartViewGL extends TextureView {
             if (this.data.type == ColumnData.Type.line) {
 
                 scrollbar_lines = new GLChartProgram[data.length - 1];
-                long max = -1;
-                long min = Long.MAX_VALUE;
 
 
-                for (int i = 1, dataLength = data.length; i < dataLength; i++) {
-                    ColumnData datum = data[i];
-                    scrollbar_lines[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, simple, joiningShader);
-                    max = Math.max(max, datum.max);
-                    min = Math.min(min, datum.min);
-                }
-                for (GLChartProgram it : scrollbar_lines) {
-                    it.maxValue = max;
-                    it.minValue = min;
+                if (this.data.y_scaled) {
+                    for (int i = 1, dataLength = data.length; i < dataLength; i++) {
+                        ColumnData datum = data[i];
+                        GLChartProgram it = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, simple, joiningShader);
+                        scrollbar_lines[i - 1] = it;
+                        calculateChartLinesMaxScaled(it, 0f, 1f);
+                        it.animateMinMax(it.scaledViewporMin, it.scaledViewporMax, false, 0);
+                    }
+                } else {
+                    long max = -1;
+                    long min = Long.MAX_VALUE;
+                    for (int i = 1, dataLength = data.length; i < dataLength; i++) {
+                        ColumnData datum = data[i];
+                        scrollbar_lines[i - 1] = new GLChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, simple, joiningShader);
+                        max = Math.max(max, datum.max);
+                        min = Math.min(min, datum.min);
+                    }
+                    for (GLChartProgram it : scrollbar_lines) {
+                        it.maxValue = max;
+                        it.minValue = min;
+                    }
                 }
             } else if (barSingle) {
                 barShader = new BarChartProgram.MyShader();
@@ -580,27 +600,37 @@ public class ChartViewGL extends TextureView {
                     }
                     // scrollbar
                     if (scrollbar_lines != null) {
-
-                        GLChartProgram found = null;
-                        long max = -1;
-                        long min = Long.MAX_VALUE;
-
-
-                        for (int i = 0; i < scrollbar_lines.length; i++) {
-                            GLChartProgram c = scrollbar_lines[i];
-                            if (c.column.id.equals(id)) {
-                                found = c;
-                                c.animateAlpha(isChecked);
+                        if (data.y_scaled) {
+                            for (int i = 0; i < scrollbar_lines.length; i++) {
+                                GLChartProgram c = scrollbar_lines[i];
+                                if (c.column.id.equals(id)) {
+                                    c.animateAlpha(isChecked);
+                                    break;
+                                }
                             }
-                            if (c.checked) {
-                                max = Math.max(c.column.max, max);
-                                min = Math.min(c.column.min, min);
+                        } else {
+
+                            GLChartProgram found = null;
+                            long max = -1;
+                            long min = Long.MAX_VALUE;
+
+
+                            for (int i = 0; i < scrollbar_lines.length; i++) {
+                                GLChartProgram c = scrollbar_lines[i];
+                                if (c.column.id.equals(id)) {
+                                    found = c;
+                                    c.animateAlpha(isChecked);
+                                }
+                                if (c.checked) {
+                                    max = Math.max(c.column.max, max);
+                                    min = Math.min(c.column.min, min);
+                                }
                             }
-                        }
-                        for (GLChartProgram c : scrollbar_lines) {
-                            if (found == c && !isChecked) {
-                            } else {
-                                c.animateMinMax(min, max, true, 208);
+                            for (GLChartProgram c : scrollbar_lines) {
+                                if (found == c && !isChecked) {
+                                } else {
+                                    c.animateMinMax(min, max, true, 208);
+                                }
                             }
                         }
                     }
@@ -717,7 +747,7 @@ public class ChartViewGL extends TextureView {
                             calculateChartLinesMaxScaled(c, r.overlay.left, r.overlay.right);
                             c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, false, 0);
                         }
-                        ruler.init(r.chartLines[0].scaledViewporMin, r.chartLines[1].scaledViewporMax);
+                        ruler.init(r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax);
                     } else {
                         calculateChartLinesMax(r.overlay.left, r.overlay.right); // draw ( init)
                         ruler.init(viewportMin, viewportMax);
