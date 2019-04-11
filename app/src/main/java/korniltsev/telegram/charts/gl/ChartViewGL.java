@@ -1,7 +1,6 @@
 package korniltsev.telegram.charts.gl;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
@@ -565,12 +564,6 @@ public class ChartViewGL extends TextureView {
             Runnable setCheckedOnRenderThread = new Runnable() {
                 @Override
                 public void run() {
-                    int prevCheckedCOunt = 0;
-                    for (boolean b : checked) {
-                        if (b) {
-                            prevCheckedCOunt++;
-                        }
-                    }
                     ColumnData[] data1 = data.data;
                     int foundIndex = -1;
                     for (int i = 1; i < data1.length; i++) {
@@ -578,12 +571,6 @@ public class ChartViewGL extends TextureView {
                         if (datum.id.equals(id)) {
                             checked[i - 1] = isChecked;
                             foundIndex = i - 1;
-                        }
-                    }
-                    int checkedCount = 0;
-                    for (boolean b : checked) {
-                        if (b) {
-                            checkedCount++;
                         }
                     }
                     // scrollbar
@@ -642,12 +629,10 @@ public class ChartViewGL extends TextureView {
 
                         // chart
                         for (GLChartProgram c : chartLines) {
-                            if (checkedCount != 0) {
-                                c.animateMinMax(viewportMin, viewportMax, true, 208);
-                            }
+                            c.animateMinMax(viewportMin, viewportMax, true, 208);
                         }
                         if (prevMax != viewportMax || prevMin != viewportMin) {
-                            ruler.animateScale(ratio, viewportMin, viewportMax, checkedCount, prevCheckedCOunt, 208);
+                            ruler.animateScale(ratio, viewportMin, viewportMax, 208);
                             prevMax = viewportMax;
                             prevMin = viewportMin;
                         }
@@ -661,7 +646,7 @@ public class ChartViewGL extends TextureView {
                         }
                         float ratio = prevMax / (float) viewportMax;
                         if (prevMax != viewportMax) {
-                            ruler.animateScale(ratio, 0, viewportMax, checkedCount, prevCheckedCOunt, 208);
+                            ruler.animateScale(ratio, 0, viewportMax, 208);
                             prevMax = viewportMax;
                         }
                     }
@@ -1160,19 +1145,13 @@ public class ChartViewGL extends TextureView {
 
         public void updateLeftRight(float left, float right, float scale) {
             overlay.setLeftRight(left, right);
-//                long t = SystemClock.elapsedRealtimeNanos();
-//            long newMax = calculateMax(left, right);
             if (chartLines != null) {
 
                 calculateChartLinesMax(left, right);// updateLeftRight
 
-                int checkedCount = 0;
                 for (GLChartProgram glChartProgram : r.chartLines) {
                     glChartProgram.zoom = scale;
                     glChartProgram.left = left;
-                    if (glChartProgram.checked) {
-                        checkedCount++;
-                    }
                     if (prevMax != viewportMax || prevMin != viewportMin) {
                         glChartProgram.animateMinMax(viewportMin, viewportMax, !firstLeftRightUpdate, 256);
                     }
@@ -1182,7 +1161,7 @@ public class ChartViewGL extends TextureView {
                 if (prevMax != viewportMax || prevMin != viewportMin) {
                     if (rulerInitDone) {
                         float ratio = prevMax / (float) viewportMax;
-                        ruler.animateScale(ratio, viewportMin, viewportMax, checkedCount, checkedCount, 256);
+                        ruler.animateScale(ratio, viewportMin, viewportMax, 256);
                     }
                     prevMax = viewportMax;
                     prevMin = viewportMin;
@@ -1197,7 +1176,7 @@ public class ChartViewGL extends TextureView {
                     if (rulerInitDone) {
                         chartBar.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
                         float ratio = prevMax / (float) viewportMax;
-                        ruler.animateScale(ratio, 0, viewportMax, 1, 1, 256);
+                        ruler.animateScale(ratio, 0, viewportMax, 256);
                     }
                     prevMax = viewportMax;
                     prevMin = viewportMin;
@@ -1212,48 +1191,32 @@ public class ChartViewGL extends TextureView {
                     if (rulerInitDone) {
                         chartBar7.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
                         float ratio = prevMax / (float) viewportMax;
-                        ruler.animateScale(ratio, 0, viewportMax, 1, 1, 256);
+                        ruler.animateScale(ratio, 0, viewportMax, 256);
                     }
                     prevMax = viewportMax;
                 }
-                //todo
             }
             if (chartStackedPercent != null) {
                 ruler.setLeftRight(left, right, scale);
                 chartStackedPercent.zoom = scale;
                 chartStackedPercent.left = left;
-//                viewportMax = calculateBar7Max(data.data, r.overlay.left, r.overlay.right);
-//                if (prevMax != viewportMax) {
-//                    if (rulerInitDone) {
-//                        chartStackedPercent.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
-//                        float ratio = prevMax / (float) viewportMax;
-//                        ruler.animateScale(ratio, 0, viewportMax, 1, 1, 256);
-//                    }
-//                    prevMax = viewportMax;
-//                }
-                //todo
             }
             firstLeftRightUpdate = false;
         }
     }
 
-    //    public int scroller_width;//todo replace with scroller_left/rightd
-//    public int scroller_pos = -1;
     public Rect scrollbarPos = new Rect();
-    //    public int scroller_move_down_x;
     static final int DOWN_MOVE = 0;
     static final int DOWN_RESIZE_LEFT = 1;
     static final int DOWN_RESIZE_RIGHT = 2;
     static final int DOWN_TOOLTIP = 3;
     float last_x = -1f;
-    //    int resze_scroller_right = -1;
     int down_target = -1;
     boolean dragging;
 
 
     public int scroller__right = -1;
     public int scroller_left = -1;
-    //    public Rect scrollbar = new Rect();
     public int scroller_move_down_x;
     public int scroller_move_down_width;
 

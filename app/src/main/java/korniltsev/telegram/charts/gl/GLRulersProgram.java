@@ -453,31 +453,21 @@ public final class GLRulersProgram {
 //        Log.d("OVERLAY", " " + left + " " + right);
 //    }
 
-    public void animateScale(float ratio, long minValue, long maxValue, int checkedCount, int prevCheckedCOunt, long duration) {
+    public void animateScale(float ratio, long minValue, long maxValue, long duration) {
         for (int i = 0, rsSize = rs.size(); i < rsSize; i++) {
             Ruler r = rs.get(i);
             if (r.toBeDeleted) {
                 continue;
             }
-            if (checkedCount == 0 && prevCheckedCOunt != 0) {
-
-            } else {
-                r.scaleAnim = new MyAnimation.Float(duration, r.scale, ratio);
-            }
+            r.scaleAnim = new MyAnimation.Float(duration, r.scale, ratio);
             r.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, r.alpha, 0f);
             r.toBeDeleted = true;
         }
-        if (checkedCount != 0) {
-            Ruler e = new Ruler(minValue, maxValue, 1f/ratio, paint, barChart);
-            e.alpha = 0f;
-            if (prevCheckedCOunt == 0) {
-                e.scale = 1f;
-            } else {
-                e.scaleAnim = new MyAnimation.Float(duration, e.scale, 1f);
-            }
-            e.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, e.alpha, 1f);
-            rs.add(e);
-        }
+        Ruler e = new Ruler(minValue, maxValue, 1f/ratio, paint, barChart);
+        e.alpha = 0f;
+        e.scaleAnim = new MyAnimation.Float(duration, e.scale, 1f);
+        e.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, e.alpha, 1f);
+        rs.add(e);
     }
 
     float stride = 0;//draw xlabel every n points
