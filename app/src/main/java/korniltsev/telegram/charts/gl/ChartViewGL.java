@@ -60,6 +60,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
     - A long tap on any data filter should uncheck all other filters.
 
+    - зарелизить все новые графики
     - дизайн тултипа
     - дизайн скролбара
     - дизайн чекбоксов
