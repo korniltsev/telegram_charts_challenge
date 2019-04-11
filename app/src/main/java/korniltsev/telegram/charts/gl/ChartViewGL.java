@@ -1432,6 +1432,18 @@ public class ChartViewGL extends TextureView {
         }
     }
 
+    static {
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                if (DEBUG) {
+                    Log.e(TAG, "err", e);
+                    System.exit(0);
+                }
+            }
+        });
+    }
+
     public final void calculateChartBarMax(float left, float right) {
         if (r.chartBar != null) {
 
@@ -1502,35 +1514,4 @@ public class ChartViewGL extends TextureView {
         }
     }
 
-    //    @Override
-//    public void invalidate() {
-//        super.invalidate();
-//    }
-
-    //    class MyMotionEvent implements Runnable {
-//        float left;
-//        float scale;
-//        float right;
-//
-//        @Override
-//        public void run() {
-//            r.overlay.setLeftRight(left, right);
-//            for (GLChartProgram glChartProgram : r.chart) {
-//                glChartProgram.zoom = scale;
-//                glChartProgram.left = left;
-//            }
-//            motionEvents.offer(this);
-//        }
-//    }
-    static {
-//            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-//                @Override
-//                public void uncaughtException(Thread t, Throwable e) {
-//                    if (DEBUG) {
-//                        Log.e(TAG, "err", e);
-//                        System.exit(0);
-//                    }
-//                }
-//            });
-    }
 }
