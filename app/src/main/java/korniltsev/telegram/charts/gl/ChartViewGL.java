@@ -113,7 +113,7 @@ public class ChartViewGL extends TextureView {
     public static final int CHECKBOX_HEIGHT_DPI = 50;
     public static final int CHECKBOX_DIVIDER_HIEIGHT = 1;
     public static final int CHART_BOTTOM_DIP = 80;//relative to checkboxes
-//    public static final int CHART_HEIGHT = 280;
+    //    public static final int CHART_HEIGHT = 280;
     public static final int CHART_BOTTOM_DPI = 80;
     public final Dimen dimen;
 
@@ -279,8 +279,8 @@ public class ChartViewGL extends TextureView {
         public int w;
         public int h;
 
-        public long prevMax;
-        public long prevMin;
+//        public long prevMax;
+//        public long prevMin;
 
         public boolean rulerInitDone;
         public boolean[] checked;
@@ -516,7 +516,7 @@ public class ChartViewGL extends TextureView {
                 chartBar = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, false, barShader);
             } else if (bar7) {
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
-                chartBar7 =  new Bar7ChartProgram(cs, w, h, dimen, ChartViewGL.this, false, bar7Shader);
+                chartBar7 = new Bar7ChartProgram(cs, w, h, dimen, ChartViewGL.this, false, bar7Shader);
             } else if (stacked_percent) {
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 7);
                 chartStackedPercent = new PercentStackedChartProgram(cs, w, h, dimen, ChartViewGL.this, false, stackPercentShader);
@@ -624,19 +624,11 @@ public class ChartViewGL extends TextureView {
                         }
 
                         calculateChartLinesMax(r.overlay.left, r.overlay.right);// set checked
-                        //todo
-                        float ratio = prevMax / (float) viewportMax;
-//                    if (MainActivity.LOGGING) Log.d(MainActivity.TAG, "anim ratio " + ratio);
 
-                        // chart
                         for (GLChartProgram c : chartLines) {
                             c.animateMinMax(viewportMin, viewportMax, true, 208);
                         }
-                        if (prevMax != viewportMax || prevMin != viewportMin) {
-                            ruler.animateScale(viewportMin, viewportMax, 208);
-                            prevMax = viewportMax;
-                            prevMin = viewportMin;
-                        }
+                        ruler.animateScale(viewportMin, viewportMax, 208);
                     }
                     if (chartBar7 != null) {
                         chartBar7.setTooltipIndex(-1);
@@ -645,11 +637,7 @@ public class ChartViewGL extends TextureView {
                         if (foundIndex != -1) {
                             chartBar7.animateFade(foundIndex, isChecked, 208);
                         }
-                        float ratio = prevMax / (float) viewportMax;
-                        if (prevMax != viewportMax) {
-                            ruler.animateScale(0, viewportMax, 208);
-                            prevMax = viewportMax;
-                        }
+                        ruler.animateScale(0, viewportMax, 208);
                     }
                     if (chartStackedPercent != null) {
                         chartStackedPercent.setTooltipIndex(-1);
@@ -718,9 +706,7 @@ public class ChartViewGL extends TextureView {
                 if (chartLines != null) {
 
                     calculateChartLinesMax(r.overlay.left, r.overlay.right); // draw ( init)
-                    prevMax = viewportMax;
-                    prevMin = viewportMin;
-                    ruler.init(viewportMin, prevMax);
+                    ruler.init(viewportMin, viewportMax);
                     for (GLChartProgram glChartProgram : chartLines) {
                         glChartProgram.animateMinMax(viewportMin, viewportMax, false, 0);
                     }
@@ -729,19 +715,14 @@ public class ChartViewGL extends TextureView {
                     calculateChartBarMax(r.overlay.left, r.overlay.right);
                     chartBar.animateMinMax(viewportMax, false, 0);
                     ruler.init(0, viewportMax);
-                    prevMax = viewportMax;
                 }
                 if (chartBar7 != null) {
                     viewportMax = calculateBar7Max(data.data, r.overlay.left, r.overlay.right);
                     chartBar7.animateMinMax(viewportMax, false, 0);
                     ruler.init(0, viewportMax);
-                    prevMax = viewportMax;
                 }
                 if (chartStackedPercent != null) {
-//                    viewportMax = calculateBar7Max(data.data, r.overlay.left, r.overlay.right);
-//                    chartStackedPercent.animateMinMax(viewportMax, false, 0);
                     ruler.init(0, 100);
-                    prevMax = viewportMax;
                 }
                 rulerInitDone = true;
             }
@@ -1158,13 +1139,8 @@ public class ChartViewGL extends TextureView {
                 }
                 ruler.setLeftRight(left, right, scale);
 
-                if (prevMax != viewportMax || prevMin != viewportMin) {
-                    if (rulerInitDone) {
-                        float ratio = prevMax / (float) viewportMax;
-                        ruler.animateScale(viewportMin, viewportMax, 256);
-                    }
-                    prevMax = viewportMax;
-                    prevMin = viewportMin;
+                if (rulerInitDone) {
+                    ruler.animateScale(viewportMin, viewportMax, 256);
                 }
             }
             if (chartBar != null) {
@@ -1172,14 +1148,9 @@ public class ChartViewGL extends TextureView {
                 chartBar.zoom = scale;
                 chartBar.left = left;
                 calculateChartBarMax(left, right);
-                if (prevMax != viewportMax) {
-                    if (rulerInitDone) {
-                        chartBar.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
-                        float ratio = prevMax / (float) viewportMax;
-                        ruler.animateScale(0, viewportMax, 256);
-                    }
-                    prevMax = viewportMax;
-                    prevMin = viewportMin;
+                if (rulerInitDone) {
+                    chartBar.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
+                    ruler.animateScale(0, viewportMax, 256);
                 }
             }
             if (chartBar7 != null) {
@@ -1187,13 +1158,9 @@ public class ChartViewGL extends TextureView {
                 chartBar7.zoom = scale;
                 chartBar7.left = left;
                 viewportMax = calculateBar7Max(data.data, r.overlay.left, r.overlay.right);
-                if (prevMax != viewportMax) {
-                    if (rulerInitDone) {
-                        chartBar7.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
-                        float ratio = prevMax / (float) viewportMax;
-                        ruler.animateScale(0, viewportMax, 256);
-                    }
-                    prevMax = viewportMax;
+                if (rulerInitDone) {
+                    chartBar7.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
+                    ruler.animateScale(0, viewportMax, 256);
                 }
             }
             if (chartStackedPercent != null) {
@@ -1536,12 +1503,12 @@ public class ChartViewGL extends TextureView {
         }
     }
 
-        //    @Override
+    //    @Override
 //    public void invalidate() {
 //        super.invalidate();
 //    }
 
-        //    class MyMotionEvent implements Runnable {
+    //    class MyMotionEvent implements Runnable {
 //        float left;
 //        float scale;
 //        float right;
@@ -1556,7 +1523,7 @@ public class ChartViewGL extends TextureView {
 //            motionEvents.offer(this);
 //        }
 //    }
-        static {
+    static {
 //            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 //                @Override
 //                public void uncaughtException(Thread t, Throwable e) {
@@ -1566,5 +1533,5 @@ public class ChartViewGL extends TextureView {
 //                    }
 //                }
 //            });
-        }
+    }
 }

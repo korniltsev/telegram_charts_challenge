@@ -475,14 +475,10 @@ public final class GLRulersProgram {
 
     }
 
-//    public void setLeftRight(float left, float right) {
-//        this.left = left;
-//        this.right = right;
-//        Log.d("OVERLAY", " " + left + " " + right);
-//    }
-
-    //todo delete ratio outside
     public void animateScale(long minValue, long maxValue, long duration) {
+        if (min == minValue && max == maxValue) {
+            return;
+        }
         if (this.min != minValue) {
             this.minAnim = new MyAnimation.Float(duration, this.min, minValue);
         } else {
