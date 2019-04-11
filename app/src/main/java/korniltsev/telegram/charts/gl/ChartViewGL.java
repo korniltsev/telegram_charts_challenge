@@ -71,11 +71,20 @@ high prio
         норм сокращалка
         в бар7: выбрать apricots, pears - показывает 3k несколько раз
         если сокращенные значения не меняются то ничего не делать с линейкой и надписями
+
+
 low prio
     убрать touch slop
     цвета
         - bar chart - неправильный цвет при выбранной колонке - заюзать из гайдлайнов
         - в тултипе цвет текста не такой как на графике линия
+    - в баре тултип показывать около значения а не вверху
+    - когда скейлишь x левую надпись пидорасит
+    [ ? ] Matrix -> MyMatrix for inlining? test if it does something
+
+
+    line alpha animation blending - render to fbo
+    - проверить цвета в колоночных графиках day/night
 
 ---------------------------------------
 оптимизации
@@ -87,26 +96,13 @@ low prio
     - когда скроллбар не меняется - отрендерить его во фреймбуффер
     - попробовать отрендерить все на SurfaceView для Android N
     - мб сначала создать один график, потом остальные
-    - почему когда водишь пальцем то не лагает, а когда анимируется лагает? попробовать postDelayed для анимации сделать?
+    - почему когда водишь пальцем то не лагает, а когда анимируется лагает? попробовать postDelayed для анимации сделать?, Choreographer Callback
 ---------
-    - в баре тултип показывать около значения а не вверху
-    - когда скейлишь x левую надпись пидорасит
-    [ ? ] Matrix -> MyMatrix for inlining? test if it does something
 
 
-    сократить цифры на лейблах на линейных графиках
-    tooltip animation
-    alpha animation blending - render to fbo
-    - проверить цвета в колоночных графиках day/night
+// todo testing
+// write ui test monkey
 
-
-
-
-//todo testing
-//     requestLayaout during drag
-//     requestLayaout during animation?
-//     test on old device                      <<<<<<
-//     monkey test   + screenshots
 
 
 after contest replace GL_LINE with triangles & dithering
