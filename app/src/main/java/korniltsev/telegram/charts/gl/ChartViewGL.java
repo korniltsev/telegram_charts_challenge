@@ -50,8 +50,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 high prio
     - A long tap on any data filter should uncheck all other filters.
-    - зарелизить все новые графики
-        - посмотреть в профайлере что больашя часть памяти освобождается
 
     - бонус зум для 1
     - бонус зум для 2
