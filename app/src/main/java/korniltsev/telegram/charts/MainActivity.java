@@ -246,7 +246,7 @@ public class MainActivity extends Activity {
         title.setText("Statistics");
         title.setTextColor(Color.WHITE);
         title.setGravity(Gravity.CENTER_VERTICAL);
-        title.setTypeface(Typeface.create("sans-serif-condensed", Typeface.NORMAL));
+        title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         title.setPadding(dimen.dpi(18), 0, dimen.dpi(18), 0);
         title.setLayoutParams(titleLP);
 

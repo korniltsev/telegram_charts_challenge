@@ -2,6 +2,7 @@ package korniltsev.telegram.charts.gl;
 
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.text.TextPaint;
@@ -29,10 +30,11 @@ import static android.opengl.GLES10.glClearColor;
 class TooltipFramebuffer {
 
     public static final int PADDING_BETWEEN_VALUES = 20;
-    public static final int HEIGHT = 62;
-    public static final int LEFT_RIGHT_PADDING = 10;
+    //    public static final int HEIGHT = 62;
+    public static final int LEFT_RIGHT_PADDING = 12;
     public static final float FONT_SIZE_16 = 12f;
     public static final float FONT_SIZE22 = 16f;
+    //    public static final int VMARGIN = 8;
     private final int fakeShadowSimulatorLine;
     int[] fbos = new int[1];
     private final int fbo;
@@ -63,6 +65,7 @@ class TooltipFramebuffer {
     private int fakeShadowColor;
     private MyAnimation.Color fakeShadowColorAnim;
     private boolean released;
+    public float realH;
 
     public TooltipFramebuffer(TexShader shader, ChartData data, int index, Dimen dimen, ColorSet set, boolean[] checked, SimpleShader simple) {
         this.dateColor = set.tooltipTitleColor;
@@ -134,13 +137,23 @@ class TooltipFramebuffer {
     }
 
     public final void drawTooltip() {
+        realH = dimen.dpf(8) * 2 + title.h;
+
+
+        for (int i = 0; i < lines.size(); i++) {
+            Line l = lines.get(i);
+            TextTex name = l.name;
+            float lh = l.h * l.visibility;
+            realH += lh;
+        }
+
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fbo);
         GLES20.glViewport(0, 0, w, h);
         //todo probably need glViewPort()
         glClearColor(
-                MyColor.red(bgColor)/255f,
-                MyColor.green(bgColor)/255f,
-                MyColor.blue(bgColor)/255f,
+                MyColor.red(bgColor) / 255f,
+                MyColor.green(bgColor) / 255f,
+                MyColor.blue(bgColor) / 255f,
                 1.0f
         );
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -148,16 +161,25 @@ class TooltipFramebuffer {
         GLES20.glUseProgram(shader_.texProgram);
         MyGL.checkGlError2();
 
-        drawText(title, dimen.dpf(LEFT_RIGHT_PADDING), dimen.dpf(40), dateColor);
+        float titleY = realH - title.h - dimen.dpi(8);
+        drawText(title, dimen.dpf(LEFT_RIGHT_PADDING), titleY, dateColor, 1f);
+        float ity = titleY;
 
+//        float currentX = dimen.dpf(LEFT_RIGHT_PADDING);
 
-        float currentX = dimen.dpf(LEFT_RIGHT_PADDING);
-        for (int i = 0; i < names.size(); i++) {
-            TextTex name = names.get(i);
-            drawText(name, currentX, dimen.dpf(8), name.color);
-            TextTex value = values.get(i);
-            drawText(value, currentX, dimen.dpf(21), name.color);
-            currentX += Math.max(name.w, value.w) + dimen.dpf(PADDING_BETWEEN_VALUES);
+        for (int i = 0; i < lines.size(); i++) {
+            Line l = lines.get(i);
+            TextTex name = l.name;
+            float lh = l.h * l.visibility;
+//            realH += lh;
+
+//            int ny = titleY - dimen.dpi(VMARGIN) - i * (dimen.dpi(VMARGIN) + name.h);
+            drawText(name, dimen.dpf(LEFT_RIGHT_PADDING), ity-l.h, dateColor, l.visibility);
+            TextTex value = l.value;
+            float vx = w - dimen.dpi(LEFT_RIGHT_PADDING) - value.w;
+            drawText(value, vx, ity-l.h, value.color, l.visibility);
+            ity -= lh;
+//            currentX += Math.max(name.w, value.w) + dimen.dpf(PADDING_BETWEEN_VALUES);
         }
 
 //        int width = w;
@@ -170,12 +192,9 @@ class TooltipFramebuffer {
 //        System.out.println();
 
 
-
-
-
         Matrix.setIdentityM(VIEW, 0);
 //        Matrix.translateM(VIEW, 0, 0, dimen.dpf(80f), 0f);
-        Matrix.scaleM(VIEW, 0, w, h, 1f);
+        Matrix.scaleM(VIEW, 0, w, realH, 1f);
 //        Matrix.translateM(VIEW, 0, ndcx, 0f, 0f);
         Matrix.multiplyMM(MVP, 0, PROJ, 0, VIEW, 0);
 
@@ -194,23 +213,23 @@ class TooltipFramebuffer {
 
 
     }
+
     float[] PROJ = new float[16];
     float[] VIEW = new float[16];
     float[] MVP = new float[16];
 
-    private void drawText(TextTex text, float x, float y, int color) {
+    private void drawText(TextTex text, float x, float y, int color, float alpha) {
 
         Matrix.setIdentityM(VIEW, 0);
         Matrix.translateM(VIEW, 0, x, y, 0);
-        Matrix.scaleM(VIEW, 0, text.w, text.h,1);
+        Matrix.scaleM(VIEW, 0, text.w, text.h, 1);
         Matrix.multiplyMM(MVP, 0, PROJ, 0, VIEW, 0);
-
 
 
         GLES20.glEnableVertexAttribArray(shader_.texPositionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, shader_.texVerticesVBO);
         GLES20.glVertexAttribPointer(shader_.texPositionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
-        GLES20.glUniform1f(shader_.texAlphaHandle, 1f);
+        GLES20.glUniform1f(shader_.texAlphaHandle, alpha);
 
         GLES20.glUniformMatrix4fv(shader_.texMVPHandle, 1, false, MVP, 0);
         MyColor.set(colorParts, color);
@@ -221,50 +240,51 @@ class TooltipFramebuffer {
     }
 
     TextTex title;
-    List<TextTex> values = new ArrayList<>();
-    List<TextTex> names = new ArrayList<>();
+    List<Line> lines = new ArrayList<Line>();
+
 
     public void prepareTextTexturesAndMeasure(boolean[] checked) {
         long dateTimestamp = data.data[0].values[index];
         String date = Tooltip.dateFormat.format(dateTimestamp);
-
+        Typeface medium = Typeface.create("sans-serif-medium", Typeface.NORMAL);
         TextPaint p16 = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         p16.setColor(Color.BLACK);
         p16.setAntiAlias(true);
         p16.setTextSize(dimen.dpf(FONT_SIZE_16));
 
-        TextPaint p22 = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-        p22.setColor(Color.BLACK);
-        p22.setAntiAlias(true);
-        p22.setTextSize(dimen.dpf(FONT_SIZE22));
 
+        p16.setTypeface(medium);
         title = new TextTex(date, p16);
+        p16.setTypeface(null);
 
         for (int i = 1; i < data.data.length; i++) {
+            ColumnData datum = data.data[i];
+            TextTex name = new TextTex(datum.name, p16);
+            name.color = title.color;
+
+            p16.setTypeface(medium);
+            TextTex value = new TextTex(String.valueOf(datum.values[index]), p16);
+            p16.setTypeface(null);
+            value.color = datum.color;
+            Line e = new Line(name, value, value.h + dimen.dpi(4), datum.id);
             if (checked[i - 1]) {
-                ColumnData datum = data.data[i];
-                TextTex name = new TextTex(datum.name, p16);
-
-                TextTex value = new TextTex(String.valueOf(datum.values[index]), p22);
-                name.color = value.color = datum.color;
-                names.add(name);
-                values.add(value);
+                e.visibility = 1f;
+            } else {
+                e.visibility = 0f;
             }
+            lines.add(e);
         }
-        int valuesWidth = 0;
-        for (int i = 0; i < names.size(); i++) {
-            if (i != 0) {
-                valuesWidth += dimen.dpi(PADDING_BETWEEN_VALUES);//padding between values
-            }
-            TextTex name = names.get(i);
-            TextTex value = values.get(i);
-            valuesWidth += Math.max(name.w, value.w);
+        int vw = -1;
+        for (int i = 0; i < lines.size(); i++) {
+            Line line = lines.get(i);
+            vw = Math.max(vw, line.name.w + line.value.w + dimen.dpi(8));
         }
 
 
-
-        w = 2 * dimen.dpi(LEFT_RIGHT_PADDING) + Math.max(title.w, valuesWidth);
-        h = dimen.dpi(HEIGHT);
+        //todo rename to maxW maxH
+        w = 2 * dimen.dpi(LEFT_RIGHT_PADDING) + Math.max(title.w + 0/*arror*/, vw);
+        int hspace = dimen.dpi(8) * 2;//top and bottom margin
+        h = hspace + title.h + lines.get(0).h * lines.size();
 
         Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
     }
@@ -275,40 +295,87 @@ class TooltipFramebuffer {
         }
         released = true;
         title.release();
-        for (TextTex name : names) {
-            name.release();
-        }
-        for (TextTex value : values) {
-            value.release();
+        for (Line line : lines) {
+            line.name.release();
+            line.value.release();
         }
         GLES20.glDeleteFramebuffers(1, fbos, 0);
         GLES20.glDeleteTextures(1, textures, 0);
     }
 
-    public void animtionTick(long time) {
+    public boolean animtionTick(long time) {
+        boolean invalidate = false;
+//        for (Line line : lines) {
+//
+//        }
         if (bgAnim != null) {
             bgColor = bgAnim.tick(time);
             if (bgAnim.ended) {
                 bgAnim = null;
+            } else {
+                invalidate = true;
             }
         }
         if (titleColorAnim != null) {
             dateColor = titleColorAnim.tick(time);
             if (titleColorAnim.ended) {
                 titleColorAnim = null;
+            } else {
+                invalidate = true;
             }
         }
         if (fakeShadowColorAnim != null) {
             fakeShadowColor = fakeShadowColorAnim.tick(time);
             if (fakeShadowColorAnim.ended) {
                 fakeShadowColorAnim = null;
+            } else {
+                invalidate = true;
             }
         }
+
+        for (int i = 0; i < lines.size(); i++) {
+            Line line = lines.get(i);
+            MyAnimation.Float a = line.visibilityANim;
+            if (a != null) {
+                line.visibility = a.tick(time);
+                if (a.ended) {
+                    line.visibilityANim = null;
+                } else {
+                    invalidate = true;
+                }
+            }
+
+        }
+        return invalidate;
     }
 
     public void animateToColors(ColorSet c, long duration) {
         bgAnim = new MyAnimation.Color(duration, bgColor, c.tooltipBGColor);
         titleColorAnim = new MyAnimation.Color(duration, dateColor, c.tooltipTitleColor);
-        fakeShadowColorAnim  = new MyAnimation.Color(duration, fakeShadowColor, c.tooltipFakeSHadowColor);
+        fakeShadowColorAnim = new MyAnimation.Color(duration, fakeShadowColor, c.tooltipFakeSHadowColor);
+    }
+
+    public void setChecked(String id, boolean isChecked) {
+        for (Line line : lines) {
+            if (line.id.equals(id)) {
+                line.visibilityANim = new MyAnimation.Float(208, line.visibility, isChecked ? 1f : 0f);
+                break;
+            }
+        }
+    }
+
+    public static class Line {
+        public float visibility = 1f;
+        public TextTex name;
+        public TextTex value;
+        public final int h;
+        public MyAnimation.Float visibilityANim;
+        final String id;
+        public Line(TextTex name, TextTex value, int h, String id) {
+            this.name = name;
+            this.value = value;
+            this.h = h;
+            this.id = id;
+        }
     }
 }

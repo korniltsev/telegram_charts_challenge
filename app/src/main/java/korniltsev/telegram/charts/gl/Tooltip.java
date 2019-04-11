@@ -148,7 +148,10 @@ public class Tooltip {
             }
         }
         if (framebuffer != null) {
-            framebuffer.animtionTick(time);
+            boolean it_inv = framebuffer.animtionTick(time);
+            if (it_inv) {
+                invalidate = true;
+            }
         }
 
         if (framebuffer == null || index != fbindex) {//or index change
@@ -192,8 +195,8 @@ public class Tooltip {
 
         Matrix.setIdentityM(VIEW, 0);
         int texw = framebuffer.w;
-        int texh = framebuffer.h;
-        Matrix.translateM(VIEW, 0, xpos, dimen.dpf(80 + 290 - TooltipFramebuffer.HEIGHT) + rot.checkboxesHeight, 0f);
+        float texh = framebuffer.h;
+        Matrix.translateM(VIEW, 0, xpos, dimen.dpf(80 + 290)- framebuffer.realH , 0f);
         Matrix.scaleM(VIEW, 0, texw, texh, 1f);
 
         Matrix.multiplyMM(MVP, 0, proj, 0, VIEW, 0);
@@ -259,6 +262,12 @@ public class Tooltip {
         if (framebuffer != null) {
             framebuffer.release();
             framebuffer = null;
+        }
+    }
+
+    public void setChecked(String id, boolean isChecked) {
+        if (framebuffer != null) {
+            framebuffer.setChecked(id, isChecked);
         }
     }
 }

@@ -59,6 +59,7 @@ high prio
 
     - дизайн тултипа
         - дизайн
+        - стрелочка
         - правильная позиция + анимирование позиции
         - анимирование смены значений как на видосах
         - анимировать добавление элементов при setChecked? ( low prio )
@@ -622,6 +623,9 @@ public class ChartViewGL extends TextureView {
                             foundIndex = i - 1;
                         }
                     }
+                    if (tooltip != null) {
+                        tooltip.setChecked(id, isChecked);
+                    }
                     // scrollbar
                     if (scrollbar_lines != null) {
                         if (data.y_scaled) {
@@ -673,7 +677,7 @@ public class ChartViewGL extends TextureView {
 
                     if (chartLines != null) {
                         for (GLChartProgram c : chartLines) {
-                            c.setTooltipIndex(-1);
+//                            c.setTooltipIndex(-1);
                             if (c.column.id.equals(id)) {
                                 c.animateAlpha(isChecked);
                             }
@@ -696,7 +700,7 @@ public class ChartViewGL extends TextureView {
                         }
                     }
                     if (chartBar7 != null) {
-                        chartBar7.setTooltipIndex(-1);
+//                        chartBar7.setTooltipIndex(-1);
                         viewportMax = calculateBar7Max(data1, r.overlay.left, r.overlay.right);
                         chartBar7.animateMinMax(viewportMax, true, 208);
                         if (foundIndex != -1) {
@@ -705,7 +709,7 @@ public class ChartViewGL extends TextureView {
                         ruler.animateScale(0, viewportMax, 208);
                     }
                     if (chartStackedPercent != null) {
-                        chartStackedPercent.setTooltipIndex(-1);
+//                        chartStackedPercent.setTooltipIndex(-1);
 //                        viewportMax = calculateBar7Max(data1, r.overlay.left, r.overlay.right);
 //                        chartStackedPercent.animateMinMax(viewportMax, true, 208);
                         if (foundIndex != -1) {
