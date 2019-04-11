@@ -1153,9 +1153,7 @@ public class ChartViewGL extends TextureView {
                 for (GLChartProgram glChartProgram : r.chartLines) {
                     glChartProgram.zoom = scale;
                     glChartProgram.left = left;
-                    if (prevMax != viewportMax || prevMin != viewportMin) {
-                        glChartProgram.animateMinMax(viewportMin, viewportMax, !firstLeftRightUpdate, 256);
-                    }
+                    glChartProgram.animateMinMax(viewportMin, viewportMax, !firstLeftRightUpdate, 256);
                 }
                 ruler.setLeftRight(left, right, scale);
 

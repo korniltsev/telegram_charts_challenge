@@ -269,8 +269,16 @@ public final class GLChartProgram {
             minAnim = null;
             maxAnim = null;
         } else {
-            minAnim = new MyAnimation.Float(duration, minValue, min);
-            maxAnim = new MyAnimation.Float(duration, maxValue, max);
+            if (minValue == min) {
+                minAnim = null;
+            } else {
+                minAnim = new MyAnimation.Float(duration, minValue, min);
+            }
+            if (maxValue == max) {
+                maxAnim = null;
+            } else {
+                maxAnim = new MyAnimation.Float(duration, maxValue, max);
+            }
         }
 
     }
