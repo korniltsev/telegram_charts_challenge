@@ -269,6 +269,8 @@ public class Bar7ChartProgram {
         visibilityANim[foundIndex] = new MyAnimation.Float(duration, visibility[foundIndex], isChecked ? 1f : 0f);
     }
 
+
+
     static class Vx {
         public static final int SIZE = 10 * 4;
         float v0;
@@ -360,5 +362,10 @@ public class Bar7ChartProgram {
             released = true;
             GLES20.glDeleteProgram(program);
         }
+    }
+
+    public void release() {
+        GLES20.glDeleteBuffers(7, vbos, 0);
+        MyGL.checkGlError2();
     }
 }

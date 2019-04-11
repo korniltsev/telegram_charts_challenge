@@ -69,8 +69,8 @@ public class PercentStackedChartProgram {
         this.shader = shader;
 
 
-        vbos = new int[7];
-        GLES20.glGenBuffers(7, vbos, 0);
+        vbos = new int[6];
+        GLES20.glGenBuffers(6, vbos, 0);
         MyGL.checkGlError2();
 
 //        long[] values = column.values;
@@ -79,7 +79,7 @@ public class PercentStackedChartProgram {
 //        int n = values.length/20;
 //        vertices = new float[n * 18];
 
-        for (int j = 0; j < 7; j++) {
+        for (int j = 0; j < 6; j++) {
 
             List<Vx> vs = new ArrayList<>();
             int columnNo = j;
@@ -275,6 +275,11 @@ public class PercentStackedChartProgram {
 
     public void animateFade(int foundIndex, boolean isChecked, long duration) {
         visibilityANim[foundIndex] = new MyAnimation.Float(duration, visibility[foundIndex], isChecked ? 1f : 0f);
+    }
+
+    public void release() {
+        GLES20.glDeleteBuffers(6, vbos, 0);
+        MyGL.checkGlError2();
     }
 
     static class Vx {

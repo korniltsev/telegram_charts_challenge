@@ -314,6 +314,10 @@ public class ChartViewGL extends TextureView {
         public GLRulersProgram ruler;
 
         public SimpleShader simple;
+        BarChartProgram.MyShader barShader = null;
+        Bar7ChartProgram.MyShader bar7Shader = null;
+        PercentStackedChartProgram.MyShader stackPercentShader = null;
+
         //        public GLChartProgram.Shader chartShader;
         public MyCircles.Shader joiningShader;
         private ArrayList<MyRect> debugRects;
@@ -379,6 +383,36 @@ public class ChartViewGL extends TextureView {
                             } catch (Throwable e) {
                                 if (LOGGING) Log.e(TAG, "release err", e);
                             }
+                        }
+                    }
+                    {
+                        if (chartBar != null) {
+                            chartBar.release();
+                        }
+                        if (scrollbar_bars != null) {
+                            scrollbar_bars.release();
+                        }
+                        if (barShader != null) {
+                            barShader.release();
+                        }
+                    }
+                    {
+                        if (chartBar7 != null) {
+                            chartBar7.release();
+                        }
+                        if (scrollbar_bar7 != null) {
+                            scrollbar_bar7.release();
+                        }
+                        if (bar7Shader != null) {
+                            bar7Shader.release();
+                        }
+                    }
+                    {
+                        if (chartStackedPercent != null) {
+                            chartStackedPercent.release();
+                        }
+                        if (stackPercentShader != null) {
+                            stackPercentShader.release();
                         }
                     }
                     try {
@@ -483,9 +517,6 @@ public class ChartViewGL extends TextureView {
                 checked[i - 1] = true;
             }
 
-            BarChartProgram.MyShader barShader = null;
-            Bar7ChartProgram.MyShader bar7Shader = null;
-            PercentStackedChartProgram.MyShader stackPercentShader = null;
 
 
             boolean barSingle = this.data.type == ColumnData.Type.bar && data.length == 2;

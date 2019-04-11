@@ -238,4 +238,8 @@ public class BarChartProgram {
             GLES20.glDeleteProgram(program);
         }
     }
+
+    public void release(){
+        GLES20.glDeleteBuffers(1, vbos, 0);
+    }
 }
