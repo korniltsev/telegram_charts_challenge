@@ -48,7 +48,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 /*
 
 
-    - отрефачить код позиции линеек чтобы легко можно было запрогать след график
 
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
 
