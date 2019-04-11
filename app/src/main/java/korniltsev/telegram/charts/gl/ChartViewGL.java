@@ -48,7 +48,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 /*
 
 
-
+high prio
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
 
     - A long tap on any data filter should uncheck all other filters.
@@ -60,7 +60,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
     - придумать как исправить лаг когда скролишь и мин/макс меняется каждые пару фреймов
 
     - сокращалка в бар7: выбрать apricots, pears - показывает 3k несколько раз
-
+low prio
     цвета
         - bar chart - неправильный цвет при выбранной колонке - заюзать из гайдлайнов
         - в тултипе цвет текста не такой как на графике линия
