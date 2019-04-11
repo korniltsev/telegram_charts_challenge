@@ -30,6 +30,8 @@ public final class GLChartProgram {
     public final SimpleShader shader;
     public float zoom = 1f;//1 -- all, 0.2 - partial
     public float left = 0;
+    public long scaledViewporMax;
+    public long scaledViewporMin;
     private int tooltipIndex = -1;
 
     //    private float[] M = new float[16];

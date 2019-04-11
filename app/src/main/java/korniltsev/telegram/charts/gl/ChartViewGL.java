@@ -50,6 +50,8 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 high prio
     - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
+        - split chart
+        - split scrollbar
 
     - A long tap on any data filter should uncheck all other filters.
 
@@ -59,8 +61,11 @@ high prio
     - дизайн чекбоксов
     - придумать как исправить лаг когда скролишь и мин/макс меняется каждые пару фреймов
 
-    - сокращалка в бар7: выбрать apricots, pears - показывает 3k несколько раз
+    - сокращалка
+        норм сокращалка
+        в бар7: выбрать apricots, pears - показывает 3k несколько раз
 low prio
+    убрать touch slop
     цвета
         - bar chart - неправильный цвет при выбранной колонке - заюзать из гайдлайнов
         - в тултипе цвет текста не такой как на графике линия
@@ -613,21 +618,25 @@ public class ChartViewGL extends TextureView {
                     }
 
                     if (chartLines != null) {
-
                         for (GLChartProgram c : chartLines) {
                             c.setTooltipIndex(-1);
-
                             if (c.column.id.equals(id)) {
                                 c.animateAlpha(isChecked);
                             }
                         }
-
-                        calculateChartLinesMax(r.overlay.left, r.overlay.right);// set checked
-
-                        for (GLChartProgram c : chartLines) {
-                            c.animateMinMax(viewportMin, viewportMax, true, 208);
+                        if (data.y_scaled) {
+                            for (GLChartProgram c : r.chartLines) {
+                                calculateChartLinesMaxScaled(c, r.overlay.left, r.overlay.right);
+                                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, !firstLeftRightUpdate, 256);
+                            }
+                            ruler.animateScale(r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax, 208);
+                        } else {
+                            calculateChartLinesMax(r.overlay.left, r.overlay.right);// set checked
+                            for (GLChartProgram c : chartLines) {
+                                c.animateMinMax(viewportMin, viewportMax, true, 208);
+                            }
+                            ruler.animateScale(viewportMin, viewportMax, 208);
                         }
-                        ruler.animateScale(viewportMin, viewportMax, 208);
                     }
                     if (chartBar7 != null) {
                         chartBar7.setTooltipIndex(-1);
@@ -703,11 +712,18 @@ public class ChartViewGL extends TextureView {
             boolean invalidated = false;
             if (!rulerInitDone) {
                 if (chartLines != null) {
-
-                    calculateChartLinesMax(r.overlay.left, r.overlay.right); // draw ( init)
-                    ruler.init(viewportMin, viewportMax);
-                    for (GLChartProgram glChartProgram : chartLines) {
-                        glChartProgram.animateMinMax(viewportMin, viewportMax, false, 0);
+                    if (data.y_scaled) {
+                        for (GLChartProgram c : r.chartLines) {
+                            calculateChartLinesMaxScaled(c, r.overlay.left, r.overlay.right);
+                            c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, false, 0);
+                        }
+                        ruler.init(r.chartLines[0].scaledViewporMin, r.chartLines[1].scaledViewporMax);
+                    } else {
+                        calculateChartLinesMax(r.overlay.left, r.overlay.right); // draw ( init)
+                        ruler.init(viewportMin, viewportMax);
+                        for (GLChartProgram glChartProgram : chartLines) {
+                            glChartProgram.animateMinMax(viewportMin, viewportMax, false, 0);
+                        }
                     }
                 }
                 if (chartBar != null) {
@@ -1128,18 +1144,31 @@ public class ChartViewGL extends TextureView {
         public void updateLeftRight(float left, float right, float scale) {
             overlay.setLeftRight(left, right);
             if (chartLines != null) {
+                if (data.y_scaled) {
+                    for (GLChartProgram c : r.chartLines) {
+                        calculateChartLinesMaxScaled(c, left, right);
+                        c.zoom = scale;
+                        c.left = left;
+                        c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, !firstLeftRightUpdate, 256);
+                    }
+                    ruler.setLeftRight(left, right, scale);
+                    if (rulerInitDone) {
+                        ruler.animateScale(r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax, 256);
+                    }
 
-                calculateChartLinesMax(left, right);// updateLeftRight
+                } else {
+                    calculateChartLinesMax(left, right);// updateLeftRight
 
-                for (GLChartProgram glChartProgram : r.chartLines) {
-                    glChartProgram.zoom = scale;
-                    glChartProgram.left = left;
-                    glChartProgram.animateMinMax(viewportMin, viewportMax, !firstLeftRightUpdate, 256);
-                }
-                ruler.setLeftRight(left, right, scale);
+                    for (GLChartProgram glChartProgram : r.chartLines) {
+                        glChartProgram.zoom = scale;
+                        glChartProgram.left = left;
+                        glChartProgram.animateMinMax(viewportMin, viewportMax, !firstLeftRightUpdate, 256);
+                    }
+                    ruler.setLeftRight(left, right, scale);
 
-                if (rulerInitDone) {
-                    ruler.animateScale(viewportMin, viewportMax, 256);
+                    if (rulerInitDone) {
+                        ruler.animateScale(viewportMin, viewportMax, 256);
+                    }
                 }
             }
             if (chartBar != null) {
@@ -1442,6 +1471,22 @@ public class ChartViewGL extends TextureView {
                 }
             }
         });
+    }
+
+    public static void calculateChartLinesMaxScaled(GLChartProgram p, float left, float right) {
+        long max = Long.MIN_VALUE;
+        long min = Long.MAX_VALUE;
+        int len = p.column.values.length;
+        int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
+        int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
+        long[] values = p.column.values;
+        for (int i = from; i < to; i++) {
+            long value = values[i];
+            max = (max >= value) ? max : value;
+            min = Math.min(min, value);
+        }
+        p.scaledViewporMax = max;
+        p.scaledViewporMin = min;
     }
 
     public final void calculateChartBarMax(float left, float right) {
