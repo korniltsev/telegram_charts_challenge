@@ -49,9 +49,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 
 high prio
-    - 2. A line chart with 2 lines and 2 Y axes (Screenshot 3).
-        - нарисовать надписи справа +  цвет надписей
-
     - A long tap on any data filter should uncheck all other filters.
     - зарелизить все новые графики
         - посмотреть в профайлере что больашя часть памяти освобождается
@@ -554,7 +551,7 @@ public class ChartViewGL extends TextureView {
 
             overlay = new GLScrollbarOverlayProgram(w, h, dimen, ChartViewGL.this, init_colors.scrollbarBorder, init_colors.scrollbarOverlay, simple);
             boolean differentXYAxisColors = barSingle || bar7 || stacked_percent;//todo
-            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors, simple, xColumn, differentXYAxisColors, stacked_percent);
+            ruler = new GLRulersProgram(w, h, dimen, ChartViewGL.this, init_colors, simple, xColumn, differentXYAxisColors, stacked_percent, this.data.y_scaled);
 
             Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
 
@@ -659,7 +656,10 @@ public class ChartViewGL extends TextureView {
                                 calculateChartLinesMaxScaled(c, r.overlay.left, r.overlay.right);
                                 c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, !firstLeftRightUpdate, 256);
                             }
-                            ruler.animateScale(r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax, 208);
+                            ruler.animateScale(
+                                    r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax,
+                                    r.chartLines[1].scaledViewporMin, r.chartLines[1].scaledViewporMax,
+                                    208);
                         } else {
                             calculateChartLinesMax(r.overlay.left, r.overlay.right);// set checked
                             for (GLChartProgram c : chartLines) {
@@ -747,7 +747,12 @@ public class ChartViewGL extends TextureView {
                             calculateChartLinesMaxScaled(c, r.overlay.left, r.overlay.right);
                             c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, false, 0);
                         }
-                        ruler.init(r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax);
+                        ruler.init(
+                                r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax,
+                                r.chartLines[1].scaledViewporMin, r.chartLines[1].scaledViewporMax,
+                                r.chartLines[0].column.color,
+                                r.chartLines[1].column.color
+                        );
                     } else {
                         calculateChartLinesMax(r.overlay.left, r.overlay.right); // draw ( init)
                         ruler.init(viewportMin, viewportMax);
@@ -1183,7 +1188,10 @@ public class ChartViewGL extends TextureView {
                     }
                     ruler.setLeftRight(left, right, scale);
                     if (rulerInitDone) {
-                        ruler.animateScale(r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax, 256);
+                        ruler.animateScale(
+                                r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax,
+                                r.chartLines[1].scaledViewporMin, r.chartLines[1].scaledViewporMax,
+                                256);
                     }
 
                 } else {
