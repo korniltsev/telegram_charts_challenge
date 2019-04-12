@@ -1531,6 +1531,10 @@ public class ChartViewGL extends TextureView {
     boolean zoomedIn = false;
 
     private void onZoom(int tooltipIndex) {
+        ChartData details = data.getDetails(tooltipIndex);
+        if (details == null) {
+            return;
+        }
         zoomedIn = !zoomedIn;
         if (r.chartLines != null) {
             for (LinesChartProgram c : r.chartLines) {

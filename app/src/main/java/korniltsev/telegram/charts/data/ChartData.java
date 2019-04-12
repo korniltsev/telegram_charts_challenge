@@ -1,13 +1,19 @@
 package korniltsev.telegram.charts.data;
 
 import android.graphics.Color;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.TimeZone;
 
+import korniltsev.telegram.charts.BuildConfig;
 import korniltsev.telegram.charts.MainActivity;
 
 public class ChartData {
@@ -19,16 +25,18 @@ public class ChartData {
     public final boolean y_scaled;
     public final ColumnData.Type type;
 
-    public ChartData(ColumnData[] data, boolean percentage, boolean stacked, boolean y_scaled, ColumnData.Type type) {
+    public final int index;//1-5
+    public ChartData(ColumnData[] data, boolean percentage, boolean stacked, boolean y_scaled, ColumnData.Type type, int index) {
         this.data = data;
         this.percentage = percentage;
         this.stacked = stacked;
         this.y_scaled = y_scaled;
         this.type = type;
+        this.index = index;
     }
 
 
-    public static ChartData pareOne(JSONObject o) throws JSONException {
+    public static ChartData pareOne(JSONObject o, int index) throws JSONException {
 //        chart.names – Name for each variable.
 //        chart.percentage – true for percentage based values.
 //        chart.stacked – true for values stacking on top of each other.
@@ -77,6 +85,42 @@ public class ChartData {
         boolean percentage = o.optBoolean("percentage", false);
         boolean stacked = o.optBoolean("stacked", false);
         boolean y_scaled = o.optBoolean("y_scaled", false);
-        return new ChartData(jcolumn, percentage, stacked, y_scaled, lastT );
+        return new ChartData(jcolumn, percentage, stacked, y_scaled, lastT, index);
+    }
+
+    public static SimpleDateFormat dateFormat;
+
+    public ChartData getDetails(int tooltipIndex) {
+        if (dateFormat == null) {
+            dateFormat = new SimpleDateFormat("yyyy-MM/dd", Locale.US);
+            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        }
+        long value = data[0].values[tooltipIndex];
+        String format = dateFormat.format(value);
+        System.out.println(format);
+        InputStream inputStream = null;
+        try {
+            inputStream = MainActivity.ctx.getAssets().open(index + "/" + format + ".json");
+            byte[] bytes = MainActivity.readAll(inputStream);
+            String s = new String(bytes, "UTF-8");
+            JSONObject o = new JSONObject(s);
+            return ChartData.pareOne(o, -1);
+
+        } catch (IOException e) {
+            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err " + format, e);
+            return null;
+        } catch (JSONException e) {
+            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err " + format, e);
+            return null;
+        } finally {
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+            }
+        }
+//        Date date = new Date(value);
+
     }
 }

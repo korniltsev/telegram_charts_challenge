@@ -67,7 +67,7 @@ public class MainActivity extends Activity {
     public static final boolean DEBUG = BuildConfig.DEBUG;
     public static final boolean TRACE = false;
     public static final boolean USE_RIPPLE = true;
-    public static final boolean LOGGING = false;
+    public static final boolean LOGGING = DEBUG;
     public static final boolean DIRTY_CHECK = true;
     public static final boolean LOG_FPS = false;
 
@@ -424,14 +424,15 @@ public class MainActivity extends Activity {
         };
         if (parseNew) {
 
-            for (String d : ds) {
+            for (int i = 0; i < ds.length; i++) {
+                String d = ds[i];
                 InputStream inputStream = null;
                 try {
                     inputStream = getAssets().open(d);
                     byte[] bytes = readAll(inputStream);
                     String s = new String(bytes, "UTF-8");
                     JSONObject o = new JSONObject(s);
-                    ChartData it = ChartData.pareOne(o);
+                    ChartData it = ChartData.pareOne(o, i+1);
                     res.add(it);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
