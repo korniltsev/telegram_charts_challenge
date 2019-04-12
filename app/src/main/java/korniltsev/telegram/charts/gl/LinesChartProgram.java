@@ -14,7 +14,7 @@ import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyColor;
 
-public final class GLChartProgram {
+public final class LinesChartProgram {
 
     public static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
@@ -64,7 +64,7 @@ public final class GLChartProgram {
         lineJoining.release();
     }
 
-    public GLChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, int toolttipFillColor, SimpleShader shader, MyCircles.Shader joiningShader) {
+    public LinesChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, int toolttipFillColor, SimpleShader shader, MyCircles.Shader joiningShader) {
         this.tooltipFillColor = toolttipFillColor;
         this.w = w;
         this.h = h;

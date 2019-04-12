@@ -12,7 +12,7 @@ import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyColor;
 
-import static korniltsev.telegram.charts.gl.GLChartProgram.BYTES_PER_FLOAT;
+import static korniltsev.telegram.charts.gl.LinesChartProgram.BYTES_PER_FLOAT;
 
 public class BarChartProgram {
     public final ColumnData column;
