@@ -326,6 +326,7 @@ public class ChartViewGL extends TextureView {
         //        public LinesChartProgram.Shader chartShader;
         public MyCircles.Shader joiningShader;
         private ArrayList<MyRect> debugRects;
+        private LinesChartProgram.MyShader lineShader;
 
 
         public Render(ChartData column) {
@@ -391,33 +392,65 @@ public class ChartViewGL extends TextureView {
                         }
                     }
                     {
-                        if (chartBar != null) {
-                            chartBar.release();
+                        try {
+                            if (chartBar != null) {
+                                chartBar.release();
+                            }
+                        } catch (Throwable e) {
+                            if (LOGGING) Log.e(TAG, "release err", e);
                         }
-                        if (scrollbar_bars != null) {
-                            scrollbar_bars.release();
+                        try {
+                            if (scrollbar_bars != null) {
+                                scrollbar_bars.release();
+                            }
+                        } catch (Throwable e) {
+                            if (LOGGING) Log.e(TAG, "release err", e);
                         }
-                        if (barShader != null) {
-                            barShader.release();
+                        try {
+                            if (barShader != null) {
+                                barShader.release();
+                            }
+                        } catch (Throwable e) {
+                            if (LOGGING) Log.e(TAG, "release err", e);
                         }
                     }
                     {
-                        if (chartBar7 != null) {
-                            chartBar7.release();
+                        try {
+                            if (chartBar7 != null) {
+                                chartBar7.release();
+                            }
+                        } catch (Throwable e) {
+                            if (LOGGING) Log.e(TAG, "release err", e);
                         }
-                        if (scrollbar_bar7 != null) {
-                            scrollbar_bar7.release();
+                        try {
+                            if (scrollbar_bar7 != null) {
+                                scrollbar_bar7.release();
+                            }
+                        } catch (Throwable e) {
+                            if (LOGGING) Log.e(TAG, "release err", e);
                         }
-                        if (bar7Shader != null) {
-                            bar7Shader.release();
+                        try {
+                            if (bar7Shader != null) {
+                                bar7Shader.release();
+                            }
+                        } catch (Throwable e) {
+                            if (LOGGING) Log.e(TAG, "release err", e);
                         }
                     }
                     {
-                        if (chartStackedPercent != null) {
-                            chartStackedPercent.release();
+                        try {
+                            if (chartStackedPercent != null) {
+                                chartStackedPercent.release();
+                            }
+                        } catch (Throwable e) {
+                            e.printStackTrace();
                         }
-                        if (stackPercentShader != null) {
-                            stackPercentShader.release();
+                        try {
+                            if (stackPercentShader != null) {
+                                stackPercentShader.release();
+                            }
+                        } catch (Throwable e) {
+                            e.printStackTrace();
                         }
                     }
                     try {
@@ -437,6 +470,13 @@ public class ChartViewGL extends TextureView {
                     } catch (Throwable e) {
                         if (LOGGING) Log.e(TAG, "release err", e);
 
+                    }
+                    try {
+                        if (lineShader != null) {
+                            lineShader.release();
+                        }
+                    } catch (Throwable e) {
+                        if (LOGGING) Log.e(TAG, "release err", e);
                     }
                     try {
                         joiningShader.release();
@@ -531,11 +571,13 @@ public class ChartViewGL extends TextureView {
 
                 scrollbar_lines = new LinesChartProgram[data.length - 1];
 
-
+                lineShader = new LinesChartProgram.MyShader();
                 if (this.data.y_scaled) {
                     for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                         ColumnData datum = data[i];
-                        LinesChartProgram it = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, simple, joiningShader);
+
+
+                        LinesChartProgram it = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, lineShader, joiningShader);
                         scrollbar_lines[i - 1] = it;
                         calculateChartLinesMaxScaled(it, 0f, 1f);
                         it.animateMinMax(it.scaledViewporMin, it.scaledViewporMax, false, 0);
@@ -545,7 +587,7 @@ public class ChartViewGL extends TextureView {
                     long min = Long.MAX_VALUE;
                     for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                         ColumnData datum = data[i];
-                        scrollbar_lines[i - 1] = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, simple, joiningShader);
+                        scrollbar_lines[i - 1] = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors.lightBackground, lineShader, joiningShader);
                         max = Math.max(max, datum.max);
                         min = Math.min(min, datum.min);
                     }
@@ -580,7 +622,7 @@ public class ChartViewGL extends TextureView {
             } else {
                 chartLines = new LinesChartProgram[data.length - 1];
                 for (int i = 1, dataLength = data.length; i < dataLength; i++) {
-                    chartLines[i - 1] = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground, simple, joiningShader);
+                    chartLines[i - 1] = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors.lightBackground, lineShader, joiningShader);
                 }
             }
 
