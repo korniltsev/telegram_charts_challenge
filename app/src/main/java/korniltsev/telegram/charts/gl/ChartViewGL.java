@@ -288,6 +288,7 @@ public class ChartViewGL extends TextureView {
         public EGLConfig mEglConfig;
         public EGLContext mEglContext;
         public EGLSurface mEglSurface;
+        public int tooltipIndex;
 
         SurfaceTexture surface;
         final Object lock = new Object();//todo fuck locking
@@ -1401,7 +1402,7 @@ public class ChartViewGL extends TextureView {
             case MotionEvent.ACTION_UP:
                 if (action == MotionEvent.ACTION_UP && down_target == DOWN_TOOLTIP) {
                     if (Math.abs(last_x - x) < touchSlop) {
-                        dispatchTouchDownChart(x);
+                        dispatchTouchDownChart(x, y);
                     }
                 }
                 if (LOGGING) Log.d("tg.chart", "dragging = false ");
@@ -1414,7 +1415,7 @@ public class ChartViewGL extends TextureView {
         return false;
     }
 
-    public void dispatchTouchDownChart(float x) {
+    public void dispatchTouchDownChart(final float x, final float y) {
         if (x < scrollbarPos.left || x > scrollbarPos.right) {
             if (LOGGING) Log.d(MainActivity.TAG, "chart down miss");
         } else {
@@ -1428,6 +1429,17 @@ public class ChartViewGL extends TextureView {
             Runnable dispatchTouchdown = new Runnable() {
                 @Override
                 public void run() {
+                    if (r.tooltip != null && r.tooltipIndex != -1) {
+                        float xpos = r.tooltip.xpos;
+                        float ypos = r.tooltip.ypos;
+                        float tw = r.tooltip.framebuffer.realW;
+                        float th = r.tooltip.framebuffer.realH;
+                        float invy = h - y;
+                        if (x >= xpos && x <= xpos + tw && invy >= ypos && invy <= ypos + th) {
+                            onZoom(r.tooltipIndex);
+                            return;
+                        }
+                    }
                     float sdataset = r.overlay.left + finalswindow * (r.overlay.right - r.overlay.left);
                     int n = r.data.data[0].values.length;
                     int i = (int) (Math.round(n - 1) * sdataset);
@@ -1460,6 +1472,7 @@ public class ChartViewGL extends TextureView {
                     if (r.chartStackedPercent != null) {
                         r.chartStackedPercent.setTooltipIndex(finali);
                     }
+                    r.tooltipIndex = finali;
 //                    r.drawAndSwap();
                     r.invalidateRender();
                 }
@@ -1469,6 +1482,11 @@ public class ChartViewGL extends TextureView {
 
             if (LOGGING) Log.d(MainActivity.TAG, "chart touch down");
         }
+    }
+
+    private void onZoom(int tooltipIndex) {
+
+
     }
 
 //    public static final BlockingQueue<MyMotionEvent> motionEvents = new ArrayBlockingQueue<MyMotionEvent>(100);
@@ -1510,6 +1528,7 @@ public class ChartViewGL extends TextureView {
         if (r.chartStackedPercent != null) {
             r.chartStackedPercent.setTooltipIndex(-1);
         }
+        r.tooltipIndex = -1;
 //                r.drawAndSwap();
         r.invalidateRender();
     }

@@ -66,6 +66,7 @@ class TooltipFramebuffer {
     private MyAnimation.Color fakeShadowColorAnim;
     private boolean released;
     public float realH;
+    public int realW;
 
     public TooltipFramebuffer(TexShader shader, ChartData data, int index, Dimen dimen, ColorSet set, boolean[] checked, SimpleShader simple) {
         this.dateColor = set.tooltipTitleColor;
@@ -138,6 +139,7 @@ class TooltipFramebuffer {
 
     public final void drawTooltip() {
         realH = dimen.dpf(8) * 2 + title.h;
+        realW = w;
 
 
         for (int i = 0; i < lines.size(); i++) {

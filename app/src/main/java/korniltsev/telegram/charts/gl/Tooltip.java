@@ -43,7 +43,7 @@ public class Tooltip {
             ;
     private final int[] vbos;
     private ColorSet colorsSet;
-    private TooltipFramebuffer framebuffer;
+    public TooltipFramebuffer framebuffer;
     private final ChartData data;
     //    private int fbo;
 //    private int tex;
@@ -54,7 +54,9 @@ public class Tooltip {
     private float ndcx;
     private boolean released;
     public final ChartViewGL rot;
-//    private TexShader texShader;
+    public float xpos;
+    public float ypos;
+    //    private TexShader texShader;
 
     public Tooltip(Dimen dimen, int w, int h, ColorSet colors, ChartData data, SimpleShader simple, ChartViewGL rot) {
         this.data = data;
@@ -179,7 +181,6 @@ public class Tooltip {
 //        float
 //        Log.d("FUCK", " " + ndcx);
         float dip16 = dimen.dpf(16);
-        float xpos;
         if (framebuffer.w <= w - 2 * dip16) {
             xpos = ndcx * w - dip16;
             if (xpos < dip16) {
@@ -196,7 +197,8 @@ public class Tooltip {
         Matrix.setIdentityM(VIEW, 0);
         int texw = framebuffer.w;
         float texh = framebuffer.h;
-        Matrix.translateM(VIEW, 0, xpos, dimen.dpf(80 + 290)- framebuffer.realH , 0f);
+        ypos = dimen.dpf(80 + 290) - framebuffer.realH;
+        Matrix.translateM(VIEW, 0, xpos, ypos, 0f);
         Matrix.scaleM(VIEW, 0, texw, texh, 1f);
 
         Matrix.multiplyMM(MVP, 0, proj, 0, VIEW, 0);
@@ -269,5 +271,9 @@ public class Tooltip {
         if (framebuffer != null) {
             framebuffer.setChecked(id, isChecked);
         }
+    }
+
+    public int getToooltipIndex() {
+        return fbindex;
     }
 }
