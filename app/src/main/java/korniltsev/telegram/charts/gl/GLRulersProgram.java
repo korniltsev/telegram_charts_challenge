@@ -565,62 +565,84 @@ public final class GLRulersProgram {
         if (!yScaled) {
             throw new AssertionError();
         }
-        if (min == minValue && max == maxValue && minValue2 == min2 && maxValue2 == max2) {
-            return;
-        }
 
-        if (min != minValue || max != maxValue) {
+        {
+            boolean minChanged = false;
+            boolean maxChanged = false;
             if (this.min != minValue) {
-                this.minAnim = new MyAnimation.Float(duration, this.min, minValue);
+                if (this.minAnim != null && minAnim.to == minValue) {
+                } else {
+                    this.minAnim = new MyAnimation.Float(duration, this.min, minValue);
+                    minChanged = true;
+                }
             } else {
                 this.minAnim = null;
             }
 
             if (this.max != maxValue) {
-                this.maxAnim = new MyAnimation.Float(duration, this.max, maxValue);
+                if (this.maxAnim != null && this.maxAnim.to == maxValue) {
+
+                } else {
+                    this.maxAnim = new MyAnimation.Float(duration, this.max, maxValue);
+                    maxChanged = true;
+                }
             } else {
                 this.maxAnim = null;
             }
-
-            for (int i = 0, rsSize = rs1.size(); i < rsSize; i++) {
-                Ruler r = rs1.get(i);
-                if (r.toBeDeleted) {
-                    continue;
+            if (minChanged || maxChanged) {
+                for (int i = 0, rsSize = rs1.size(); i < rsSize; i++) {
+                    Ruler r = rs1.get(i);
+                    if (r.toBeDeleted) {
+                        continue;
+                    }
+                    r.alphaAnim = new MyAnimation.Float(duration, r.alpha, 0f);
+                    r.toBeDeleted = true;
                 }
-                r.alphaAnim = new MyAnimation.Float(duration, r.alpha, 0f);
-                r.toBeDeleted = true;
+                Ruler e = new Ruler(minValue, maxValue, paint, barChart, percents);
+                e.alpha = 0f;
+                e.alphaAnim = new MyAnimation.Float(duration, e.alpha, 1f);
+                rs1.add(e);
             }
-            Ruler e = new Ruler(minValue, maxValue, paint, barChart, percents);
-            e.alpha = 0f;
-            e.alphaAnim = new MyAnimation.Float(duration, e.alpha, 1f);
-            rs1.add(e);
         }
 
-        if (min2 != minValue2 || max2 != maxValue2) {
+        {
+            boolean minChanged = false;
+            boolean maxChanged = false;
             if (this.min2 != minValue2) {
-                this.minAnim2 = new MyAnimation.Float(duration, this.min2, minValue2);
+                if (this.minAnim2 != null && this.minAnim2.to == minValue2) {
+
+                } else {
+                    this.minAnim2 = new MyAnimation.Float(duration, this.min2, minValue2);
+                    minChanged = true;
+                }
             } else {
                 this.minAnim2 = null;
             }
 
             if (this.max2 != maxValue2) {
-                this.maxAnim2 = new MyAnimation.Float(duration, this.max2, maxValue2);
+                if (this.maxAnim2 != null && this.maxAnim2.to == maxValue2) {
+
+                } else {
+                    this.maxAnim2 = new MyAnimation.Float(duration, this.max2, maxValue2);
+                    maxChanged = true;
+                }
             } else {
                 this.maxAnim2 = null;
             }
-
-            for (int i = 0, rsSize = rs2.size(); i < rsSize; i++) {
-                Ruler r = rs2.get(i);
-                if (r.toBeDeleted) {
-                    continue;
+            if (minChanged || maxChanged) {
+                for (int i = 0, rsSize = rs2.size(); i < rsSize; i++) {
+                    Ruler r = rs2.get(i);
+                    if (r.toBeDeleted) {
+                        continue;
+                    }
+                    r.alphaAnim = new MyAnimation.Float(duration, r.alpha, 0f);
+                    r.toBeDeleted = true;
                 }
-                r.alphaAnim = new MyAnimation.Float(duration, r.alpha, 0f);
-                r.toBeDeleted = true;
+                Ruler e = new Ruler(minValue2, maxValue2, paint, barChart, percents);
+                e.alpha = 0f;
+                e.alphaAnim = new MyAnimation.Float(duration, e.alpha, 1f);
+                rs2.add(e);
             }
-            Ruler e = new Ruler(minValue2, maxValue2, paint, barChart, percents);
-            e.alpha = 0f;
-            e.alphaAnim = new MyAnimation.Float(duration, e.alpha, 1f);
-            rs2.add(e);
         }
     }
 
@@ -628,21 +650,31 @@ public final class GLRulersProgram {
         if (yScaled) {
             throw new AssertionError();
         }
-        if (min == minValue && max == maxValue) {
-            return;
-        }
+        boolean minChanged = false;
+        boolean maxChanged = false;
         if (this.min != minValue) {
-            this.minAnim = new MyAnimation.Float(duration, this.min, minValue);
+            if (this.minAnim != null && minAnim.to == minValue) {
+            } else {
+                this.minAnim = new MyAnimation.Float(duration, this.min, minValue);
+                minChanged = true;
+            }
         } else {
             this.minAnim = null;
         }
 
         if (this.max != maxValue) {
-            this.maxAnim = new MyAnimation.Float(duration, this.max, maxValue);
+            if (this.maxAnim != null && this.maxAnim.to == maxValue) {
+
+            } else {
+                this.maxAnim = new MyAnimation.Float(duration, this.max, maxValue);
+                maxChanged = true;
+            }
         } else {
             this.maxAnim = null;
         }
-
+        if (!minChanged && !maxChanged) {
+            return;
+        }
         for (int i = 0, rsSize = rs1.size(); i < rsSize; i++) {
             Ruler r = rs1.get(i);
             if (r.toBeDeleted) {

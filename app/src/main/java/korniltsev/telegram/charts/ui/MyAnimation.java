@@ -16,7 +16,7 @@ public class MyAnimation {
 
         final long startTime = SystemClock.uptimeMillis();
         final float from;
-        final float to;
+        public final float to;
         private final long duration;
 
         long endTime;
