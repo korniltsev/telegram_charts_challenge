@@ -52,6 +52,7 @@ high prio
 
 
     - бонус зум для 1
+        заблокировать скролл/зум
     - бонус зум для 2
 
 
@@ -561,7 +562,6 @@ public class ChartViewGL extends TextureView {
             for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                 checked[i - 1] = true;
             }
-
 
 
             boolean barSingle = this.data.type == ColumnData.Type.bar && data.length == 2;
@@ -1368,7 +1368,7 @@ public class ChartViewGL extends TextureView {
                         if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
                     }
                 } else {
-                    boolean chart = y >= this.chartTop && y <= this.chartBottom;
+                    boolean chart = y <= this.chartBottom;
                     if (chart) {
                         last_x = x;
                         down_target = DOWN_TOOLTIP;
@@ -1526,9 +1526,17 @@ public class ChartViewGL extends TextureView {
         }
     }
 
+    boolean zoomedIn = false;
+
     private void onZoom(int tooltipIndex) {
+        zoomedIn = !zoomedIn;
+        if (r.chartLines != null) {
+            for (LinesChartProgram c : r.chartLines) {
+                c.animateOut(256 + 128, zoomedIn);
+            }
+        }
 
-
+        r.invalidateRender();
     }
 
 //    public static final BlockingQueue<MyMotionEvent> motionEvents = new ArrayBlockingQueue<MyMotionEvent>(100);

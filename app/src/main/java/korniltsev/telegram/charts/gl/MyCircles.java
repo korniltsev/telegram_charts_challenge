@@ -222,11 +222,7 @@ public class MyCircles {
         int n = to - from;
         int ifrom = from * triangle_count * 3;
         int size = n * triangle_count * 3;
-        try {
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, ifrom, size );
-        } catch (Exception e) {
-            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "circles ", e);
-        }
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, ifrom, size );
 
 
     }
