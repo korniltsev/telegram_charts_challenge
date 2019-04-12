@@ -181,10 +181,36 @@ public final class LinesChartProgram {
             final float yscale = h / (maxValue - minValue);
             final float dy = -yscale * minValue;
 
-            Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + root.checkboxesHeight + dip2, 0);
+            final float y = root.dimen_v_padding8 + root.checkboxesHeight + dip2;
+            Matrix.translateM(V, 0, hpadding, y, 0);
             Matrix.translateM(V, 0, 0, dy, 0);
             Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
             Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
+
+            if (animateOutValue == -1f) {
+
+            } else {
+                tmpvec[0] = tooltipIndex;
+                tmpvec[3] = 1;
+                Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
+                float leftAnimDistance = tmpvec2[0];
+                float rightAnimDistance = this.w -tmpvec2[0];
+                float posndcx = (tmpvec2[0] + 1f) / 2f;
+
+                Matrix.setIdentityM(V, 0);
+                Matrix.translateM(V, 0, hpadding, y, 0);
+                Matrix.translateM(V, 0, 0, dy, 0);
+                Matrix.translateM(V, 0, -leftAnimDistance * animateOutValue, 0f, 0f);
+                Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
+                Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
+
+                Matrix.setIdentityM(V, 0);
+                Matrix.translateM(V, 0, hpadding, y, 0);
+                Matrix.translateM(V, 0, 0, dy, 0);
+                Matrix.translateM(V, 0, rightAnimDistance * animateOutValue, 0f, 0f);
+                Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
+                Matrix.multiplyMM(MVP2, 0, PROJ, 0, V, 0);
+            }
         } else {
             final int ypx = dimen.dpi(80) + root.checkboxesHeight;
 
@@ -273,9 +299,21 @@ public final class LinesChartProgram {
 
 
         if (scrollbar) {
-            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
             GLES20.glLineWidth(dimen.dpf(1f));
-            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+            if (animateOutValue == -1f ) {
+                GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
+                GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+            } else {
+                if (tooltipIndex != -1) {
+                    GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
+                    GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, (tooltipIndex + 1));
+
+                    GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP2, 0);
+                    int n = vertices.length / 2;
+                    int from = tooltipIndex;
+                    GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, tooltipIndex, n - from);
+                }
+            }
         } else {
             GLES20.glLineWidth(dimen.dpf(2f));
             if (animateOutValue == -1f ) {
@@ -302,9 +340,18 @@ public final class LinesChartProgram {
     public void step3() {
         float scalex = 2.0f / w;
         float r_ndc = scalex * dimen.dpf(scrollbar ? 0.5f : 1f);
-        //todo learn matrixes ¯\_(ツ)_/¯
         if (scrollbar) {
-            lineJoining.draw(MVP, colors, r_ndc, (float) h / w);
+            if (animateOutValue == -1f) {
+                lineJoining.draw(MVP, colors, r_ndc, (float) h / w);
+            } else {
+                if (tooltipIndex != -1) {
+                    int n = vertices.length / 2;
+                    lineJoining.draw(MVP, colors, 0, tooltipIndex + 1, r_ndc, (float) h / w);
+                    MyGL.checkGlError2();
+                    lineJoining.draw(MVP2, colors, tooltipIndex, n, r_ndc, (float) h / w);
+                    MyGL.checkGlError2();
+                }
+            }
         } else {
             if (animateOutValue == -1f) {
                 lineJoining.draw(MVP, colors, r_ndc, (float) h / w);
@@ -378,16 +425,17 @@ public final class LinesChartProgram {
         animateOutValueAnim = new MyAnimation.Float(duration, animateOutValue, zoomedIn ? 1f : 0f);
     }
     public void setTooltipIndex(int tooltipIndex) {
-
-        if (goodCircle == null || this.tooltipIndex != tooltipIndex) {
-            if (goodCircle != null) {
+        if (!scrollbar) {
+            if (goodCircle == null || this.tooltipIndex != tooltipIndex) {
+                if (goodCircle != null) {
 //                goodCircle.release();//todo
-                goodCircle = null;
+                    goodCircle = null;
 
-            }
-            if (tooltipIndex != -1) {
-                long[] vs = new long[]{column.values[tooltipIndex]};
-                goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 24, new MyCircles.Shader(24));
+                }
+                if (tooltipIndex != -1) {
+                    long[] vs = new long[]{column.values[tooltipIndex]};
+                    goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 24, new MyCircles.Shader(24));
+                }
             }
         }
         this.tooltipIndex = tooltipIndex;

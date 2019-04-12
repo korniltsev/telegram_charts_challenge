@@ -52,7 +52,6 @@ high prio
 
 
     - бонус зум для 1 & 2
-        - зум аут скроллбара
         - зум ин графика
         - зум ин скроллбара
         - заблокировать скролл/зум
@@ -70,6 +69,7 @@ high prio
 
 
     - дизайн скролбара
+        - кропнуть со скруглениями?
     - дизайн чекбоксов
         - A long tap on any data filter should uncheck all other filters.
     - придумать как исправить лаг когда скролишь и мин/макс меняется каждые пару фреймов
@@ -1509,6 +1509,11 @@ public class ChartViewGL extends TextureView {
                             }
                         }
                     }
+                    if (r.scrollbar_lines != null) {
+                        for (LinesChartProgram glChartProgram : r.scrollbar_lines ) {
+                            glChartProgram.setTooltipIndex(finali);
+                        }
+                    }
                     if (r.chartBar != null) {
                         r.chartBar.setTooltipIndex(finali);
                     }
@@ -1536,6 +1541,11 @@ public class ChartViewGL extends TextureView {
         zoomedIn = !zoomedIn;
         if (r.chartLines != null) {
             for (LinesChartProgram c : r.chartLines) {
+                c.animateOut(256 + 128, zoomedIn);
+            }
+        }
+        if (r.scrollbar_lines != null) {
+            for (LinesChartProgram c : r.scrollbar_lines) {
                 c.animateOut(256 + 128, zoomedIn);
             }
         }
@@ -1570,6 +1580,11 @@ public class ChartViewGL extends TextureView {
         if (r.chartLines != null) {
 
             for (LinesChartProgram glChartProgram : r.chartLines) {
+                glChartProgram.setTooltipIndex(-1);
+            }
+        }
+        if (r.scrollbar_lines != null) {
+            for (LinesChartProgram glChartProgram : r.scrollbar_lines ) {
                 glChartProgram.setTooltipIndex(-1);
             }
         }
