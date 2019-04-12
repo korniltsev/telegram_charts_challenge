@@ -27,16 +27,6 @@ public class ChartData {
         this.type = type;
     }
 
-    public static ArrayList<ChartData> parseMany(JSONArray charts) throws JSONException {
-        //todo stream parser
-        ArrayList<ChartData> ret = new ArrayList<>(charts.length());
-        for (int c = 0; c < charts.length(); c++) {
-            JSONObject o = charts.getJSONObject(c);
-            ChartData e = pareOne(o);
-            ret.add(e);
-        }
-        return ret;
-    }
 
     public static ChartData pareOne(JSONObject o) throws JSONException {
 //        chart.names – Name for each variable.
