@@ -413,39 +413,21 @@ public class MainActivity extends Activity {
 
     public List<ChartData> readData() {
         List<ChartData> res = new ArrayList<>();
-        boolean parseOld = false;
         boolean parseNew = true;
-        if (parseOld) {
-            InputStream inputStream = getResources().openRawResource(R.raw.data);
-            try {
-                byte[] bytes = readAll(inputStream);
-                String s = new String(bytes, "UTF-8");
-                JSONArray o = new JSONArray(s);
-                ArrayList<ChartData> prev = ChartData.parseMany(o);
-                res.addAll(prev);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            } finally {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                }
-            }
-        }
-        int[] ds = new int[]{
-                R.raw.d1,
-                R.raw.d2,
-                R.raw.d3,
-                R.raw.d4,
-                R.raw.d5,
+
+        String[] ds = new String[]{
+                "1/overview.json",
+                "2/overview.json",
+                "3/overview.json",
+                "4/overview.json",
+                "5/overview.json",
         };
         if (parseNew) {
 
-            for (int d : ds) {
-                InputStream inputStream = getResources().openRawResource(d);
+            for (String d : ds) {
+                InputStream inputStream = null;
                 try {
+                    inputStream = getAssets().open(d);
                     byte[] bytes = readAll(inputStream);
                     String s = new String(bytes, "UTF-8");
                     JSONObject o = new JSONObject(s);
@@ -457,7 +439,9 @@ public class MainActivity extends Activity {
                     throw new RuntimeException(e);
                 } finally {
                     try {
-                        inputStream.close();
+                        if (inputStream != null) {
+                            inputStream.close();
+                        }
                     } catch (IOException e) {
                     }
                 }
