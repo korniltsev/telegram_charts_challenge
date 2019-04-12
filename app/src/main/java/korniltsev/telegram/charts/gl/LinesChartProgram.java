@@ -30,7 +30,7 @@ public final class LinesChartProgram {
     private final FloatBuffer buf1;
     public final ColumnData column;
     public final MyCircles lineJoining;
-    public final MyShader shader;
+    public final SimpleShader shader;
     public float zoom = 1f;//1 -- all, 0.2 - partial
     public float left = 0;
     public long scaledViewporMax;
@@ -69,7 +69,7 @@ public final class LinesChartProgram {
         lineJoining.release();
     }
 
-    public LinesChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, int toolttipFillColor, MyShader shader, MyCircles.Shader joiningShader) {
+    public LinesChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, int toolttipFillColor, SimpleShader shader, MyCircles.Shader joiningShader) {
         this.tooltipFillColor = toolttipFillColor;
         this.w = w;
         this.h = h;
@@ -441,42 +441,4 @@ public final class LinesChartProgram {
         this.tooltipIndex = tooltipIndex;
     }
 
-    static class MyShader {
-        final String fragmentShader =
-                "precision mediump float;       \n"
-                        + "uniform vec4 u_color;       \n"
-                        + "void main()                    \n"
-                        + "{                              \n"
-                        + "   gl_FragColor = u_color;     \n"
-                        + "}                              \n";
-        public final int MVPHandle;
-        public final int positionHandle;
-        public final int program;
-        public final int colorHandle;
-        private boolean released;
-
-        public MyShader() {
-            try {
-                byte[] vertex = MainActivity.readAll(MainActivity.ctx.getResources().openRawResource(R.raw.lines_vertex));
-                program = MyGL.createProgram(new String(vertex, "UTF-8"), fragmentShader);
-            } catch (IOException e) {
-                throw new AssertionError();
-            }
-            MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
-            positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
-            colorHandle = GLES20.glGetUniformLocation(program, "u_color");
-        }
-
-        public final void use() {
-            GLES20.glUseProgram(program);
-        }
-
-        public void release() {
-            if (released) {
-                return;
-            }
-            released = true;
-            GLES20.glDeleteProgram(program);
-        }
-    }
 }
