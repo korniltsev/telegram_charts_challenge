@@ -99,21 +99,32 @@ public final class LinesChartProgram {
 
     }
 
-    public static void initMinMax(boolean y_scaled, LinesChartProgram[]cs, float left, float right, GLRulersProgram ruler) {
+    public static void initMinMax(boolean y_scaled, LinesChartProgram[]cs, float left, float right, GLRulersProgram ruler, boolean animateRuler) {
         if (y_scaled) {
             for (LinesChartProgram c : cs) {
                 LinesChartProgram.calculateChartLinesMaxScaled(c, left, right);
                 c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, false, 0);
             }
-            ruler.init(
-                    cs[0].scaledViewporMin, cs[0].scaledViewporMax,
-                    cs[1].scaledViewporMin, cs[1].scaledViewporMax,
-                    cs[0].column.color,
-                    cs[1].column.color
-            );
+            if (animateRuler) {
+                ruler.animateScale(
+                        cs[0].scaledViewporMin, cs[0].scaledViewporMax,
+                        cs[1].scaledViewporMin, cs[1].scaledViewporMax, 208
+                );
+            } else {
+                ruler.init(
+                        cs[0].scaledViewporMin, cs[0].scaledViewporMax,
+                        cs[1].scaledViewporMin, cs[1].scaledViewporMax,
+                        cs[0].column.color,
+                        cs[1].column.color
+                );
+            }
         } else {
             LinesChartProgram.calculateChartLinesMax3(cs, left, right); // draw ( init)
-            ruler.init(cs[0].scaledViewporMin, cs[0].scaledViewporMax);
+            if (animateRuler) {
+                ruler.animateScale(cs[0].scaledViewporMin, cs[0].scaledViewporMax, 208);
+            } else {
+                ruler.init(cs[0].scaledViewporMin, cs[0].scaledViewporMax);
+            }
             for (LinesChartProgram c : cs) {
                 c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, false, 0);
             }
@@ -521,16 +532,20 @@ public final class LinesChartProgram {
                 LinesChartProgram.calculateChartLinesMaxScaled(c, left, right);
                 c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, true, 256);
             }
-            ruler.animateScale(
-                    cs[0].scaledViewporMin, cs[0].scaledViewporMax,
-                    cs[1].scaledViewporMin, cs[1].scaledViewporMax,
-                    208);
+            if (ruler != null) {
+                ruler.animateScale(
+                        cs[0].scaledViewporMin, cs[0].scaledViewporMax,
+                        cs[1].scaledViewporMin, cs[1].scaledViewporMax,
+                        208);
+            }
         } else {
             LinesChartProgram.calculateChartLinesMax3(cs, left, right);// set checked
             for (LinesChartProgram c : cs) {
                 c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, true, 208);
             }
-            ruler.animateScale(cs[0].scaledViewporMin, cs[0].scaledViewporMax, 208);
+            if (ruler != null) {
+                ruler.animateScale(cs[0].scaledViewporMin, cs[0].scaledViewporMax, 208);
+            }
         }
 
     }
