@@ -231,8 +231,8 @@ public final class LinesChartProgram {
 
 
             if (animateOutValue != -1f) {
-                float leftAnimDistance = getTooltipX();//todo padding?
-                float rightAnimDistance = this.w - tmpvec2[0];
+                float leftAnimDistance = getTooltipX() - dimen.dpf(16);
+                float rightAnimDistance = this.w - tmpvec2[0] - dimen.dpf(16);;
                 float posndcx = (tmpvec2[0] + 1f) / 2f;
 
                 Matrix.setIdentityM(V_, 0);
@@ -377,7 +377,7 @@ public final class LinesChartProgram {
 
     }
 
-    public void step2() {
+    public void step2(float[]PROJ) {
 
         colors[0] = MyColor.red(column.color) / 255f;
         colors[1] = MyColor.green(column.color) / 255f;
@@ -402,8 +402,15 @@ public final class LinesChartProgram {
         } else {
             GLES20.glLineWidth(dimen.dpf(2f));
         }
+        if (animateInValue == -1f) {
+            GLES20.glUniform1f(shader.u_animate_in_y, -1f);
+        } else {
+            GLES20.glUniform1f(shader.u_animate_in_y, animInY);
+            GLES20.glUniform1f(shader.u_animate_in_value, animateInValue);
+        }
+        GLES20.glUniformMatrix4fv(shader.u_P, 1, false, PROJ, 0);
         if (animateInValue != -1f) {
-            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP_, 0);
+            GLES20.glUniformMatrix4fv(shader.u_V, 1, false, V_, 0);
             if (animateInValue == 1f) {
                 GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
             } else {
@@ -411,16 +418,16 @@ public final class LinesChartProgram {
             }
         } else if (animateOutValue != -1f) {
             if (tooltipIndex != -1) {
-                GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP_, 0);
+                GLES20.glUniformMatrix4fv(shader.u_V, 1, false, V_, 0);
                 GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, (tooltipIndex + 1));
 
-                GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP2_, 0);
+                GLES20.glUniformMatrix4fv(shader.u_V, 1, false, V2_, 0);
                 int n = vertices.length / 2;
                 int from = tooltipIndex;
                 GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, tooltipIndex, n - from);
             }
         } else {
-            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP_, 0);
+            GLES20.glUniformMatrix4fv(shader.u_V, 1, false, V_, 0);
             GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
         }
 
@@ -434,7 +441,7 @@ public final class LinesChartProgram {
             if (animateInValue == 1f) {
                 lineJoining.draw(MVP_, colors, r_ndc, (float) h / w);
             } else {
-                lineJoining.draw(MVP_, colors, leftxi, rightxi, r_ndc, (float) h / w);
+//                lineJoining.draw(MVP_, colors, leftxi, rightxi, r_ndc, (float) h / w);//todo
             }
         } else if (animateOutValue != -1f) {
             if (tooltipIndex != -1) {
@@ -690,10 +697,13 @@ public final class LinesChartProgram {
                         + "{                              \n"
                         + "   gl_FragColor = u_color;     \n"
                         + "}                              \n";
-        public final int MVPHandle;
         public final int positionHandle;
         public final int program;
         public final int colorHandle;
+        public final int u_V;
+        public final int u_P;
+        private final int u_animate_in_y;
+        private final int u_animate_in_value;
         private boolean released;
 
         public MyShader() {
@@ -704,9 +714,12 @@ public final class LinesChartProgram {
             } catch (IOException e) {
                 throw new AssertionError();
             }
-            MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
+            u_V = GLES20.glGetUniformLocation(program, "u_V");
+            u_P = GLES20.glGetUniformLocation(program, "u_P");
             positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
             colorHandle = GLES20.glGetUniformLocation(program, "u_color");
+            u_animate_in_y = GLES20.glGetUniformLocation(program, "u_animate_in_y");
+            u_animate_in_value = GLES20.glGetUniformLocation(program, "u_animate_in_value");
         }
 
         public final void use() {

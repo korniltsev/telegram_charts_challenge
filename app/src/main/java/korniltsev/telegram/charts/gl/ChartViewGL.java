@@ -57,6 +57,7 @@ high prio
                 - анимировать значения из точки сплита
                 - соединиеть линии
                 - заскейлить половинки ( потом )
+                - на время анимации отключить line joining :(
 
         - зум ин графика
 
@@ -916,7 +917,7 @@ public class ChartViewGL extends TextureView {
                 MyGL.checkGlError2();
                 for (LinesChartProgram chartProgram : scrollbar_lines) {
                     chartProgram.shader.use();//todo use only once!
-                    chartProgram.step2();
+                    chartProgram.step2(PROJ);
 
                     chartProgram.lineJoining.shader.use();
                     chartProgram.step3();
@@ -1054,7 +1055,7 @@ public class ChartViewGL extends TextureView {
             if (drawCharts) {
                 for (LinesChartProgram chartProgram : chartLines) {
                     chartProgram.shader.use();//todo use only once!
-                    chartProgram.step2();
+                    chartProgram.step2(PROJ);
 
                     chartProgram.lineJoining.shader.use();
                     chartProgram.step3();
@@ -1071,7 +1072,7 @@ public class ChartViewGL extends TextureView {
             if (zoomLines != null) {
                 for (LinesChartProgram chartProgram : zoomLines) {
                     chartProgram.shader.use();//todo use only once!
-                    chartProgram.step2();
+                    chartProgram.step2(PROJ);
 
                     chartProgram.lineJoining.shader.use();
                     chartProgram.step3();
