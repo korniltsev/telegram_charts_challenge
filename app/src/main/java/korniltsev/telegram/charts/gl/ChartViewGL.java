@@ -904,6 +904,8 @@ public class ChartViewGL extends TextureView {
         }
 
         public boolean drawScrollbar(boolean invalidated, long t) {
+            GLES20.glScissor(scrollbarPos.left, h - scrollbarPos.bottom, scrollbarPos.width(), scrollbarPos.height());
+            GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
             if (scrollbar_lines != null) {
                 for (LinesChartProgram chartProgram : scrollbar_lines) {
                     boolean it_invalid = chartProgram.animateionTick(t);
@@ -941,6 +943,7 @@ public class ChartViewGL extends TextureView {
                 scrollbar_stacked_percent.draw(t, PROJ);
                 invalidated = it_inv || invalidated;
             }
+            GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
             return invalidated;
         }
 
@@ -1571,7 +1574,7 @@ public class ChartViewGL extends TextureView {
         scroller__right = (int) (scrollbarPos.left + scrollbarPos.width() * newRight);
         zoomedIn = !zoomedIn;
         if (r.chartLines != null) {
-            int duration = 3840;
+            int duration = 384;
             if (r.scrollbar_lines != null) {
                 for (LinesChartProgram c : r.scrollbar_lines) {
                     c.animateOut(duration, zoomedIn, 0, 0);
