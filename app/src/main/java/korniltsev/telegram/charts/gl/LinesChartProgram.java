@@ -26,7 +26,7 @@ public final class LinesChartProgram {
     private final FloatBuffer buf1;
     public final ColumnData column;
     public final MyCircles lineJoining;
-    public final SimpleShader shader;
+    public final MyShader shader;
     public float zoom = 1f;//1 -- all, 0.2 - partial
     public float left = 0;
     public long scaledViewporMax;
@@ -56,9 +56,10 @@ public final class LinesChartProgram {
     private boolean released;
     public boolean zoomedIn;
     private float animInCenter;
+    private float animInY;
 
 
-    public LinesChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, ColorSet colors, SimpleShader shader, MyCircles.Shader joiningShader) {
+    public LinesChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, ColorSet colors, MyShader shader, MyCircles.Shader joiningShader) {
         this.tooltipFillColor = colors.lightBackground;
         this.w = w;
         this.h = h;
@@ -631,6 +632,7 @@ public final class LinesChartProgram {
         }
         calcAnimOffsets(PROJ);
         this.animInCenter = tooltipScreenpx;
+        this.animInY = outTooltipY;
         this.zoomedIn = zoomedIn;
         if (animateInValue == -1f) {
             animateInValue = 0f;
@@ -675,4 +677,48 @@ public final class LinesChartProgram {
         }
         animateOutValueAnim = new MyAnimation.Float(duration, animateOutValue, zoomedIn ? 1f : 0f);
     }
+
+    public static final class MyShader {
+        final String vertexShader =
+                "uniform mat4 u_MVPMatrix;      \n"
+                        + "attribute vec2 a_Position;     \n"
+                        + "void main()                    \n"
+                        + "{                              \n"
+                        + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
+                        + "}                              \n";
+
+        final String fragmentShader =
+                "precision mediump float;       \n"
+                        + "uniform vec4 u_color;       \n"
+                        + "void main()                    \n"
+                        + "{                              \n"
+                        + "   gl_FragColor = u_color;     \n"
+                        + "}                              \n";
+        public final int MVPHandle;
+        public final int positionHandle;
+        public final int program;
+        public final int colorHandle;
+        private boolean released;
+
+        public MyShader() {
+
+            program = MyGL.createProgram(vertexShader, fragmentShader);
+            MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
+            positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
+            colorHandle = GLES20.glGetUniformLocation(program, "u_color");
+        }
+
+        public final void use() {
+            GLES20.glUseProgram(program);
+        }
+
+        public void release() {
+            if (released) {
+                return;
+            }
+            released = true;
+            GLES20.glDeleteProgram(program);
+        }
+    }
+
 }

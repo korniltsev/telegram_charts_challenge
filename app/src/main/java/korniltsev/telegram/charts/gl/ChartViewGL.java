@@ -346,6 +346,7 @@ public class ChartViewGL extends TextureView {
         //        public LinesChartProgram.Shader chartShader;
         public MyCircles.Shader joiningShader;
         private ArrayList<MyRect> debugRects;
+        private LinesChartProgram.MyShader linesShader;//todo release
 
 
         public Render(ChartData column) {
@@ -579,7 +580,7 @@ public class ChartViewGL extends TextureView {
             boolean bar7 = this.data.type == ColumnData.Type.bar && data.length == 8;
             boolean stacked_percent = this.data.stacked && this.data.percentage;
             if (this.data.type == ColumnData.Type.line) {
-
+                linesShader = new LinesChartProgram.MyShader();
                 scrollbar_lines = new LinesChartProgram[data.length - 1];
 
                 if (this.data.y_scaled) {
@@ -587,7 +588,7 @@ public class ChartViewGL extends TextureView {
                         ColumnData datum = data[i];
 
 
-                        LinesChartProgram it = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors, simple, joiningShader);
+                        LinesChartProgram it = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors, linesShader, joiningShader);
                         scrollbar_lines[i - 1] = it;
                         LinesChartProgram.calculateChartLinesMaxScaled(it, 0f, 1f, ChartViewGL.this);
                         it.animateMinMax(it.scaledViewporMin, it.scaledViewporMax, false, 0);
@@ -597,7 +598,7 @@ public class ChartViewGL extends TextureView {
                     long min = Long.MAX_VALUE;
                     for (int i = 1, dataLength = data.length; i < dataLength; i++) {
                         ColumnData datum = data[i];
-                        scrollbar_lines[i - 1] = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors, simple, joiningShader);
+                        scrollbar_lines[i - 1] = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors, linesShader, joiningShader);
                         max = Math.max(max, datum.max);
                         min = Math.min(min, datum.min);
                     }
@@ -632,7 +633,7 @@ public class ChartViewGL extends TextureView {
             } else {
                 chartLines = new LinesChartProgram[data.length - 1];
                 for (int i = 1, dataLength = data.length; i < dataLength; i++) {
-                    chartLines[i - 1] = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors, simple, joiningShader);
+                    chartLines[i - 1] = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, false, init_colors, linesShader, joiningShader);
                 }
             }
 
@@ -1575,7 +1576,7 @@ public class ChartViewGL extends TextureView {
             if (zoomedIn) {
                 r.zoomLines = new LinesChartProgram[details.data.length - 1];
                 for (int i = 1; i < details.data.length; i++) {
-                    r.zoomLines[i - 1] = new LinesChartProgram(details.data[i], r.w, r.h, dimen, this, false, currentColors, r.simple, r.joiningShader);
+                    r.zoomLines[i - 1] = new LinesChartProgram(details.data[i], r.w, r.h, dimen, this, false, currentColors, r.linesShader, r.joiningShader);
                 }
                 for (LinesChartProgram it : r.zoomLines) {
                     it.left = newLeft;
