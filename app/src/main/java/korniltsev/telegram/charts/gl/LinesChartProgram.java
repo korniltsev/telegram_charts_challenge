@@ -37,9 +37,10 @@ public final class LinesChartProgram {
     private int tooltipIndex = -1;
 
     //    private float[] M = new float[16];
-    public float[] V = new float[16];
-    public final float[] MVP = new float[16];
-    public final float[] MVP2 = new float[16];
+    public float[] V_ = new float[16];
+    public float[] V2_ = new float[16];
+    public final float[] MVP_ = new float[16];
+    public final float[] MVP2_ = new float[16];
 
     public final int w;
     public final int h;
@@ -234,25 +235,25 @@ public final class LinesChartProgram {
                 float rightAnimDistance = this.w - tmpvec2[0];
                 float posndcx = (tmpvec2[0] + 1f) / 2f;
 
-                Matrix.setIdentityM(V, 0);
-                Matrix.translateM(V, 0, hpadding, y, 0);
-                Matrix.translateM(V, 0, 0, dy, 0);
-                Matrix.translateM(V, 0, -leftAnimDistance * animateOutValue, 0f, 0f);
-                Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
-                Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
+                Matrix.setIdentityM(V_, 0);
+                Matrix.translateM(V_, 0, hpadding, y, 0);
+                Matrix.translateM(V_, 0, 0, dy, 0);
+                Matrix.translateM(V_, 0, -leftAnimDistance * animateOutValue, 0f, 0f);
+                Matrix.scaleM(V_, 0, w / ((maxx)), yscale, 1.0f);
+                Matrix.multiplyMM(MVP_, 0, PROJ, 0, V_, 0);
 
-                Matrix.setIdentityM(V, 0);
-                Matrix.translateM(V, 0, hpadding, y, 0);
-                Matrix.translateM(V, 0, 0, dy, 0);
-                Matrix.translateM(V, 0, rightAnimDistance * animateOutValue, 0f, 0f);
-                Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
-                Matrix.multiplyMM(MVP2, 0, PROJ, 0, V, 0);
+                Matrix.setIdentityM(V2_, 0);
+                Matrix.translateM(V2_, 0, hpadding, y, 0);
+                Matrix.translateM(V2_, 0, 0, dy, 0);
+                Matrix.translateM(V2_, 0, rightAnimDistance * animateOutValue, 0f, 0f);
+                Matrix.scaleM(V2_, 0, w / ((maxx)), yscale, 1.0f);
+                Matrix.multiplyMM(MVP2_, 0, PROJ, 0, V2_, 0);
             } else {
-                Matrix.setIdentityM(V, 0);
-                Matrix.translateM(V, 0, hpadding, y, 0);
-                Matrix.translateM(V, 0, 0, dy, 0);
-                Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
-                Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
+                Matrix.setIdentityM(V_, 0);
+                Matrix.translateM(V_, 0, hpadding, y, 0);
+                Matrix.translateM(V_, 0, 0, dy, 0);
+                Matrix.scaleM(V_, 0, w / ((maxx)), yscale, 1.0f);
+                Matrix.multiplyMM(MVP_, 0, PROJ, 0, V_, 0);
             }
         } else {
             final int ypx = dimen.dpi(80) + root.checkboxesHeight;
@@ -265,47 +266,47 @@ public final class LinesChartProgram {
             final float dy = -hs * minValue;
 
             if (animateInValue != -1f) {
-                Matrix.setIdentityM(V, 0);
+                Matrix.setIdentityM(V_, 0);
 
-                Matrix.translateM(V, 0, animInCenter, 0, 0);
-                Matrix.scaleM(V, 0, animateInValue, 1f, 1f);
-                Matrix.translateM(V, 0, -animInCenter, 0, 0);
+                Matrix.translateM(V_, 0, animInCenter, 0, 0);
+                Matrix.scaleM(V_, 0, animateInValue, 1f, 1f);
+                Matrix.translateM(V_, 0, -animInCenter, 0, 0);
 
-                Matrix.translateM(V, 0, hpadding, ypx, 0);
-                Matrix.translateM(V, 0, 0, dy, 0);
+                Matrix.translateM(V_, 0, hpadding, ypx, 0);
+                Matrix.translateM(V_, 0, 0, dy, 0);
 
-                Matrix.scaleM(V, 0, ws, hs, 1.0f);
-                Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
-                Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
+                Matrix.scaleM(V_, 0, ws, hs, 1.0f);
+                Matrix.translateM(V_, 0, -left * xdiff, 0f, 0f);
+                Matrix.multiplyMM(MVP_, 0, PROJ, 0, V_, 0);
             } else if (animateOutValue != -1f) {
                 float x = getTooltipX();
                 float leftAnimDistance = x - leftx + dimen.dpf(16);
                 float rightAnimDistance = rightx-x + dimen.dpf(16);
                 float posndcx = (tmpvec2[0] + 1f) / 2f;
 
-                Matrix.setIdentityM(V, 0);
-                Matrix.translateM(V, 0, hpadding, ypx, 0);
-                Matrix.translateM(V, 0, 0, dy, 0);
-                Matrix.translateM(V, 0, -leftAnimDistance * animateOutValue, 0f, 0f);
-                Matrix.scaleM(V, 0, ws, hs, 1.0f);
-                Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
-                Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
+                Matrix.setIdentityM(V_, 0);
+                Matrix.translateM(V_, 0, hpadding, ypx, 0);
+                Matrix.translateM(V_, 0, 0, dy, 0);
+                Matrix.translateM(V_, 0, -leftAnimDistance * animateOutValue, 0f, 0f);
+                Matrix.scaleM(V_, 0, ws, hs, 1.0f);
+                Matrix.translateM(V_, 0, -left * xdiff, 0f, 0f);
+                Matrix.multiplyMM(MVP_, 0, PROJ, 0, V_, 0);
 
-                Matrix.setIdentityM(V, 0);
-                Matrix.translateM(V, 0, hpadding, ypx, 0);
-                Matrix.translateM(V, 0, 0, dy, 0);
-                Matrix.translateM(V, 0, rightAnimDistance * animateOutValue, 0f, 0f);
-                Matrix.scaleM(V, 0, ws, hs, 1.0f);
-                Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
-                Matrix.multiplyMM(MVP2, 0, PROJ, 0, V, 0);
+                Matrix.setIdentityM(V2_, 0);
+                Matrix.translateM(V2_, 0, hpadding, ypx, 0);
+                Matrix.translateM(V2_, 0, 0, dy, 0);
+                Matrix.translateM(V2_, 0, rightAnimDistance * animateOutValue, 0f, 0f);
+                Matrix.scaleM(V2_, 0, ws, hs, 1.0f);
+                Matrix.translateM(V2_, 0, -left * xdiff, 0f, 0f);
+                Matrix.multiplyMM(MVP2_, 0, PROJ, 0, V2_, 0);
             } else {
                 {
-                    Matrix.setIdentityM(V, 0);
-                    Matrix.translateM(V, 0, hpadding, ypx, 0);
-                    Matrix.translateM(V, 0, 0, dy, 0);
-                    Matrix.scaleM(V, 0, ws, hs, 1.0f);
-                    Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
-                    Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
+                    Matrix.setIdentityM(V_, 0);
+                    Matrix.translateM(V_, 0, hpadding, ypx, 0);
+                    Matrix.translateM(V_, 0, 0, dy, 0);
+                    Matrix.scaleM(V_, 0, ws, hs, 1.0f);
+                    Matrix.translateM(V_, 0, -left * xdiff, 0f, 0f);
+                    Matrix.multiplyMM(MVP_, 0, PROJ, 0, V_, 0);
                 }
             }
         }
@@ -326,10 +327,10 @@ public final class LinesChartProgram {
             final float dy = -yscale * minValue;
 
             final float y = root.dimen_v_padding8 + root.checkboxesHeight + dip2;
-            Matrix.setIdentityM(V, 0);
-            Matrix.translateM(V, 0, hpadding, y, 0);
-            Matrix.translateM(V, 0, 0, dy, 0);
-            Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
+            Matrix.setIdentityM(V_, 0);
+            Matrix.translateM(V_, 0, hpadding, y, 0);
+            Matrix.translateM(V_, 0, 0, dy, 0);
+            Matrix.scaleM(V_, 0, w / ((maxx)), yscale, 1.0f);
         } else {
             final int ypx = dimen.dpi(80) + root.checkboxesHeight;
 
@@ -339,18 +340,18 @@ public final class LinesChartProgram {
             final float ws = w / xdiff / zoom;
             final float hs = h / (maxValue - minValue);
             final float dy = -hs * minValue;
-            Matrix.setIdentityM(V, 0);
-            Matrix.translateM(V, 0, hpadding, ypx, 0);
-            Matrix.translateM(V, 0, 0, dy, 0);
-            Matrix.scaleM(V, 0, ws, hs, 1.0f);
-            Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
+            Matrix.setIdentityM(V_, 0);
+            Matrix.translateM(V_, 0, hpadding, ypx, 0);
+            Matrix.translateM(V_, 0, 0, dy, 0);
+            Matrix.scaleM(V_, 0, ws, hs, 1.0f);
+            Matrix.translateM(V_, 0, -left * xdiff, 0f, 0f);
         }
 
         tmpvec[0] = tooltipIndex;
         tmpvec[1] = column.values[tooltipIndex];
         tmpvec[2] = 0f;
         tmpvec[3] = 1;
-        Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
+        Matrix.multiplyMV(tmpvec2, 0, V_, 0, tmpvec, 0);
         outTooltipX = tmpvec2[0];
         outTooltipY = tmpvec2[1];
         return tmpvec2[0];
@@ -364,12 +365,12 @@ public final class LinesChartProgram {
             if (alpha != 0f) {
 
                 if (goodCircle != null && animateOutValue == -1f) {
-                    goodCircle.draw(MVP, colors, 0, 1, dimen.dpf(5) * scalex, (float) h / w);
+                    goodCircle.draw(MVP_, colors, 0, 1, dimen.dpf(5) * scalex, (float) h / w);
                     white[0] = MyColor.red(tooltipFillColor) / 255f;
                     white[1] = MyColor.green(tooltipFillColor) / 255f;
                     white[2] = MyColor.blue(tooltipFillColor) / 255f;
                     white[3] = alpha;
-                    goodCircle.draw(MVP, white, 0, 1, dimen.dpf(3) * scalex, (float) h / w);
+                    goodCircle.draw(MVP_, white, 0, 1, dimen.dpf(3) * scalex, (float) h / w);
                 }
             }
         }
@@ -402,7 +403,7 @@ public final class LinesChartProgram {
             GLES20.glLineWidth(dimen.dpf(2f));
         }
         if (animateInValue != -1f) {
-            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
+            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP_, 0);
             if (animateInValue == 1f) {
                 GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
             } else {
@@ -410,16 +411,16 @@ public final class LinesChartProgram {
             }
         } else if (animateOutValue != -1f) {
             if (tooltipIndex != -1) {
-                GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
+                GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP_, 0);
                 GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, (tooltipIndex + 1));
 
-                GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP2, 0);
+                GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP2_, 0);
                 int n = vertices.length / 2;
                 int from = tooltipIndex;
                 GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, tooltipIndex, n - from);
             }
         } else {
-            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
+            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP_, 0);
             GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
         }
 
@@ -431,20 +432,20 @@ public final class LinesChartProgram {
         float r_ndc = scalex * dimen.dpf(scrollbar ? 0.5f : 1f);
         if (animateInValue != -1f) {
             if (animateInValue == 1f) {
-                lineJoining.draw(MVP, colors, r_ndc, (float) h / w);
+                lineJoining.draw(MVP_, colors, r_ndc, (float) h / w);
             } else {
-                lineJoining.draw(MVP, colors, leftxi, rightxi, r_ndc, (float) h / w);
+                lineJoining.draw(MVP_, colors, leftxi, rightxi, r_ndc, (float) h / w);
             }
         } else if (animateOutValue != -1f) {
             if (tooltipIndex != -1) {
                 int n = vertices.length / 2;
-                lineJoining.draw(MVP, colors, 0, tooltipIndex + 1, r_ndc, (float) h / w);
+                lineJoining.draw(MVP_, colors, 0, tooltipIndex + 1, r_ndc, (float) h / w);
                 MyGL.checkGlError2();
-                lineJoining.draw(MVP2, colors, tooltipIndex, n, r_ndc, (float) h / w);
+                lineJoining.draw(MVP2_, colors, tooltipIndex, n, r_ndc, (float) h / w);
                 MyGL.checkGlError2();
             }
         } else {
-            lineJoining.draw(MVP, colors, r_ndc, (float) h / w);
+            lineJoining.draw(MVP_, colors, r_ndc, (float) h / w);
         }
     }
 
@@ -652,7 +653,7 @@ public final class LinesChartProgram {
             tmpvec[1] = 0f;
             tmpvec[2] = 0f;
             tmpvec[3] = 1f;
-            Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
+            Matrix.multiplyMV(tmpvec2, 0, V_, 0, tmpvec, 0);
             float x = tmpvec2[0];
             if (leftxi == -1 || x <= 0) {
                 leftx = x;

@@ -1045,8 +1045,8 @@ public class ChartViewGL extends TextureView {
 
             if (tooltipIndex != -1) {
                 this.tooltip.animationTick(t, tooltipIndex, checked);
-                this.tooltip.calcPos(chartLines[0].MVP, tooltipIndex);
-                this.tooltip.drawVLine(PROJ, chartLines[0].MVP, tooltipIndex);
+                this.tooltip.calcPos(chartLines[0].MVP_, tooltipIndex);
+                this.tooltip.drawVLine(PROJ, chartLines[0].MVP_, tooltipIndex);
             }
 
             MyGL.checkGlError2();
