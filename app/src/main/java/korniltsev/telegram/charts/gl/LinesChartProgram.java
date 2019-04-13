@@ -60,6 +60,47 @@ public final class LinesChartProgram {
     private boolean released;
     private boolean zoomedIn;
 
+    public static void calculateChartLinesMax3(LinesChartProgram[] cs, float left, float right) {
+
+
+            long max = Long.MIN_VALUE;
+            long min = Long.MAX_VALUE;
+            int len = cs[0].column.values.length;
+            int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
+            int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
+            for (LinesChartProgram glChartProgram : cs) {
+                if (glChartProgram.checked) {
+                    long[] values = glChartProgram.column.values;
+                    for (int i = from; i < to; i++) {
+                        long value = values[i];
+                        max = (max >= value) ? max : value;
+                        min = Math.min(min, value);
+                    }
+                }
+            }
+        for (LinesChartProgram c : cs) {
+            c.scaledViewporMin = min;
+            c.scaledViewporMax = max;
+        }
+
+    }
+
+    public static void calculateChartLinesMaxScaled(LinesChartProgram p, float left, float right) {
+        long max = Long.MIN_VALUE;
+        long min = Long.MAX_VALUE;
+        int len = p.column.values.length;
+        int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
+        int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
+        long[] values = p.column.values;
+        for (int i = from; i < to; i++) {
+            long value = values[i];
+            max = (max >= value) ? max : value;
+            min = Math.min(min, value);
+        }
+        p.scaledViewporMax = max;
+        p.scaledViewporMin = min;
+    }
+
     public void release() {
         if (released) {
             return;
