@@ -3,10 +3,13 @@ package korniltsev.telegram.charts.gl;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import korniltsev.telegram.charts.MainActivity;
+import korniltsev.telegram.charts.R;
 import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
@@ -679,14 +682,6 @@ public final class LinesChartProgram {
     }
 
     public static final class MyShader {
-        final String vertexShader =
-                "uniform mat4 u_MVPMatrix;      \n"
-                        + "attribute vec2 a_Position;     \n"
-                        + "void main()                    \n"
-                        + "{                              \n"
-                        + "   gl_Position = u_MVPMatrix * vec4(a_Position.xy, 0.0, 1.0);   \n"
-                        + "}                              \n";
-
         final String fragmentShader =
                 "precision mediump float;       \n"
                         + "uniform vec4 u_color;       \n"
@@ -702,7 +697,12 @@ public final class LinesChartProgram {
 
         public MyShader() {
 
-            program = MyGL.createProgram(vertexShader, fragmentShader);
+            try {
+                byte[] vertex = MainActivity.readAll(MainActivity.ctx.getResources().openRawResource(R.raw.lines_vertex));
+                program = MyGL.createProgram(new String(vertex, "UTF-8"), fragmentShader);
+            } catch (IOException e) {
+                throw new AssertionError();
+            }
             MVPHandle = GLES20.glGetUniformLocation(program, "u_MVPMatrix");
             positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
             colorHandle = GLES20.glGetUniformLocation(program, "u_color");
