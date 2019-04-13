@@ -1236,35 +1236,7 @@ public class ChartViewGL extends TextureView {
         public void updateLeftRight(float left, float right, float scale) {
             overlay.setLeftRight(left, right);
             if (chartLines != null) {
-                if (data.y_scaled) {
-                    for (LinesChartProgram c : r.chartLines) {
-                        LinesChartProgram.calculateChartLinesMaxScaled(c, left, right);
-                        c.zoom = scale;
-                        c.left = left;
-                        c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, !firstLeftRightUpdate, 256);
-                    }
-                    ruler.setLeftRight(left, right, scale);
-                    if (rulerInitDone) {
-                        ruler.animateScale(
-                                r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax,
-                                r.chartLines[1].scaledViewporMin, r.chartLines[1].scaledViewporMax,
-                                256);
-                    }
-
-                } else {
-                    LinesChartProgram.calculateChartLinesMax3(r.chartLines, left, right);// updateLeftRight
-
-                    for (LinesChartProgram glChartProgram : r.chartLines) {
-                        glChartProgram.zoom = scale;
-                        glChartProgram.left = left;
-                        glChartProgram.animateMinMax(glChartProgram.scaledViewporMin, glChartProgram.scaledViewporMax, !firstLeftRightUpdate, 256);
-                    }
-                    ruler.setLeftRight(left, right, scale);
-
-                    if (rulerInitDone) {
-                        ruler.animateScale(r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax, 256);
-                    }
-                }
+                LinesChartProgram.updateLeftRight(chartLines, left, right, scale, rulerInitDone, ruler, data.y_scaled, firstLeftRightUpdate);
             }
             if (chartBar != null) {
                 ruler.setLeftRight(left, right, scale);

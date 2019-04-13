@@ -127,6 +127,38 @@ public final class LinesChartProgram {
 
     }
 
+    public static void updateLeftRight(LinesChartProgram[] cs, float left, float right, float scale,  boolean rulerInitDone, GLRulersProgram ruler, boolean y_scaled, boolean firstLeftRightUpdate) {
+        if (y_scaled) {
+            for (LinesChartProgram c : cs) {
+                LinesChartProgram.calculateChartLinesMaxScaled(c, left, right);
+                c.zoom = scale;
+                c.left = left;
+                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, !firstLeftRightUpdate, 256);
+            }
+            ruler.setLeftRight(left, right, scale);
+            if (rulerInitDone) {
+                ruler.animateScale(
+                        cs[0].scaledViewporMin, cs[0].scaledViewporMax,
+                        cs[1].scaledViewporMin, cs[1].scaledViewporMax,
+                        256);
+            }
+
+        } else {
+            LinesChartProgram.calculateChartLinesMax3(cs, left, right);// updateLeftRight
+
+            for (LinesChartProgram glChartProgram : cs) {
+                glChartProgram.zoom = scale;
+                glChartProgram.left = left;
+                glChartProgram.animateMinMax(glChartProgram.scaledViewporMin, glChartProgram.scaledViewporMax, !firstLeftRightUpdate, 256);
+            }
+            ruler.setLeftRight(left, right, scale);
+
+            if (rulerInitDone) {
+                ruler.animateScale(cs[0].scaledViewporMin, cs[0].scaledViewporMax, 256);
+            }
+        }
+    }
+
     public void release() {
         if (released) {
             return;
