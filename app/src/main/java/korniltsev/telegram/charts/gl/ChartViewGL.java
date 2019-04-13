@@ -64,9 +64,11 @@ high prio
             - не рисовать старый скроллбар если анимация закончилась
         - санимировать x
         - тултип в зуме
+        - бага - выбрать 1 график и зазумить
 
-
-
+    - дизайн чекбоксов
+        - A long tap on any data filter should uncheck all other filters.
+    ----------------------
 
     - дизайн тултипа
         - дизайн
@@ -80,8 +82,7 @@ high prio
 
     - дизайн скролбара
         - кропнуть со скруглениями?
-    - дизайн чекбоксов
-        - A long tap on any data filter should uncheck all other filters.
+
     - придумать как исправить лаг когда скролишь и мин/макс меняется каждые пару фреймов
 
     - сокращалка
@@ -1587,7 +1588,7 @@ public class ChartViewGL extends TextureView {
                     LinesChartProgram it = zoomLines[i];
                     LinesChartProgram itc = r.chartLines[i];
                     itc.getTooltipX();
-                    it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX);
+                    it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX, itc.outTooltipY);
                 }
                 LinesChartProgram[] chartLines = r.chartLines;
                 for (int i = 0; i < chartLines.length; i++) {
@@ -1601,7 +1602,7 @@ public class ChartViewGL extends TextureView {
                     LinesChartProgram it = zoomLines[i];
                     LinesChartProgram itc = r.chartLines[i];
                     itc.getTooltipX();
-                    it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX);
+                    it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX, itc.outTooltipY);
                 }
                 LinesChartProgram[] chartLines = r.chartLines;
                 for (int i = 0; i < chartLines.length; i++) {

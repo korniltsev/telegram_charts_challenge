@@ -625,7 +625,7 @@ public final class LinesChartProgram {
     float rightx = Float.NaN;
     int leftxi = -1;
     int rightxi = -1;
-    public void animateIn(int duration, boolean zoomedIn, float[] PROJ, float tooltipScreenpx) {
+    public void animateIn(int duration, boolean zoomedIn, float[] PROJ, float tooltipScreenpx, float outTooltipY) {
         if (zoomedIn == this.zoomedIn) {
             return;
         }
