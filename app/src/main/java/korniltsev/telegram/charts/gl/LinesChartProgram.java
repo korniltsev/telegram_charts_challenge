@@ -2,15 +2,11 @@ package korniltsev.telegram.charts.gl;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
-import android.util.Log;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import korniltsev.telegram.charts.MainActivity;
-import korniltsev.telegram.charts.R;
 import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
@@ -58,7 +54,8 @@ public final class LinesChartProgram {
     private MyAnimation.Color tooltipFillColorAnim;
     private final int[] vbos;
     private boolean released;
-    private boolean zoomedIn;
+    public boolean zoomedIn;
+    private float animInCenter;
 
 
     public LinesChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, ColorSet colors, SimpleShader shader, MyCircles.Shader joiningShader) {
@@ -192,6 +189,17 @@ public final class LinesChartProgram {
                 invalidate = true;
             }
         }
+        if (animateInValueAnim != null) {
+            animateInValue = animateInValueAnim.tick(t);
+            if (animateInValueAnim.ended) {
+                animateInValueAnim = null;
+                if (!zoomedIn) {
+                    animateInValue = -1f;
+                }
+            } else {
+                invalidate = true;
+            }
+        }
 
         return invalidate;
 
@@ -205,7 +213,7 @@ public final class LinesChartProgram {
         float maxx = vertices[vertices.length - 2];
 
         if (scrollbar) {
-            Matrix.setIdentityM(V, 0);
+
             hpadding += dimen.dpf(1);
             final float dip2 = dimen.dpf(2);
 
@@ -215,16 +223,10 @@ public final class LinesChartProgram {
             final float dy = -yscale * minValue;
 
             final float y = root.dimen_v_padding8 + root.checkboxesHeight + dip2;
-            Matrix.translateM(V, 0, hpadding, y, 0);
-            Matrix.translateM(V, 0, 0, dy, 0);
-            Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
-            Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
+
 
             if (animateOutValue != -1f) {
-                tmpvec[0] = tooltipIndex;
-                tmpvec[3] = 1;
-                Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
-                float leftAnimDistance = tmpvec2[0];
+                float leftAnimDistance = getTooltipX();//todo padding?
                 float rightAnimDistance = this.w - tmpvec2[0];
                 float posndcx = (tmpvec2[0] + 1f) / 2f;
 
@@ -241,6 +243,12 @@ public final class LinesChartProgram {
                 Matrix.translateM(V, 0, rightAnimDistance * animateOutValue, 0f, 0f);
                 Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
                 Matrix.multiplyMM(MVP2, 0, PROJ, 0, V, 0);
+            } else {
+                Matrix.setIdentityM(V, 0);
+                Matrix.translateM(V, 0, hpadding, y, 0);
+                Matrix.translateM(V, 0, 0, dy, 0);
+                Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
+                Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
             }
         } else {
             final int ypx = dimen.dpi(80) + root.checkboxesHeight;
@@ -252,19 +260,23 @@ public final class LinesChartProgram {
             final float hs = h / (maxValue - minValue);
             final float dy = -hs * minValue;
 
+            if (animateInValue != -1f) {
+                Matrix.setIdentityM(V, 0);
 
-            Matrix.setIdentityM(V, 0);
-            Matrix.translateM(V, 0, hpadding, ypx, 0);
-            Matrix.translateM(V, 0, 0, dy, 0);
-            Matrix.scaleM(V, 0, ws, hs, 1.0f);
-            Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
-            Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
-            if (animateOutValue != -1f) {
-                tmpvec[0] = tooltipIndex;
-                tmpvec[3] = 1;
-                Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
-                float leftAnimDistance = tmpvec2[0];
-                float rightAnimDistance = this.w - tmpvec2[0];
+                Matrix.translateM(V, 0, animInCenter, 0, 0);
+                Matrix.scaleM(V, 0, animateInValue, 1f, 1f);
+                Matrix.translateM(V, 0, -animInCenter, 0, 0);
+
+                Matrix.translateM(V, 0, hpadding, ypx, 0);
+                Matrix.translateM(V, 0, 0, dy, 0);
+
+                Matrix.scaleM(V, 0, ws, hs, 1.0f);
+                Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
+                Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
+            } else if (animateOutValue != -1f) {
+                float x = getTooltipX();
+                float leftAnimDistance = x - leftx + dimen.dpf(16);
+                float rightAnimDistance = rightx-x + dimen.dpf(16);
                 float posndcx = (tmpvec2[0] + 1f) / 2f;
 
                 Matrix.setIdentityM(V, 0);
@@ -282,9 +294,62 @@ public final class LinesChartProgram {
                 Matrix.scaleM(V, 0, ws, hs, 1.0f);
                 Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
                 Matrix.multiplyMM(MVP2, 0, PROJ, 0, V, 0);
+            } else {
+                {
+                    Matrix.setIdentityM(V, 0);
+                    Matrix.translateM(V, 0, hpadding, ypx, 0);
+                    Matrix.translateM(V, 0, 0, dy, 0);
+                    Matrix.scaleM(V, 0, ws, hs, 1.0f);
+                    Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
+                    Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
+                }
             }
         }
 
+    }
+    public float outTooltipX;// screen space
+    public float outTooltipY;// screen space
+    public float getTooltipX() {
+        float hpadding = dimen.dpf(16);
+        float maxx = vertices[vertices.length - 2];
+        if (scrollbar) {
+            hpadding += dimen.dpf(1);
+            final float dip2 = dimen.dpf(2);
+
+            final float w = this.w - 2 * hpadding;
+            final float h = root.dimen_scrollbar_height - 2 * dip2;
+            final float yscale = h / (maxValue - minValue);
+            final float dy = -yscale * minValue;
+
+            final float y = root.dimen_v_padding8 + root.checkboxesHeight + dip2;
+            Matrix.setIdentityM(V, 0);
+            Matrix.translateM(V, 0, hpadding, y, 0);
+            Matrix.translateM(V, 0, 0, dy, 0);
+            Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
+        } else {
+            final int ypx = dimen.dpi(80) + root.checkboxesHeight;
+
+            final float w = this.w - 2 * hpadding;
+            final int h = root.dimen_chart_usefull_height;
+            final float xdiff = maxx;
+            final float ws = w / xdiff / zoom;
+            final float hs = h / (maxValue - minValue);
+            final float dy = -hs * minValue;
+            Matrix.setIdentityM(V, 0);
+            Matrix.translateM(V, 0, hpadding, ypx, 0);
+            Matrix.translateM(V, 0, 0, dy, 0);
+            Matrix.scaleM(V, 0, ws, hs, 1.0f);
+            Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
+        }
+
+        tmpvec[0] = tooltipIndex;
+        tmpvec[1] = column.values[tooltipIndex];
+        tmpvec[2] = 0f;
+        tmpvec[3] = 1;
+        Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
+        outTooltipX = tmpvec[0];
+        outTooltipY = tmpvec[1];
+        return tmpvec2[0];
     }
 
     public void step4() {
@@ -332,10 +397,14 @@ public final class LinesChartProgram {
         } else {
             GLES20.glLineWidth(dimen.dpf(2f));
         }
-        if (animateOutValue == -1f) {
+        if (animateInValue != -1f) {
             GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
-            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
-        } else {
+            if (animateInValue == 1f) {
+                GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+            } else {
+                GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, leftxi, rightxi - leftxi+1);
+            }
+        } else if (animateOutValue != -1f) {
             if (tooltipIndex != -1) {
                 GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
                 GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, (tooltipIndex + 1));
@@ -345,6 +414,9 @@ public final class LinesChartProgram {
                 int from = tooltipIndex;
                 GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, tooltipIndex, n - from);
             }
+        } else {
+            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
+            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
         }
 
     }
@@ -353,33 +425,23 @@ public final class LinesChartProgram {
     public void step3() {
         float scalex = 2.0f / w;
         float r_ndc = scalex * dimen.dpf(scrollbar ? 0.5f : 1f);
-        if (scrollbar) {
-            if (animateOutValue == -1f) {
+        if (animateInValue != -1f) {
+            if (animateInValue == 1f) {
                 lineJoining.draw(MVP, colors, r_ndc, (float) h / w);
             } else {
-                if (tooltipIndex != -1) {
-                    int n = vertices.length / 2;
-                    lineJoining.draw(MVP, colors, 0, tooltipIndex + 1, r_ndc, (float) h / w);
-                    MyGL.checkGlError2();
-                    lineJoining.draw(MVP2, colors, tooltipIndex, n, r_ndc, (float) h / w);
-                    MyGL.checkGlError2();
-                }
+                lineJoining.draw(MVP, colors, leftxi, rightxi, r_ndc, (float) h / w);
+            }
+        } else if (animateOutValue != -1f) {
+            if (tooltipIndex != -1) {
+                int n = vertices.length / 2;
+                lineJoining.draw(MVP, colors, 0, tooltipIndex + 1, r_ndc, (float) h / w);
+                MyGL.checkGlError2();
+                lineJoining.draw(MVP2, colors, tooltipIndex, n, r_ndc, (float) h / w);
+                MyGL.checkGlError2();
             }
         } else {
-            if (animateOutValue == -1f) {
-                lineJoining.draw(MVP, colors, r_ndc, (float) h / w);
-            } else {
-                if (tooltipIndex != -1) {
-                    int n = vertices.length / 2;
-                    lineJoining.draw(MVP, colors, 0, tooltipIndex + 1, r_ndc, (float) h / w);
-                    MyGL.checkGlError2();
-                    lineJoining.draw(MVP2, colors, tooltipIndex, n, r_ndc, (float) h / w);
-                    MyGL.checkGlError2();
-                }
-            }
-
+            lineJoining.draw(MVP, colors, r_ndc, (float) h / w);
         }
-
     }
 
     boolean checked = true;
@@ -559,18 +621,54 @@ public final class LinesChartProgram {
             }
         }
     }
-
-    public void animateIn(int duration, boolean zoomedIn) {
+    float leftx = Float.NaN;
+    float rightx = Float.NaN;
+    int leftxi = -1;
+    int rightxi = -1;
+    public void animateIn(int duration, boolean zoomedIn, float[] PROJ, float tooltipScreenpx) {
+        if (zoomedIn == this.zoomedIn) {
+            return;
+        }
+        calcAnimOffsets(PROJ);
+        this.animInCenter = tooltipScreenpx;
+        this.zoomedIn = zoomedIn;
         if (animateInValue == -1f) {
             animateInValue = 0f;
         }
         animateInValueAnim = new MyAnimation.Float(duration, animateInValue, zoomedIn ? 1f : 0f);
     }
 
-    public void animateOut(long duration, boolean zoomedIn) {
+    private void calcAnimOffsets(float[] PROJ) {
+        step1(PROJ);
+        leftxi = -1;
+        rightxi = -1;
+        for (int i = 0; i < column.values.length; i++) {
+            tmpvec[0] = i;
+            tmpvec[1] = 0f;
+            tmpvec[2] = 0f;
+            tmpvec[3] = 1f;
+            Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
+            float x = tmpvec2[0];
+            if (leftxi == -1 || x <= 0) {
+                leftx = x;
+                leftxi = i;
+            } else if (x >= w) {
+                rightx = x;
+                rightxi = i;
+                break;
+            } else if (i == column.values.length - 1) {
+                rightx = x;
+                rightxi = i;
+            }
+        }
+    }
+
+    public void animateOut(long duration, boolean zoomedIn, float leftx, float rightx) {
         if (zoomedIn == this.zoomedIn) {
             return;
         }
+        this.leftx = leftx;
+        this.rightx = rightx;
         this.zoomedIn = zoomedIn;
         if (animateOutValue == -1f) {
             animateOutValue = 0f;

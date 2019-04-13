@@ -54,7 +54,9 @@ high prio
     - бонус зум для 1 & 2
         - работа зазумленого графика
             - анимация зума
-            - соединиеть линии
+                - анимировать значения из точки сплита
+                - соединиеть линии
+                - заскейлить половинки ( потом )
 
         - зум ин графика
 
@@ -939,95 +941,7 @@ public class ChartViewGL extends TextureView {
 
         public boolean drawChart(boolean invalidated, long t) {
             if (chartLines != null) {
-                ruler.draw(t);
-                int tooltipIndex = chartLines[0].getTooltipIndex();
-                if (tooltipIndex != -1) {
-                    if (this.tooltip == null) {
-                        this.tooltip = new Tooltip(dimen, w, h, currentColors, data, simple, ChartViewGL.this);
-                    }
-                }
-
-
-                if (zoomLines != null) {
-                    for (LinesChartProgram c : zoomLines) {
-                        boolean it_invalid = c.animateionTick(t);
-                        c.step1(PROJ);
-                        invalidated = invalidated || it_invalid;
-                    }
-                }
-
-                for (LinesChartProgram chartProgram : chartLines) {
-                    boolean it_invalid = chartProgram.animateionTick(t);
-                    chartProgram.step1(PROJ);
-                    invalidated = invalidated || it_invalid;
-                }
-
-                boolean drawCharts;
-                if (!zoomedIn) {
-                    drawCharts = true;
-                } else {
-                    drawCharts = chartLines[0].animateOutValue != 1f;
-                }
-
-                if (tooltipIndex != -1) {
-                    this.tooltip.animationTick(t, tooltipIndex, checked);
-                    this.tooltip.calcPos(chartLines[0].MVP, tooltipIndex);
-                    this.tooltip.drawVLine(PROJ, chartLines[0].MVP, tooltipIndex);
-                }
-
-                MyGL.checkGlError2();
-                GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
-                if (drawCharts) {
-                    for (LinesChartProgram chartProgram : chartLines) {
-                        chartProgram.shader.use();//todo use only once!
-                        chartProgram.step2();
-
-                        chartProgram.lineJoining.shader.use();
-                        chartProgram.step3();
-                    }
-                    MyGL.checkGlError2();
-                    for (LinesChartProgram c : chartLines) {
-                        if (c.goodCircle != null) {
-                            c.step4();
-                        }
-                    }
-                    MyGL.checkGlError2();
-                }
-
-                if (zoomLines != null) {
-                    for (LinesChartProgram chartProgram : zoomLines) {
-                        chartProgram.shader.use();//todo use only once!
-                        chartProgram.step2();
-
-                        chartProgram.lineJoining.shader.use();
-                        chartProgram.step3();
-                    }
-                    MyGL.checkGlError2();
-                    for (LinesChartProgram c : zoomLines) {
-                        if (c.goodCircle != null) {
-                            c.step4();
-                        }
-                    }
-                    MyGL.checkGlError2();
-                }
-
-                GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
-
-                if (tooltipIndex != -1) {
-                    this.tooltip.drawTooltip(PROJ);
-                }
-
-                if (uiLocked) {
-                    if (zoomedIn) {
-                        if (chartLines[0].animateOutValue == 1f) {
-                            uiLocked = false;
-                        }
-                    } else {
-                        if (chartLines[0].animateOutValue == -1f) {
-                            uiLocked = false;
-                        }
-                    }
-                }
+                invalidated = drawLinesChart(invalidated, t);
             } else if (chartBar != null) {
                 int tooltipIndex = chartBar.getTooltipIndex();
                 if (tooltipIndex != -1) {
@@ -1086,6 +1000,105 @@ public class ChartViewGL extends TextureView {
                 }
                 invalidated = it_invalidated || invalidated;
 
+            }
+            return invalidated;
+        }
+
+        private boolean drawLinesChart(boolean invalidated, long t) {
+            ruler.draw(t);
+            int tooltipIndex = chartLines[0].getTooltipIndex();
+            if (tooltipIndex != -1) {
+                if (this.tooltip == null) {
+                    this.tooltip = new Tooltip(dimen, w, h, currentColors, data, simple, ChartViewGL.this);
+                }
+            }
+
+
+            if (zoomLines != null) {
+                for (LinesChartProgram c : zoomLines) {
+                    boolean it_invalid = c.animateionTick(t);
+                    c.step1(PROJ);
+                    invalidated = invalidated || it_invalid;
+                }
+                if (!zoomLines[0].zoomedIn && zoomLines[0].animateInValue == -1f) {
+                    for (LinesChartProgram zoomLine : zoomLines) {
+                        zoomLine.release();
+                    }
+                    zoomLines = null;
+                }
+            }
+
+            for (LinesChartProgram chartProgram : chartLines) {
+                boolean it_invalid = chartProgram.animateionTick(t);
+                chartProgram.step1(PROJ);
+                invalidated = invalidated || it_invalid;
+            }
+
+            boolean drawCharts;
+            if (!zoomedIn) {
+                drawCharts = true;
+            } else {
+                drawCharts = chartLines[0].animateOutValue != 1f;
+            }
+
+            if (tooltipIndex != -1) {
+                this.tooltip.animationTick(t, tooltipIndex, checked);
+                this.tooltip.calcPos(chartLines[0].MVP, tooltipIndex);
+                this.tooltip.drawVLine(PROJ, chartLines[0].MVP, tooltipIndex);
+            }
+
+            MyGL.checkGlError2();
+            GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+            if (drawCharts) {
+                for (LinesChartProgram chartProgram : chartLines) {
+                    chartProgram.shader.use();//todo use only once!
+                    chartProgram.step2();
+
+                    chartProgram.lineJoining.shader.use();
+                    chartProgram.step3();
+                }
+                MyGL.checkGlError2();
+                for (LinesChartProgram c : chartLines) {
+                    if (c.goodCircle != null) {
+                        c.step4();
+                    }
+                }
+                MyGL.checkGlError2();
+            }
+
+            if (zoomLines != null) {
+                for (LinesChartProgram chartProgram : zoomLines) {
+                    chartProgram.shader.use();//todo use only once!
+                    chartProgram.step2();
+
+                    chartProgram.lineJoining.shader.use();
+                    chartProgram.step3();
+                }
+                MyGL.checkGlError2();
+                for (LinesChartProgram c : zoomLines) {
+                    if (c.goodCircle != null) {
+                        c.step4();
+                    }
+                }
+                MyGL.checkGlError2();
+            }
+
+            GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
+
+            if (tooltipIndex != -1) {
+                this.tooltip.drawTooltip(PROJ);
+            }
+
+            if (uiLocked) {
+                if (zoomedIn) {
+                    if (chartLines[0].animateOutValue == 1f) {
+                        uiLocked = false;
+                    }
+                } else {
+                    if (chartLines[0].animateOutValue == -1f) {
+                        uiLocked = false;
+                    }
+                }
             }
             return invalidated;
         }
@@ -1543,27 +1556,21 @@ public class ChartViewGL extends TextureView {
             r.overlay.zoomStash.scale = r.overlay.zoom.scale;
             r.overlay.zoomStash.left = r.overlay.zoom.left;
             r.overlay.zoomStash.right = r.overlay.zoom.right;
-            newLeft = 0.4f;
-            newRight = 0.6f;
-            newScale = 0.2f;
+            newLeft = 0.25f;
+            newRight = 0.75f;
+            newScale = 0.5f;
         }
         scroller_left = (int) (scrollbarPos.left + scrollbarPos.width() * newLeft);
         scroller__right = (int) (scrollbarPos.left + scrollbarPos.width() * newRight);
         zoomedIn = !zoomedIn;
         if (r.chartLines != null) {
-            int duration = 384;
-            for (LinesChartProgram c : r.chartLines) {
-                c.animateOut(duration, zoomedIn);
-            }
+            int duration = 3840;
             if (r.scrollbar_lines != null) {
                 for (LinesChartProgram c : r.scrollbar_lines) {
-                    c.animateOut(duration, zoomedIn);
+                    c.animateOut(duration, zoomedIn, 0, 0);
                 }
             }
-            if (r.zoomLines != null) {
-                //todo animate & release
-                r.zoomLines = null;
-            }
+
             if (zoomedIn) {
                 r.zoomLines = new LinesChartProgram[details.data.length - 1];
                 for (int i = 1; i < details.data.length; i++) {
@@ -1572,10 +1579,29 @@ public class ChartViewGL extends TextureView {
                 for (LinesChartProgram it : r.zoomLines) {
                     it.left = newLeft;
                     it.zoom = newScale;
-                    it.animateIn(duration, zoomedIn);
                 }
                 LinesChartProgram.initMinMax(details.y_scaled, r.zoomLines, newLeft, newRight, r.ruler, true, ChartViewGL.this);
+                float tooltipScreenpx =  r.chartLines[0].getTooltipX();
+                for (LinesChartProgram it : r.zoomLines) {
+                    it.animateIn(duration, zoomedIn, r.PROJ, tooltipScreenpx);
+                }
+                LinesChartProgram[] chartLines = r.chartLines;
+                for (int i = 0; i < chartLines.length; i++) {
+                    LinesChartProgram c = chartLines[i];
+                    LinesChartProgram zc = r.zoomLines[i];
+                    c.animateOut(duration, zoomedIn, zc.leftx, zc.rightx);
+                }
             } else {
+                float tooltipScreenpx =  r.chartLines[0].getTooltipX();
+                for (LinesChartProgram it : r.zoomLines) {
+                    it.animateIn(duration, zoomedIn, r.PROJ, tooltipScreenpx);
+                }
+                LinesChartProgram[] chartLines = r.chartLines;
+                for (int i = 0; i < chartLines.length; i++) {
+                    LinesChartProgram c = chartLines[i];
+                    LinesChartProgram zc = r.zoomLines[i];
+                    c.animateOut(duration, zoomedIn, zc.leftx, zc.rightx);
+                }
                 if (data.y_scaled) {
                     r.ruler.animateScale(
                             r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax,
