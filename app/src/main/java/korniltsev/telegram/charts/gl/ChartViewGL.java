@@ -63,7 +63,7 @@ high prio
             - не рисовать старый скроллбар если анимация закончилась
         - санимировать x
         - тултип в зуме
-        - бага - выбрать 1 график и зазумить
+
 
     - дизайн чекбоксов
         - A long tap on any data filter should uncheck all other filters.
@@ -1584,7 +1584,11 @@ public class ChartViewGL extends TextureView {
             if (zoomedIn) {
                 r.zoomLines = new LinesChartProgram[details.data.length - 1];
                 for (int i = 1; i < details.data.length; i++) {
-                    r.zoomLines[i - 1] = new LinesChartProgram(details.data[i], r.w, r.h, dimen, this, false, currentColors, r.linesShader, r.joiningShader);
+                    LinesChartProgram it = new LinesChartProgram(details.data[i], r.w, r.h, dimen, this, false, currentColors, r.linesShader, r.joiningShader);
+                    int ii = i - 1;
+                    it.alpha = r.chartLines[ii].alpha;
+                    it.checked = r.chartLines[ii].checked;
+                    r.zoomLines[ii] = it;
                 }
                 for (LinesChartProgram it : r.zoomLines) {
                     it.left = newLeft;
