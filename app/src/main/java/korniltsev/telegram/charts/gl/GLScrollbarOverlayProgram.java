@@ -39,8 +39,10 @@ public final class GLScrollbarOverlayProgram {
 
     final ChartViewGL root;
 
-    public float left = 0.5f;
-    public float right = 1.0f;
+    public ZoomState zoom = new ZoomState();
+//    public float left = 0.5f;
+//    public float right = 1.0f;
+//    public float scale;
 
     float vertices[] = {
             0, 0,
@@ -54,6 +56,7 @@ public final class GLScrollbarOverlayProgram {
     private MyAnimation.Color borderAnim;
     private MyAnimation.Color overlayAnim;
     private boolean released;
+
 
     public GLScrollbarOverlayProgram(int canvasW, int canvasH, Dimen dimen, ChartViewGL root, int colorBorder, int coloroVerlay, SimpleShader shader) {
         this.color_overlay = coloroVerlay;
@@ -93,6 +96,8 @@ public final class GLScrollbarOverlayProgram {
 //    };
 
     public final void draw(long t) {
+        float left = zoom.left;
+        float right = zoom.right;
         if (borderAnim != null) {
             color_border = borderAnim.tick(t);
             if (borderAnim.ended) {
@@ -156,9 +161,13 @@ public final class GLScrollbarOverlayProgram {
 
     }
 
-    public void setLeftRight(float left, float right) {
-        this.left = left;
-        this.right = right;
+    public void setLeftRight(float left, float right, float scale) {
+        zoom.left = left;
+        zoom.right = right;
+        zoom.scale = scale;
+//        this.left = left;
+//        this.right = right;
+//        this.scale = scale;
 //        Log.d("OVERLAY", " " + left + " " + right);
     }
 

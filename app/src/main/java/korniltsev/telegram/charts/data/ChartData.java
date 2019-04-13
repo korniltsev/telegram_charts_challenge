@@ -97,7 +97,6 @@ public class ChartData {
         }
         long value = data[0].values[tooltipIndex];
         String format = dateFormat.format(value);
-        System.out.println(format);
         InputStream inputStream = null;
         try {
             inputStream = MainActivity.ctx.getAssets().open(index + "/" + format + ".json");

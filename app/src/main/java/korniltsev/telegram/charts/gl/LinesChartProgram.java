@@ -60,116 +60,9 @@ public final class LinesChartProgram {
     private boolean released;
     private boolean zoomedIn;
 
-    public static void calculateChartLinesMax3(LinesChartProgram[] cs, float left, float right) {
 
-
-            long max = Long.MIN_VALUE;
-            long min = Long.MAX_VALUE;
-            int len = cs[0].column.values.length;
-            int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
-            int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
-            for (LinesChartProgram glChartProgram : cs) {
-                if (glChartProgram.checked) {
-                    long[] values = glChartProgram.column.values;
-                    for (int i = from; i < to; i++) {
-                        long value = values[i];
-                        max = (max >= value) ? max : value;
-                        min = Math.min(min, value);
-                    }
-                }
-            }
-        for (LinesChartProgram c : cs) {
-            c.scaledViewporMin = min;
-            c.scaledViewporMax = max;
-        }
-
-    }
-
-    public static void calculateChartLinesMaxScaled(LinesChartProgram p, float left, float right) {
-        long max = Long.MIN_VALUE;
-        long min = Long.MAX_VALUE;
-        int len = p.column.values.length;
-        int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
-        int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
-        long[] values = p.column.values;
-        for (int i = from; i < to; i++) {
-            long value = values[i];
-            max = (max >= value) ? max : value;
-            min = Math.min(min, value);
-        }
-        p.scaledViewporMax = max;
-        p.scaledViewporMin = min;
-    }
-
-    public static void setChecked(String id, float left, float right, boolean isChecked, LinesChartProgram[] cs, GLRulersProgram ruler, boolean y_scaled) {
-        for (LinesChartProgram c : cs) {
-//                            c.setTooltipIndex(-1);
-            if (c.column.id.equals(id)) {
-                c.animateAlpha(isChecked);
-            }
-        }
-        if (y_scaled) {
-            for (LinesChartProgram c : cs) {
-                LinesChartProgram.calculateChartLinesMaxScaled(c, left, right);
-                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, true, 256);
-            }
-            ruler.animateScale(
-                    cs[0].scaledViewporMin, cs[0].scaledViewporMax,
-                    cs[1].scaledViewporMin, cs[1].scaledViewporMax,
-                    208);
-        } else {
-            LinesChartProgram.calculateChartLinesMax3(cs, left, right);// set checked
-            for (LinesChartProgram c : cs) {
-                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, true, 208);
-            }
-            ruler.animateScale(cs[0].scaledViewporMin, cs[0].scaledViewporMax, 208);
-        }
-
-    }
-
-    public static void updateLeftRight(LinesChartProgram[] cs, float left, float right, float scale,  boolean rulerInitDone, GLRulersProgram ruler, boolean y_scaled, boolean firstLeftRightUpdate) {
-        if (y_scaled) {
-            for (LinesChartProgram c : cs) {
-                LinesChartProgram.calculateChartLinesMaxScaled(c, left, right);
-                c.zoom = scale;
-                c.left = left;
-                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, !firstLeftRightUpdate, 256);
-            }
-            ruler.setLeftRight(left, right, scale);
-            if (rulerInitDone) {
-                ruler.animateScale(
-                        cs[0].scaledViewporMin, cs[0].scaledViewporMax,
-                        cs[1].scaledViewporMin, cs[1].scaledViewporMax,
-                        256);
-            }
-
-        } else {
-            LinesChartProgram.calculateChartLinesMax3(cs, left, right);// updateLeftRight
-
-            for (LinesChartProgram glChartProgram : cs) {
-                glChartProgram.zoom = scale;
-                glChartProgram.left = left;
-                glChartProgram.animateMinMax(glChartProgram.scaledViewporMin, glChartProgram.scaledViewporMax, !firstLeftRightUpdate, 256);
-            }
-            ruler.setLeftRight(left, right, scale);
-
-            if (rulerInitDone) {
-                ruler.animateScale(cs[0].scaledViewporMin, cs[0].scaledViewporMax, 256);
-            }
-        }
-    }
-
-    public void release() {
-        if (released) {
-            return;
-        }
-        released = true;
-        GLES20.glDeleteBuffers(1, vbos, 0);
-        lineJoining.release();
-    }
-
-    public LinesChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, int toolttipFillColor, SimpleShader shader, MyCircles.Shader joiningShader) {
-        this.tooltipFillColor = toolttipFillColor;
+    public LinesChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, ColorSet colors, SimpleShader shader, MyCircles.Shader joiningShader) {
+        this.tooltipFillColor = colors.lightBackground;
         this.w = w;
         this.h = h;
         this.column = column;
@@ -204,6 +97,36 @@ public final class LinesChartProgram {
         //todo reuse line joining with scrollbar
         lineJoining = new MyCircles(w, h, 0, column.values, 6, joiningShader);
 
+    }
+
+    public static void initMinMax(boolean y_scaled, LinesChartProgram[]cs, float left, float right, GLRulersProgram ruler) {
+        if (y_scaled) {
+            for (LinesChartProgram c : cs) {
+                LinesChartProgram.calculateChartLinesMaxScaled(c, left, right);
+                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, false, 0);
+            }
+            ruler.init(
+                    cs[0].scaledViewporMin, cs[0].scaledViewporMax,
+                    cs[1].scaledViewporMin, cs[1].scaledViewporMax,
+                    cs[0].column.color,
+                    cs[1].column.color
+            );
+        } else {
+            LinesChartProgram.calculateChartLinesMax3(cs, left, right); // draw ( init)
+            ruler.init(cs[0].scaledViewporMin, cs[0].scaledViewporMax);
+            for (LinesChartProgram c : cs) {
+                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, false, 0);
+            }
+        }
+    }
+
+    public void release() {
+        if (released) {
+            return;
+        }
+        released = true;
+        GLES20.glDeleteBuffers(1, vbos, 0);
+        lineJoining.release();
     }
 
     float[] colors = new float[4];
@@ -293,7 +216,7 @@ public final class LinesChartProgram {
                 tmpvec[3] = 1;
                 Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
                 float leftAnimDistance = tmpvec2[0];
-                float rightAnimDistance = this.w -tmpvec2[0];
+                float rightAnimDistance = this.w - tmpvec2[0];
                 float posndcx = (tmpvec2[0] + 1f) / 2f;
 
                 Matrix.setIdentityM(V, 0);
@@ -334,7 +257,7 @@ public final class LinesChartProgram {
                 tmpvec[3] = 1;
                 Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
                 float leftAnimDistance = tmpvec2[0];
-                float rightAnimDistance = this.w -tmpvec2[0];
+                float rightAnimDistance = this.w - tmpvec2[0];
                 float posndcx = (tmpvec2[0] + 1f) / 2f;
 
                 Matrix.setIdentityM(V, 0);
@@ -399,7 +322,7 @@ public final class LinesChartProgram {
 
         if (scrollbar) {
             GLES20.glLineWidth(dimen.dpf(1f));
-            if (animateOutValue == -1f ) {
+            if (animateOutValue == -1f) {
                 GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
                 GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
             } else {
@@ -415,7 +338,7 @@ public final class LinesChartProgram {
             }
         } else {
             GLES20.glLineWidth(dimen.dpf(2f));
-            if (animateOutValue == -1f ) {
+            if (animateOutValue == -1f) {
                 GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
                 GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
             } else {
@@ -523,6 +446,7 @@ public final class LinesChartProgram {
         }
         animateOutValueAnim = new MyAnimation.Float(duration, animateOutValue, zoomedIn ? 1f : 0f);
     }
+
     public void setTooltipIndex(int tooltipIndex) {
         if (!scrollbar) {
             if (goodCircle == null || this.tooltipIndex != tooltipIndex) {
@@ -538,6 +462,107 @@ public final class LinesChartProgram {
             }
         }
         this.tooltipIndex = tooltipIndex;
+    }
+
+    public static void calculateChartLinesMax3(LinesChartProgram[] cs, float left, float right) {
+
+
+        long max = Long.MIN_VALUE;
+        long min = Long.MAX_VALUE;
+        int len = cs[0].column.values.length;
+        int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
+        int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
+        for (LinesChartProgram glChartProgram : cs) {
+            if (glChartProgram.checked) {
+                long[] values = glChartProgram.column.values;
+                for (int i = from; i < to; i++) {
+                    long value = values[i];
+                    max = (max >= value) ? max : value;
+                    min = Math.min(min, value);
+                }
+            }
+        }
+        for (LinesChartProgram c : cs) {
+            c.scaledViewporMin = min;
+            c.scaledViewporMax = max;
+        }
+
+    }
+
+    public static void calculateChartLinesMaxScaled(LinesChartProgram p, float left, float right) {
+        long max = Long.MIN_VALUE;
+        long min = Long.MAX_VALUE;
+        int len = p.column.values.length;
+        int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
+        int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
+        long[] values = p.column.values;
+        for (int i = from; i < to; i++) {
+            long value = values[i];
+            max = (max >= value) ? max : value;
+            min = Math.min(min, value);
+        }
+        p.scaledViewporMax = max;
+        p.scaledViewporMin = min;
+    }
+
+    public static void setChecked(String id, ZoomState zoom, boolean isChecked, LinesChartProgram[] cs, GLRulersProgram ruler, boolean y_scaled) {
+        float left = zoom.left;
+        float right = zoom.right;
+        for (LinesChartProgram c : cs) {
+//                            c.setTooltipIndex(-1);
+            if (c.column.id.equals(id)) {
+                c.animateAlpha(isChecked);
+            }
+        }
+        if (y_scaled) {
+            for (LinesChartProgram c : cs) {
+                LinesChartProgram.calculateChartLinesMaxScaled(c, left, right);
+                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, true, 256);
+            }
+            ruler.animateScale(
+                    cs[0].scaledViewporMin, cs[0].scaledViewporMax,
+                    cs[1].scaledViewporMin, cs[1].scaledViewporMax,
+                    208);
+        } else {
+            LinesChartProgram.calculateChartLinesMax3(cs, left, right);// set checked
+            for (LinesChartProgram c : cs) {
+                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, true, 208);
+            }
+            ruler.animateScale(cs[0].scaledViewporMin, cs[0].scaledViewporMax, 208);
+        }
+
+    }
+
+    public static void updateLeftRight(LinesChartProgram[] cs, float left, float right, float scale, boolean rulerInitDone, GLRulersProgram ruler, boolean y_scaled, boolean firstLeftRightUpdate) {
+        if (y_scaled) {
+            for (LinesChartProgram c : cs) {
+                LinesChartProgram.calculateChartLinesMaxScaled(c, left, right);
+                c.zoom = scale;
+                c.left = left;
+                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, !firstLeftRightUpdate, 256);
+            }
+            ruler.setLeftRight(left, right, scale);
+            if (rulerInitDone) {
+                ruler.animateScale(
+                        cs[0].scaledViewporMin, cs[0].scaledViewporMax,
+                        cs[1].scaledViewporMin, cs[1].scaledViewporMax,
+                        256);
+            }
+
+        } else {
+            LinesChartProgram.calculateChartLinesMax3(cs, left, right);// updateLeftRight
+
+            for (LinesChartProgram glChartProgram : cs) {
+                glChartProgram.zoom = scale;
+                glChartProgram.left = left;
+                glChartProgram.animateMinMax(glChartProgram.scaledViewporMin, glChartProgram.scaledViewporMax, !firstLeftRightUpdate, 256);
+            }
+            ruler.setLeftRight(left, right, scale);
+
+            if (rulerInitDone) {
+                ruler.animateScale(cs[0].scaledViewporMin, cs[0].scaledViewporMax, 256);
+            }
+        }
     }
 
 }
