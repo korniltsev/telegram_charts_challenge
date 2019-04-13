@@ -912,15 +912,19 @@ public class ChartViewGL extends TextureView {
                     invalidated = invalidated || it_invalid;
                 }
                 for (LinesChartProgram chartProgram : scrollbar_lines) {
-                    chartProgram.step1(PROJ);
+                    if (chartProgram.animateOutValue != 1f) {
+                        chartProgram.step1(PROJ);
+                    }
                 }
                 MyGL.checkGlError2();
                 for (LinesChartProgram chartProgram : scrollbar_lines) {
-                    chartProgram.shader.use();//todo use only once!
-                    chartProgram.step2(PROJ);
+                    if (chartProgram.animateOutValue != 1f) {
+                        chartProgram.shader.use();//todo use only once!
+                        chartProgram.step2(PROJ);
 
-                    chartProgram.lineJoining.shader.use();
-                    chartProgram.step3();
+                        chartProgram.lineJoining.shader.use();
+                        chartProgram.step3();
+                    }
                 }
                 MyGL.checkGlError2();
             } else if (scrollbar_bars != null) {
@@ -1033,7 +1037,9 @@ public class ChartViewGL extends TextureView {
 
             for (LinesChartProgram chartProgram : chartLines) {
                 boolean it_invalid = chartProgram.animateionTick(t);
-                chartProgram.step1(PROJ);
+                if (chartProgram.animateOutValue != 1f) {
+                    chartProgram.step1(PROJ);
+                }
                 invalidated = invalidated || it_invalid;
             }
 
