@@ -723,28 +723,7 @@ public class ChartViewGL extends TextureView {
                     }
 
                     if (chartLines != null) {
-                        for (LinesChartProgram c : chartLines) {
-//                            c.setTooltipIndex(-1);
-                            if (c.column.id.equals(id)) {
-                                c.animateAlpha(isChecked);
-                            }
-                        }
-                        if (data.y_scaled) {
-                            for (LinesChartProgram c : r.chartLines) {
-                                LinesChartProgram.calculateChartLinesMaxScaled(c, r.overlay.left, r.overlay.right);
-                                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, !firstLeftRightUpdate, 256);
-                            }
-                            ruler.animateScale(
-                                    r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax,
-                                    r.chartLines[1].scaledViewporMin, r.chartLines[1].scaledViewporMax,
-                                    208);
-                        } else {
-                            LinesChartProgram.calculateChartLinesMax3(r.chartLines, r.overlay.left, r.overlay.right);// set checked
-                            for (LinesChartProgram c : chartLines) {
-                                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, true, 208);
-                            }
-                            ruler.animateScale(chartLines[0].scaledViewporMin, chartLines[0].scaledViewporMax, 208);
-                        }
+                        LinesChartProgram.setChecked(id, r.overlay.left, r.overlay.right, isChecked, chartLines, ruler, data.y_scaled);
                     }
                     if (chartBar7 != null) {
 //                        chartBar7.setTooltipIndex(-1);

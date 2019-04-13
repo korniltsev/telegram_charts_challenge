@@ -101,6 +101,32 @@ public final class LinesChartProgram {
         p.scaledViewporMin = min;
     }
 
+    public static void setChecked(String id, float left, float right, boolean isChecked, LinesChartProgram[] cs, GLRulersProgram ruler, boolean y_scaled) {
+        for (LinesChartProgram c : cs) {
+//                            c.setTooltipIndex(-1);
+            if (c.column.id.equals(id)) {
+                c.animateAlpha(isChecked);
+            }
+        }
+        if (y_scaled) {
+            for (LinesChartProgram c : cs) {
+                LinesChartProgram.calculateChartLinesMaxScaled(c, left, right);
+                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, true, 256);
+            }
+            ruler.animateScale(
+                    cs[0].scaledViewporMin, cs[0].scaledViewporMax,
+                    cs[1].scaledViewporMin, cs[1].scaledViewporMax,
+                    208);
+        } else {
+            LinesChartProgram.calculateChartLinesMax3(cs, left, right);// set checked
+            for (LinesChartProgram c : cs) {
+                c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, true, 208);
+            }
+            ruler.animateScale(cs[0].scaledViewporMin, cs[0].scaledViewporMax, 208);
+        }
+
+    }
+
     public void release() {
         if (released) {
             return;
