@@ -53,8 +53,9 @@ high prio
 
     - бонус зум для 1 & 2
         - работа зазумленого графика
-            - не рисовать старый график если анимация закончилась
             - пофиксить подсчет минимума и максимума
+            - анимация зума
+            - соединиеть линии
 
         - зум ин графика
 
@@ -946,6 +947,7 @@ public class ChartViewGL extends TextureView {
                     }
                 }
 
+
                 if (zomLines != null) {
                     for (LinesChartProgram c : zomLines) {
                         boolean it_invalid = c.animateionTick(t);
@@ -960,6 +962,13 @@ public class ChartViewGL extends TextureView {
                     invalidated = invalidated || it_invalid;
                 }
 
+                boolean drawCharts;
+                if (!zoomedIn) {
+                    drawCharts = true;
+                } else {
+                    drawCharts = chartLines[0].animateOutValue != 1f;
+                }
+
                 if (tooltipIndex != -1) {
                     this.tooltip.animationTick(t, tooltipIndex, checked);
                     this.tooltip.calcPos(chartLines[0].MVP, tooltipIndex);
@@ -968,21 +977,22 @@ public class ChartViewGL extends TextureView {
 
                 MyGL.checkGlError2();
                 GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+                if (drawCharts) {
+                    for (LinesChartProgram chartProgram : chartLines) {
+                        chartProgram.shader.use();//todo use only once!
+                        chartProgram.step2();
 
-                for (LinesChartProgram chartProgram : chartLines) {
-                    chartProgram.shader.use();//todo use only once!
-                    chartProgram.step2();
-
-                    chartProgram.lineJoining.shader.use();
-                    chartProgram.step3();
-                }
-                MyGL.checkGlError2();
-                for (LinesChartProgram c : chartLines) {
-                    if (c.goodCircle != null) {
-                        c.step4();
+                        chartProgram.lineJoining.shader.use();
+                        chartProgram.step3();
                     }
+                    MyGL.checkGlError2();
+                    for (LinesChartProgram c : chartLines) {
+                        if (c.goodCircle != null) {
+                            c.step4();
+                        }
+                    }
+                    MyGL.checkGlError2();
                 }
-                MyGL.checkGlError2();
 
                 if (zomLines != null) {
                     for (LinesChartProgram chartProgram : zomLines) {
@@ -1006,6 +1016,7 @@ public class ChartViewGL extends TextureView {
                 if (tooltipIndex != -1) {
                     this.tooltip.drawTooltip(PROJ);
                 }
+
                 if (uiLocked) {
                     if (zoomedIn) {
                         if (chartLines[0].animateOutValue == 1f) {
@@ -1487,7 +1498,7 @@ public class ChartViewGL extends TextureView {
                         }
                     }
                     if (r.scrollbar_lines != null) {
-                        for (LinesChartProgram glChartProgram : r.scrollbar_lines ) {
+                        for (LinesChartProgram glChartProgram : r.scrollbar_lines) {
                             glChartProgram.setTooltipIndex(finali);
                         }
                     }
@@ -1574,7 +1585,7 @@ public class ChartViewGL extends TextureView {
             }
         }
         r.overlay.zoom.leftAnim = new MyAnimation.Float(208, r.overlay.zoom.left, newLeft);
-        r.overlay.zoom.rightAnim= new MyAnimation.Float(208, r.overlay.zoom.right, newRight);
+        r.overlay.zoom.rightAnim = new MyAnimation.Float(208, r.overlay.zoom.right, newRight);
         r.overlay.zoom.scale = newScale;
         r.invalidateRender();
     }
@@ -1610,7 +1621,7 @@ public class ChartViewGL extends TextureView {
             }
         }
         if (r.scrollbar_lines != null) {
-            for (LinesChartProgram glChartProgram : r.scrollbar_lines ) {
+            for (LinesChartProgram glChartProgram : r.scrollbar_lines) {
                 glChartProgram.setTooltipIndex(-1);
             }
         }
@@ -1629,7 +1640,6 @@ public class ChartViewGL extends TextureView {
     }
 
 
-
     static {
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
@@ -1645,22 +1655,22 @@ public class ChartViewGL extends TextureView {
     public static final long calculateChartBarMax(BarChartProgram p, float left, float right) {
 //        if (r.chartBar != null) {
 
-            long max = Long.MIN_VALUE;
-            long min = Long.MAX_VALUE;
-            int len = p.column.values.length;
-            int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
-            int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
+        long max = Long.MIN_VALUE;
+        long min = Long.MAX_VALUE;
+        int len = p.column.values.length;
+        int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
+        int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
 //            for (LinesChartProgram glChartProgram : r.chartLines) {
 //                if (glChartProgram.checked) {
-            long[] values = p.column.values;
-            for (int i = from; i < to; i++) {
-                long value = values[i];
-                max = (max >= value) ? max : value;
-                min = Math.min(min, value);
-            }
+        long[] values = p.column.values;
+        for (int i = from; i < to; i++) {
+            long value = values[i];
+            max = (max >= value) ? max : value;
+            min = Math.min(min, value);
+        }
 //                }
 //            }
-            return max;
+        return max;
 //        }
     }
 

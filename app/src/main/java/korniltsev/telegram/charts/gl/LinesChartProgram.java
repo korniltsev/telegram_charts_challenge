@@ -316,11 +316,11 @@ public final class LinesChartProgram {
         colors[0] = MyColor.red(column.color) / 255f;
         colors[1] = MyColor.green(column.color) / 255f;
         colors[2] = MyColor.blue(column.color) / 255f;
-        if (animateOutValue == -1f) {
+//        if (animateOutValue == -1f) {
             colors[3] = alpha;
-        } else {
-            colors[3] = alpha * (1 - animateOutValue);
-        }
+//        } else {
+//            colors[3] = alpha;
+//        }
         GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
 
 
