@@ -50,6 +50,8 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 high prio
 
+    - дизайн чекбоксов
+        - A long tap on any data filter should uncheck all other filters.
 
     - бонус зум для 1 & 2
         - работа зазумленого графика
@@ -63,10 +65,8 @@ high prio
             - не рисовать старый скроллбар если анимация закончилась
         - санимировать x
         - тултип в зуме
+        - когда зумишь надо показывать 7 дней
 
-
-    - дизайн чекбоксов
-        - A long tap on any data filter should uncheck all other filters.
     ----------------------
 
     - дизайн тултипа
