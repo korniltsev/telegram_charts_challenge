@@ -433,8 +433,10 @@ public final class LinesChartProgram {
         return tooltipIndex;
     }
 
-    private float animateOutValue = -1f;
+    public float animateOutValue = -1f;
     private MyAnimation.Float animateOutValueAnim;
+
+
 
     public void animateOut(long duration, boolean zoomedIn) {
         if (zoomedIn == this.zoomedIn) {

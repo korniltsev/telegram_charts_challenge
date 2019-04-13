@@ -17,9 +17,8 @@ public final class GLScrollbarOverlayProgram {
     private static final int BYTES_PER_FLOAT = 4;
     private static final int STRIDE_BYTES = 2 * BYTES_PER_FLOAT;
     private static final int POSITION_DATA_SIZE = 2;
-//    public static final int OVERLAY_COLOR = 0xbff1f5f7;
+    //    public static final int OVERLAY_COLOR = 0xbff1f5f7;
     public static final int BORDER_COLOR = 0x334b87b4;
-
 
 
     private final int vbo;
@@ -40,6 +39,7 @@ public final class GLScrollbarOverlayProgram {
     final ChartViewGL root;
 
     public ZoomState zoom = new ZoomState();
+    public ZoomState zoomStash = new ZoomState();
 //    public float left = 0.5f;
 //    public float right = 1.0f;
 //    public float scale;
@@ -74,9 +74,6 @@ public final class GLScrollbarOverlayProgram {
         buf1.position(0);
 
 
-
-
-
         vbos = new int[1];
         GLES20.glGenBuffers(1, vbos, 0);
         vbo = vbos[0];
@@ -95,7 +92,8 @@ public final class GLScrollbarOverlayProgram {
 //            MyColor.alpha(BORDER_COLOR) / 255f,
 //    };
 
-    public final void draw(long t) {
+    public final boolean draw(long t) {
+        boolean invalidate = false;
         float left = zoom.left;
         float right = zoom.right;
         if (borderAnim != null) {
@@ -108,6 +106,22 @@ public final class GLScrollbarOverlayProgram {
             color_overlay = overlayAnim.tick(t);
             if (overlayAnim.ended) {
                 overlayAnim = null;
+            }
+        }
+        if (zoom.leftAnim != null) {
+            zoom.left = zoom.leftAnim.tick(t);
+            if (zoom.leftAnim.ended) {
+                zoom.leftAnim = null;
+            } else {
+                invalidate = true;
+            }
+        }
+        if (zoom.rightAnim != null) {
+            zoom.right = zoom.rightAnim.tick(t);
+            if (zoom.rightAnim.ended) {
+                zoom.rightAnim = null;
+            } else {
+                invalidate = true;
             }
         }
         GLES20.glUseProgram(shader.program);
@@ -128,10 +142,10 @@ public final class GLScrollbarOverlayProgram {
         GLES20.glUniform4fv(shader.colorHandle, 1, color_parts, 0);
         int y = root.dimen_v_padding8 + root.checkboxesHeight;
         if (left != 0.0f) {
-            drawRect(hpadding, y, left*scrollerW, root.dimen_scrollbar_height);
+            drawRect(hpadding, y, left * scrollerW, root.dimen_scrollbar_height);
         }
         if (right != 1.0f) {
-            drawRect(hpadding + scrollerW * right, y, scrollerW * (1.0f-right), root.dimen_scrollbar_height);
+            drawRect(hpadding + scrollerW * right, y, scrollerW * (1.0f - right), root.dimen_scrollbar_height);
         }
 
         MyColor.set(color_parts, color_border);
@@ -140,10 +154,10 @@ public final class GLScrollbarOverlayProgram {
         drawRect(hpadding + scrollerW * right - vline1w, y, vline1w, root.dimen_scrollbar_height);
         float l = hpadding + scrollerW * left + vline1w;
         float r = hpadding + scrollerW * right - vline1w;
-        drawRect(l, y, r-l, vline2h);
-        drawRect(l, y + root.dimen_scrollbar_height - vline2h, r-l, vline2h);
+        drawRect(l, y, r - l, vline2h);
+        drawRect(l, y + root.dimen_scrollbar_height - vline2h, r - l, vline2h);
+        return invalidate;
     }
-
 
 
     public void drawRect(float x, float y, float w, float h) {

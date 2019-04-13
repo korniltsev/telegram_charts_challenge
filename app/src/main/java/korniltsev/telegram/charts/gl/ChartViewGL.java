@@ -52,12 +52,19 @@ high prio
 
 
     - бонус зум для 1 & 2
+        - работа зазумленого графика
+            - стеш зума + анимация ползунка
+            - checked
+            - не рисовать старый график если анимация закончилась
+
         - зум ин графика
+
         - зум ин скроллбара
-        - заблокировать скролл/зум
+        - залочить ui
         - санимировать линейку
         - санимировать x
 
+    - пофиксить подсчет минимума и максимума
 
 
     - дизайн тултипа
@@ -160,11 +167,11 @@ public class ChartViewGL extends TextureView {
     public int chartBottom;
     public int chartTop;
     public int hpadding;
-//    private long viewportMin;
+    //    private long viewportMin;
 //    private long viewportMax;
     //    public long currentMax;
 //    public ColorSet currentColorsSet;
-
+    public volatile boolean uiLocked = false;
 
     @Override
     public boolean isOpaque() {
@@ -246,6 +253,9 @@ public class ChartViewGL extends TextureView {
     }
 
     public boolean setChecked(String id, boolean isChecked) {
+        if (uiLocked) {
+            return false;
+        }
         boolean[] checked = r.checked;
         int checkedCount = 0;
         ColumnData[] data1 = data.data;
@@ -994,6 +1004,17 @@ public class ChartViewGL extends TextureView {
                 if (tooltipIndex != -1) {
                     this.tooltip.drawTooltip(PROJ);
                 }
+                if (uiLocked) {
+                    if (zoomedIn) {
+                        if (chartLines[0].animateOutValue == 1f) {
+                            uiLocked = false;
+                        }
+                    } else {
+                        if (chartLines[0].animateOutValue == -1f) {
+                            uiLocked = false;
+                        }
+                    }
+                }
             } else if (chartBar != null) {
                 int tooltipIndex = chartBar.getTooltipIndex();
                 if (tooltipIndex != -1) {
@@ -1284,13 +1305,16 @@ public class ChartViewGL extends TextureView {
     boolean dragging;
 
 
-    public int scroller__right = -1;
-    public int scroller_left = -1;
+    volatile public int scroller__right = -1;
+    volatile public int scroller_left = -1;
     public int scroller_move_down_x;
     public int scroller_move_down_width;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (uiLocked) {
+            return false;
+        }
         int action = event.getActionMasked();
 //        if (LOGGING) Log.d("tg.chart", "ScrollBug touchevent " + event);
 //        if (action != MotionEvent.ACTION_MOVE) {
@@ -1489,13 +1513,29 @@ public class ChartViewGL extends TextureView {
     boolean zoomedIn = false;
 
     private void onZoom(int tooltipIndex) {
+        uiLocked = true;
         ChartData details = null;
-        if (!zoomedIn) {
+        float newLeft;
+        float newRight;
+        float newScale;
+        if (zoomedIn) {
+            newLeft = r.overlay.zoomStash.left;
+            newRight = r.overlay.zoomStash.right;
+            newScale = r.overlay.zoomStash.scale;
+        } else {
             details = data.getDetails(tooltipIndex);
             if (details == null) {
                 return;
             }
+            r.overlay.zoomStash.scale = r.overlay.zoom.scale;
+            r.overlay.zoomStash.left = r.overlay.zoom.left;
+            r.overlay.zoomStash.right = r.overlay.zoom.right;
+            newLeft = 0.4f;
+            newRight = 0.6f;
+            newScale = 0.2f;
         }
+        scroller_left = (int) (scrollbarPos.left + scrollbarPos.width() * newLeft);
+        scroller__right = (int) (scrollbarPos.left + scrollbarPos.width() * newRight);
         zoomedIn = !zoomedIn;
         if (r.chartLines != null) {
             for (LinesChartProgram c : r.chartLines) {
@@ -1508,7 +1548,7 @@ public class ChartViewGL extends TextureView {
             }
         }
         if (r.zomLines != null) {
-            //todo release
+            //todo animate & release
             r.zomLines = null;
         }
         if (zoomedIn) {
@@ -1517,11 +1557,15 @@ public class ChartViewGL extends TextureView {
                 r.zomLines[i - 1] = new LinesChartProgram(details.data[i], r.w, r.h, dimen, this, false, currentColors, r.simple, r.joiningShader);
             }
             for (LinesChartProgram zomLine : r.zomLines) {
-                zomLine.left = r.overlay.zoom.left;
-                zomLine.zoom = r.overlay.zoom.scale;
+                zomLine.left = newLeft;
+                zomLine.zoom = newScale;
             }
-            LinesChartProgram.initMinMax(details.y_scaled, r.zomLines, r.overlay.zoom.left, r.overlay.zoom.right, r.ruler);
+            LinesChartProgram.initMinMax(details.y_scaled, r.zomLines, newLeft, newRight, r.ruler);
+        } else {
         }
+        r.overlay.zoom.leftAnim = new MyAnimation.Float(208, r.overlay.zoom.left, newLeft);
+        r.overlay.zoom.rightAnim= new MyAnimation.Float(208, r.overlay.zoom.right, newRight);
+        r.overlay.zoom.scale = newScale;
         r.invalidateRender();
     }
 
