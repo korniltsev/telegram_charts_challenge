@@ -99,10 +99,10 @@ public final class LinesChartProgram {
 
     }
 
-    public static void initMinMax(boolean y_scaled, LinesChartProgram[]cs, float left, float right, GLRulersProgram ruler, boolean animateRuler) {
+    public static void initMinMax(boolean y_scaled, LinesChartProgram[]cs, float left, float right, GLRulersProgram ruler, boolean animateRuler, ChartViewGL root) {
         if (y_scaled) {
             for (LinesChartProgram c : cs) {
-                LinesChartProgram.calculateChartLinesMaxScaled(c, left, right);
+                LinesChartProgram.calculateChartLinesMaxScaled(c, left, right, root);
                 c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, false, 0);
             }
             if (animateRuler) {
@@ -119,7 +119,7 @@ public final class LinesChartProgram {
                 );
             }
         } else {
-            LinesChartProgram.calculateChartLinesMax3(cs, left, right); // draw ( init)
+            LinesChartProgram.calculateChartLinesMax3(cs, left, right, root); // draw ( init)
             if (animateRuler) {
                 ruler.animateScale(cs[0].scaledViewporMin, cs[0].scaledViewporMax, 208);
             } else {
@@ -477,14 +477,17 @@ public final class LinesChartProgram {
         this.tooltipIndex = tooltipIndex;
     }
 
-    public static void calculateChartLinesMax3(LinesChartProgram[] cs, float left, float right) {
+    public static void calculateChartLinesMax3(LinesChartProgram[] cs, float left, float right, ChartViewGL root) {
+        float scale = right - left;// between paddings
+        int padding = root.scrollbarPos.left;
+        float x = scale * padding / root.scrollbarPos.width();
 
 
         long max = Long.MIN_VALUE;
         long min = Long.MAX_VALUE;
         int len = cs[0].column.values.length;
-        int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
-        int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
+        int from = Math.max(0,  -1 + (int) Math.ceil(len * (left - x)));
+        int to = Math.min(len, 1 + (int) Math.floor(len * (right + x)));
         for (LinesChartProgram glChartProgram : cs) {
             if (glChartProgram.checked) {
                 long[] values = glChartProgram.column.values;
@@ -502,12 +505,16 @@ public final class LinesChartProgram {
 
     }
 
-    public static void calculateChartLinesMaxScaled(LinesChartProgram p, float left, float right) {
+    public static void calculateChartLinesMaxScaled(LinesChartProgram p, float left, float right, ChartViewGL root) {
+        float scale = right - left;// between paddings
+        int padding = root.scrollbarPos.left;
+        float x = scale * padding / root.scrollbarPos.width();
+
         long max = Long.MIN_VALUE;
         long min = Long.MAX_VALUE;
         int len = p.column.values.length;
-        int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
-        int to = Math.min(len, (int) Math.ceil(len * (right + 0.02f)));
+        int from = Math.max(0, -1 + (int) Math.ceil(len * (left - x)));
+        int to = Math.min(len,  1 + (int) Math.floor(len * (right + x)));
         long[] values = p.column.values;
         for (int i = from; i < to; i++) {
             long value = values[i];
@@ -518,7 +525,7 @@ public final class LinesChartProgram {
         p.scaledViewporMin = min;
     }
 
-    public static void setChecked(String id, ZoomState zoom, boolean isChecked, LinesChartProgram[] cs, GLRulersProgram ruler, boolean y_scaled) {
+    public static void setChecked(String id, ZoomState zoom, boolean isChecked, LinesChartProgram[] cs, GLRulersProgram ruler, boolean y_scaled, ChartViewGL root) {
         float left = zoom.left;
         float right = zoom.right;
         for (LinesChartProgram c : cs) {
@@ -529,7 +536,7 @@ public final class LinesChartProgram {
         }
         if (y_scaled) {
             for (LinesChartProgram c : cs) {
-                LinesChartProgram.calculateChartLinesMaxScaled(c, left, right);
+                LinesChartProgram.calculateChartLinesMaxScaled(c, left, right, root);
                 c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, true, 256);
             }
             if (ruler != null) {
@@ -539,7 +546,7 @@ public final class LinesChartProgram {
                         208);
             }
         } else {
-            LinesChartProgram.calculateChartLinesMax3(cs, left, right);// set checked
+            LinesChartProgram.calculateChartLinesMax3(cs, left, right, root);// set checked
             for (LinesChartProgram c : cs) {
                 c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, true, 208);
             }
@@ -550,10 +557,10 @@ public final class LinesChartProgram {
 
     }
 
-    public static void updateLeftRight(LinesChartProgram[] cs, float left, float right, float scale, boolean rulerInitDone, GLRulersProgram ruler, boolean y_scaled, boolean firstLeftRightUpdate) {
+    public static void updateLeftRight(LinesChartProgram[] cs, float left, float right, float scale, boolean rulerInitDone, GLRulersProgram ruler, boolean y_scaled, boolean firstLeftRightUpdate, ChartViewGL root) {
         if (y_scaled) {
             for (LinesChartProgram c : cs) {
-                LinesChartProgram.calculateChartLinesMaxScaled(c, left, right);
+                LinesChartProgram.calculateChartLinesMaxScaled(c, left, right, root);
                 c.zoom = scale;
                 c.left = left;
                 c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, !firstLeftRightUpdate, 256);
@@ -567,7 +574,7 @@ public final class LinesChartProgram {
             }
 
         } else {
-            LinesChartProgram.calculateChartLinesMax3(cs, left, right);// updateLeftRight
+            LinesChartProgram.calculateChartLinesMax3(cs, left, right, root);// updateLeftRight
 
             for (LinesChartProgram glChartProgram : cs) {
                 glChartProgram.zoom = scale;

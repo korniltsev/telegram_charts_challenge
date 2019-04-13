@@ -53,7 +53,6 @@ high prio
 
     - бонус зум для 1 & 2
         - работа зазумленого графика
-            - пофиксить подсчет минимума и максимума
             - анимация зума
             - соединиеть линии
 
@@ -586,7 +585,7 @@ public class ChartViewGL extends TextureView {
 
                         LinesChartProgram it = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors, simple, joiningShader);
                         scrollbar_lines[i - 1] = it;
-                        LinesChartProgram.calculateChartLinesMaxScaled(it, 0f, 1f);
+                        LinesChartProgram.calculateChartLinesMaxScaled(it, 0f, 1f, ChartViewGL.this);
                         it.animateMinMax(it.scaledViewporMin, it.scaledViewporMax, false, 0);
                     }
                 } else {
@@ -733,10 +732,10 @@ public class ChartViewGL extends TextureView {
 
                     if (chartLines != null) {
                         if (zomLines != null) {
-                            LinesChartProgram.setChecked(id, r.overlay.zoom, isChecked, zomLines, ruler, data.y_scaled);
-                            LinesChartProgram.setChecked(id, r.overlay.zoomStash, isChecked, chartLines, /* ruler */ null, data.y_scaled);
+                            LinesChartProgram.setChecked(id, r.overlay.zoom, isChecked, zomLines, ruler, data.y_scaled, ChartViewGL.this);
+                            LinesChartProgram.setChecked(id, r.overlay.zoomStash, isChecked, chartLines, /* ruler */ null, data.y_scaled, ChartViewGL.this);
                         } else {
-                            LinesChartProgram.setChecked(id, r.overlay.zoom, isChecked, chartLines, ruler, data.y_scaled);
+                            LinesChartProgram.setChecked(id, r.overlay.zoom, isChecked, chartLines, ruler, data.y_scaled, ChartViewGL.this);
                         }
                     }
                     if (chartBar7 != null) {
@@ -813,7 +812,7 @@ public class ChartViewGL extends TextureView {
             boolean invalidated = false;
             if (!rulerInitDone) {
                 if (chartLines != null) {
-                    LinesChartProgram.initMinMax(data.y_scaled, chartLines, r.overlay.zoom.left, r.overlay.zoom.right, ruler, false);
+                    LinesChartProgram.initMinMax(data.y_scaled, chartLines, r.overlay.zoom.left, r.overlay.zoom.right, ruler, false, ChartViewGL.this);
                 }
                 if (chartBar != null) {
                     long viewportMax = calculateChartBarMax(chartBar, r.overlay.zoom.left, r.overlay.zoom.right);
@@ -1274,9 +1273,9 @@ public class ChartViewGL extends TextureView {
             overlay.setLeftRight(left, right, scale);
             if (chartLines != null) {
                 if (zomLines != null) {
-                    LinesChartProgram.updateLeftRight(zomLines, left, right, scale, rulerInitDone, ruler, data.y_scaled, firstLeftRightUpdate);
+                    LinesChartProgram.updateLeftRight(zomLines, left, right, scale, rulerInitDone, ruler, data.y_scaled, firstLeftRightUpdate, ChartViewGL.this);
                 } else {
-                    LinesChartProgram.updateLeftRight(chartLines, left, right, scale, rulerInitDone, ruler, data.y_scaled, firstLeftRightUpdate);
+                    LinesChartProgram.updateLeftRight(chartLines, left, right, scale, rulerInitDone, ruler, data.y_scaled, firstLeftRightUpdate, ChartViewGL.this);
                 }
             }
             if (chartBar != null) {
@@ -1572,7 +1571,7 @@ public class ChartViewGL extends TextureView {
                     zomLine.left = newLeft;
                     zomLine.zoom = newScale;
                 }
-                LinesChartProgram.initMinMax(details.y_scaled, r.zomLines, newLeft, newRight, r.ruler, true);
+                LinesChartProgram.initMinMax(details.y_scaled, r.zomLines, newLeft, newRight, r.ruler, true, ChartViewGL.this);
             } else {
                 if (data.y_scaled) {
                     r.ruler.animateScale(
