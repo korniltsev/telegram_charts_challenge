@@ -220,9 +220,7 @@ public final class LinesChartProgram {
             Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
             Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
 
-            if (animateOutValue == -1f) {
-
-            } else {
+            if (animateOutValue != -1f) {
                 tmpvec[0] = tooltipIndex;
                 tmpvec[3] = 1;
                 Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
@@ -261,9 +259,7 @@ public final class LinesChartProgram {
             Matrix.scaleM(V, 0, ws, hs, 1.0f);
             Matrix.translateM(V, 0, -left * xdiff, 0f, 0f);
             Matrix.multiplyMM(MVP, 0, PROJ, 0, V, 0);
-            if (animateOutValue == -1f) {
-
-            } else {
+            if (animateOutValue != -1f) {
                 tmpvec[0] = tooltipIndex;
                 tmpvec[3] = 1;
                 Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
@@ -333,38 +329,22 @@ public final class LinesChartProgram {
 
         if (scrollbar) {
             GLES20.glLineWidth(dimen.dpf(1f));
-            if (animateOutValue == -1f) {
-                GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
-                GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
-            } else {
-                if (tooltipIndex != -1) {
-                    GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
-                    GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, (tooltipIndex + 1));
-
-                    GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP2, 0);
-                    int n = vertices.length / 2;
-                    int from = tooltipIndex;
-                    GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, tooltipIndex, n - from);
-                }
-            }
         } else {
             GLES20.glLineWidth(dimen.dpf(2f));
-            if (animateOutValue == -1f) {
+        }
+        if (animateOutValue == -1f) {
+            GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
+            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
+        } else {
+            if (tooltipIndex != -1) {
                 GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
-                GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, vertices.length / 2);
-            } else {
-                if (tooltipIndex != -1) {
-                    GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
-                    GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, (tooltipIndex + 1));
+                GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, (tooltipIndex + 1));
 
-                    GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP2, 0);
-                    int n = vertices.length / 2;
-                    int from = tooltipIndex;
-                    GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, tooltipIndex, n - from);
-                }
+                GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP2, 0);
+                int n = vertices.length / 2;
+                int from = tooltipIndex;
+                GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, tooltipIndex, n - from);
             }
-
-
         }
 
     }
@@ -445,20 +425,11 @@ public final class LinesChartProgram {
     }
 
     public float animateOutValue = -1f;
+    public float animateInValue = -1f;
     private MyAnimation.Float animateOutValueAnim;
+    private MyAnimation.Float animateInValueAnim;
 
 
-
-    public void animateOut(long duration, boolean zoomedIn) {
-        if (zoomedIn == this.zoomedIn) {
-            return;
-        }
-        this.zoomedIn = zoomedIn;
-        if (animateOutValue == -1f) {
-            animateOutValue = 0f;
-        }
-        animateOutValueAnim = new MyAnimation.Float(duration, animateOutValue, zoomedIn ? 1f : 0f);
-    }
 
     public void setTooltipIndex(int tooltipIndex) {
         if (!scrollbar) {
@@ -589,4 +560,21 @@ public final class LinesChartProgram {
         }
     }
 
+    public void animateIn(int duration, boolean zoomedIn) {
+        if (animateInValue == -1f) {
+            animateInValue = 0f;
+        }
+        animateInValueAnim = new MyAnimation.Float(duration, animateInValue, zoomedIn ? 1f : 0f);
+    }
+
+    public void animateOut(long duration, boolean zoomedIn) {
+        if (zoomedIn == this.zoomedIn) {
+            return;
+        }
+        this.zoomedIn = zoomedIn;
+        if (animateOutValue == -1f) {
+            animateOutValue = 0f;
+        }
+        animateOutValueAnim = new MyAnimation.Float(duration, animateOutValue, zoomedIn ? 1f : 0f);
+    }
 }

@@ -61,6 +61,7 @@ high prio
         - зум ин скроллбара
             - не рисовать старый скроллбар если анимация закончилась
         - санимировать x
+        - тултип в зуме
 
 
 
@@ -304,7 +305,7 @@ public class ChartViewGL extends TextureView {
         public EGLContext mEglContext;
         public EGLSurface mEglSurface;
         public int tooltipIndex;
-        public LinesChartProgram[] zomLines;
+        public LinesChartProgram[] zoomLines;
 
         SurfaceTexture surface;
         final Object lock = new Object();//todo fuck locking
@@ -731,8 +732,8 @@ public class ChartViewGL extends TextureView {
                     }
 
                     if (chartLines != null) {
-                        if (zomLines != null) {
-                            LinesChartProgram.setChecked(id, r.overlay.zoom, isChecked, zomLines, ruler, data.y_scaled, ChartViewGL.this);
+                        if (zoomLines != null) {
+                            LinesChartProgram.setChecked(id, r.overlay.zoom, isChecked, zoomLines, ruler, data.y_scaled, ChartViewGL.this);
                             LinesChartProgram.setChecked(id, r.overlay.zoomStash, isChecked, chartLines, /* ruler */ null, data.y_scaled, ChartViewGL.this);
                         } else {
                             LinesChartProgram.setChecked(id, r.overlay.zoom, isChecked, chartLines, ruler, data.y_scaled, ChartViewGL.this);
@@ -947,8 +948,8 @@ public class ChartViewGL extends TextureView {
                 }
 
 
-                if (zomLines != null) {
-                    for (LinesChartProgram c : zomLines) {
+                if (zoomLines != null) {
+                    for (LinesChartProgram c : zoomLines) {
                         boolean it_invalid = c.animateionTick(t);
                         c.step1(PROJ);
                         invalidated = invalidated || it_invalid;
@@ -993,8 +994,8 @@ public class ChartViewGL extends TextureView {
                     MyGL.checkGlError2();
                 }
 
-                if (zomLines != null) {
-                    for (LinesChartProgram chartProgram : zomLines) {
+                if (zoomLines != null) {
+                    for (LinesChartProgram chartProgram : zoomLines) {
                         chartProgram.shader.use();//todo use only once!
                         chartProgram.step2();
 
@@ -1002,7 +1003,7 @@ public class ChartViewGL extends TextureView {
                         chartProgram.step3();
                     }
                     MyGL.checkGlError2();
-                    for (LinesChartProgram c : zomLines) {
+                    for (LinesChartProgram c : zoomLines) {
                         if (c.goodCircle != null) {
                             c.step4();
                         }
@@ -1272,8 +1273,8 @@ public class ChartViewGL extends TextureView {
         public void updateLeftRight(float left, float right, float scale) {
             overlay.setLeftRight(left, right, scale);
             if (chartLines != null) {
-                if (zomLines != null) {
-                    LinesChartProgram.updateLeftRight(zomLines, left, right, scale, rulerInitDone, ruler, data.y_scaled, firstLeftRightUpdate, ChartViewGL.this);
+                if (zoomLines != null) {
+                    LinesChartProgram.updateLeftRight(zoomLines, left, right, scale, rulerInitDone, ruler, data.y_scaled, firstLeftRightUpdate, ChartViewGL.this);
                 } else {
                     LinesChartProgram.updateLeftRight(chartLines, left, right, scale, rulerInitDone, ruler, data.y_scaled, firstLeftRightUpdate, ChartViewGL.this);
                 }
@@ -1550,28 +1551,30 @@ public class ChartViewGL extends TextureView {
         scroller__right = (int) (scrollbarPos.left + scrollbarPos.width() * newRight);
         zoomedIn = !zoomedIn;
         if (r.chartLines != null) {
+            int duration = 384;
             for (LinesChartProgram c : r.chartLines) {
-                c.animateOut(256 + 128, zoomedIn);
+                c.animateOut(duration, zoomedIn);
             }
             if (r.scrollbar_lines != null) {
                 for (LinesChartProgram c : r.scrollbar_lines) {
-                    c.animateOut(256 + 128, zoomedIn);
+                    c.animateOut(duration, zoomedIn);
                 }
             }
-            if (r.zomLines != null) {
+            if (r.zoomLines != null) {
                 //todo animate & release
-                r.zomLines = null;
+                r.zoomLines = null;
             }
             if (zoomedIn) {
-                r.zomLines = new LinesChartProgram[details.data.length - 1];
+                r.zoomLines = new LinesChartProgram[details.data.length - 1];
                 for (int i = 1; i < details.data.length; i++) {
-                    r.zomLines[i - 1] = new LinesChartProgram(details.data[i], r.w, r.h, dimen, this, false, currentColors, r.simple, r.joiningShader);
+                    r.zoomLines[i - 1] = new LinesChartProgram(details.data[i], r.w, r.h, dimen, this, false, currentColors, r.simple, r.joiningShader);
                 }
-                for (LinesChartProgram zomLine : r.zomLines) {
-                    zomLine.left = newLeft;
-                    zomLine.zoom = newScale;
+                for (LinesChartProgram it : r.zoomLines) {
+                    it.left = newLeft;
+                    it.zoom = newScale;
+                    it.animateIn(duration, zoomedIn);
                 }
-                LinesChartProgram.initMinMax(details.y_scaled, r.zomLines, newLeft, newRight, r.ruler, true, ChartViewGL.this);
+                LinesChartProgram.initMinMax(details.y_scaled, r.zoomLines, newLeft, newRight, r.ruler, true, ChartViewGL.this);
             } else {
                 if (data.y_scaled) {
                     r.ruler.animateScale(
