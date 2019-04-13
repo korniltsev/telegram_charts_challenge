@@ -1581,9 +1581,13 @@ public class ChartViewGL extends TextureView {
                     it.zoom = newScale;
                 }
                 LinesChartProgram.initMinMax(details.y_scaled, r.zoomLines, newLeft, newRight, r.ruler, true, ChartViewGL.this);
-                float tooltipScreenpx =  r.chartLines[0].getTooltipX();
-                for (LinesChartProgram it : r.zoomLines) {
-                    it.animateIn(duration, zoomedIn, r.PROJ, tooltipScreenpx);
+//                float tooltipScreenpx =  r.chartLines[0].getTooltipX();
+                LinesChartProgram[] zoomLines = r.zoomLines;
+                for (int i = 0; i < zoomLines.length; i++) {
+                    LinesChartProgram it = zoomLines[i];
+                    LinesChartProgram itc = r.chartLines[i];
+                    itc.getTooltipX();
+                    it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX);
                 }
                 LinesChartProgram[] chartLines = r.chartLines;
                 for (int i = 0; i < chartLines.length; i++) {
@@ -1592,9 +1596,12 @@ public class ChartViewGL extends TextureView {
                     c.animateOut(duration, zoomedIn, zc.leftx, zc.rightx);
                 }
             } else {
-                float tooltipScreenpx =  r.chartLines[0].getTooltipX();
-                for (LinesChartProgram it : r.zoomLines) {
-                    it.animateIn(duration, zoomedIn, r.PROJ, tooltipScreenpx);
+                LinesChartProgram[] zoomLines = r.zoomLines;
+                for (int i = 0; i < zoomLines.length; i++) {
+                    LinesChartProgram it = zoomLines[i];
+                    LinesChartProgram itc = r.chartLines[i];
+                    itc.getTooltipX();
+                    it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX);
                 }
                 LinesChartProgram[] chartLines = r.chartLines;
                 for (int i = 0; i < chartLines.length; i++) {

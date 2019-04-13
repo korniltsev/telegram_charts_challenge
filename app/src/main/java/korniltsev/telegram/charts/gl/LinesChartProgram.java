@@ -347,8 +347,8 @@ public final class LinesChartProgram {
         tmpvec[2] = 0f;
         tmpvec[3] = 1;
         Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
-        outTooltipX = tmpvec[0];
-        outTooltipY = tmpvec[1];
+        outTooltipX = tmpvec2[0];
+        outTooltipY = tmpvec2[1];
         return tmpvec2[0];
     }
 
