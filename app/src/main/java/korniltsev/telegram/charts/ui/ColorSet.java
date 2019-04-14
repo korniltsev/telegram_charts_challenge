@@ -146,8 +146,8 @@ public class ColorSet {
                 return day ? 0xffE4AE1B : 0xffDEB93F;
             default:
                 if (BuildConfig.DEBUG) {
-                    AssertionError e = new AssertionError(Integer.toHexString(color));
-                    Log.e(MainActivity.TAG, "err", e);
+//                    AssertionError e = new AssertionError(Integer.toHexString(color));
+//                    Log.e(MainActivity.TAG, "err", e);
 //                    throw e;
                 }
                 return color;
