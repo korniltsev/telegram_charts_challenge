@@ -49,7 +49,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 
 high prio
-    - замапить цвета
 
     - бонус зум для 1 & 2
         - работа зазумленого графика
