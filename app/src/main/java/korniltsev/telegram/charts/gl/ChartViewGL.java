@@ -52,9 +52,7 @@ high prio
 
     - дизайн чекбоксов
         - A long tap on any data filter should uncheck all other filters.
-        - иконку подтюнить
-        - подтюнить чтоб норм выглядело
-
+        - грид чекбоксов
 
     - бонус зум для 1 & 2
         - работа зазумленого графика
