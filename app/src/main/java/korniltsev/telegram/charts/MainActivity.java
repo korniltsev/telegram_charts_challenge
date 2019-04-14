@@ -1,5 +1,7 @@
 package korniltsev.telegram.charts;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.TimeInterpolator;
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -170,7 +172,12 @@ public class MainActivity extends Activity {
                 if (i != 1) {
                 }
                 final MyCheckBox cb = new MyCheckBox(this, dimen, c.name, c.color);
-
+                cb.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        return true;
+                    }
+                });
                 cb.setOnCheckedChangeListener(new MyCheckBox.OnCheckedChangeListener() {
                     @Override
                     public boolean onCheckedChanged(boolean isChecked) {
@@ -186,6 +193,7 @@ public class MainActivity extends Activity {
                                     return (float)(raw * Math.exp(-input * DECAY));
                                 }
                             };
+                            cb.setTranslationX(0);
                             cb.animate()
                                     .translationX(dimen.dpi(8))
                                     .setInterpolator(decayingSineWave)
