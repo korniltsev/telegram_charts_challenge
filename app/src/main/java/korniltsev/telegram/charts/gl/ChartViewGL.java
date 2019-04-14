@@ -52,7 +52,6 @@ high prio
 
     - дизайн чекбоксов
         - A long tap on any data filter should uncheck all other filters.
-        - грид чекбоксов
 
     - бонус зум для 1 & 2
         - работа зазумленого графика
@@ -159,6 +158,7 @@ public class ChartViewGL extends TextureView {
     //    public final int rulerColor;
     public final ColorSet init_colors;
     public final ChartData data;
+    public final List<ColumnData> yData;
     public final ColumnData xColumn;
     public final int legend_height;
     public final int checkboxesHeight;
@@ -183,6 +183,7 @@ public class ChartViewGL extends TextureView {
     public ChartViewGL(Context context, ChartData c, Dimen dimen, ColorSet currentColorsSet) {
         super(context);
         xColumn = c.data[0];
+        yData = Arrays.asList(c.data).subList(1, c.data.length);
 //        initTime = SystemClock.elapsedRealtimeNanos();
         this.init_colors = currentColorsSet;
         currentColors = currentColorsSet;
@@ -281,6 +282,30 @@ public class ChartViewGL extends TextureView {
         this.r.setChecked(id, isChecked);
         return true;
     }
+    public void setSingleChecked(final String id) {
+        Runnable setCheckedOnRenderThread = new Runnable() {
+            @Override
+            public void run() {
+                ColumnData[] data1 = data.data;
+                for (int i = 0; i < yData.size(); i++) {
+                    ColumnData it = yData.get(i);
+                    if (id.equals(it.id)) {
+                        if (!r.checked[i]) {
+                            r.setCheckedImpl(id, true);
+                        }
+                    } else {
+                        if (r.checked[i]) {
+                            r.setCheckedImpl(it.id, false);
+                        }
+                    }
+                }
+
+                invalidateRender();
+            }
+        };
+        r.postToRender(setCheckedOnRenderThread);
+
+    }
 
     public void invalidateRender() {
         r.postToRender(new Runnable() {
@@ -293,6 +318,8 @@ public class ChartViewGL extends TextureView {
     }
 
     public static int counter;
+
+
 
     class Render extends HandlerThread implements TextureView.SurfaceTextureListener {
 
@@ -675,102 +702,104 @@ public class ChartViewGL extends TextureView {
             Runnable setCheckedOnRenderThread = new Runnable() {
                 @Override
                 public void run() {
-                    ColumnData[] data1 = data.data;
-                    int foundIndex = -1;
-                    for (int i = 1; i < data1.length; i++) {
-                        ColumnData datum = data1[i];
-                        if (datum.id.equals(id)) {
-                            checked[i - 1] = isChecked;
-                            foundIndex = i - 1;
+                    setCheckedImpl(id, isChecked);
+                    invalidateRender();
+                }
+            };
+            postToRender(setCheckedOnRenderThread);
+        }
+
+        private void setCheckedImpl(String id, boolean isChecked) {
+            ColumnData[] data1 = data.data;
+            int foundIndex = -1;
+            for (int i = 1; i < data1.length; i++) {
+                ColumnData datum = data1[i];
+                if (datum.id.equals(id)) {
+                    checked[i - 1] = isChecked;
+                    foundIndex = i - 1;
+                }
+            }
+            if (tooltip != null) {
+                tooltip.setChecked(id, isChecked);
+            }
+            // scrollbar
+            if (scrollbar_lines != null) {
+                if (data.y_scaled) {
+                    for (LinesChartProgram c : scrollbar_lines) {
+                        if (c.column.id.equals(id)) {
+                            c.animateAlpha(isChecked);
+                            break;
                         }
                     }
-                    if (tooltip != null) {
-                        tooltip.setChecked(id, isChecked);
+                } else {
+
+                    LinesChartProgram found = null;
+                    long max = -1;
+                    long min = Long.MAX_VALUE;
+
+
+                    for (int i = 0; i < scrollbar_lines.length; i++) {
+                        LinesChartProgram c = scrollbar_lines[i];
+                        if (c.column.id.equals(id)) {
+                            found = c;
+                            c.animateAlpha(isChecked);
+                        }
+                        if (c.checked) {
+                            max = Math.max(c.column.max, max);
+                            min = Math.min(c.column.min, min);
+                        }
                     }
-                    // scrollbar
-                    if (scrollbar_lines != null) {
-                        if (data.y_scaled) {
-                            for (LinesChartProgram c : scrollbar_lines) {
-                                if (c.column.id.equals(id)) {
-                                    c.animateAlpha(isChecked);
-                                    break;
-                                }
-                            }
+                    for (LinesChartProgram c : scrollbar_lines) {
+                        if (found == c && !isChecked) {
                         } else {
-
-                            LinesChartProgram found = null;
-                            long max = -1;
-                            long min = Long.MAX_VALUE;
-
-
-                            for (int i = 0; i < scrollbar_lines.length; i++) {
-                                LinesChartProgram c = scrollbar_lines[i];
-                                if (c.column.id.equals(id)) {
-                                    found = c;
-                                    c.animateAlpha(isChecked);
-                                }
-                                if (c.checked) {
-                                    max = Math.max(c.column.max, max);
-                                    min = Math.min(c.column.min, min);
-                                }
-                            }
-                            for (LinesChartProgram c : scrollbar_lines) {
-                                if (found == c && !isChecked) {
-                                } else {
-                                    c.animateMinMax(min, max, true, 208);
-                                }
-                            }
+                            c.animateMinMax(min, max, true, 208);
                         }
                     }
-                    if (scrollbar_bar7 != null) {
-                        long max = calculateBar7Max(data1, 0, 1);
-                        scrollbar_bar7.animateMinMax(max, true, 208);
-                        if (foundIndex != -1) {
-                            scrollbar_bar7.animateFade(foundIndex, isChecked, 208);
-                        }
-                    }
-                    if (scrollbar_stacked_percent != null) {
-                        if (foundIndex != -1) {
-                            scrollbar_stacked_percent.animateFade(foundIndex, isChecked, 208);
-                        }
-                    }
+                }
+            }
+            if (scrollbar_bar7 != null) {
+                long max = calculateBar7Max(data1, 0, 1);
+                scrollbar_bar7.animateMinMax(max, true, 208);
+                if (foundIndex != -1) {
+                    scrollbar_bar7.animateFade(foundIndex, isChecked, 208);
+                }
+            }
+            if (scrollbar_stacked_percent != null) {
+                if (foundIndex != -1) {
+                    scrollbar_stacked_percent.animateFade(foundIndex, isChecked, 208);
+                }
+            }
 
-                    if (chartLines != null) {
-                        if (zoomLines != null) {
-                            LinesChartProgram.setChecked(id, r.overlay.zoom, isChecked, zoomLines, ruler, data.y_scaled, ChartViewGL.this);
-                            LinesChartProgram.setChecked(id, r.overlay.zoomStash, isChecked, chartLines, /* ruler */ null, data.y_scaled, ChartViewGL.this);
-                        } else {
-                            LinesChartProgram.setChecked(id, r.overlay.zoom, isChecked, chartLines, ruler, data.y_scaled, ChartViewGL.this);
-                        }
-                    }
-                    if (chartBar7 != null) {
+            if (chartLines != null) {
+                if (zoomLines != null) {
+                    LinesChartProgram.setChecked(id, r.overlay.zoom, isChecked, zoomLines, ruler, data.y_scaled, ChartViewGL.this);
+                    LinesChartProgram.setChecked(id, r.overlay.zoomStash, isChecked, chartLines, /* ruler */ null, data.y_scaled, ChartViewGL.this);
+                } else {
+                    LinesChartProgram.setChecked(id, r.overlay.zoom, isChecked, chartLines, ruler, data.y_scaled, ChartViewGL.this);
+                }
+            }
+            if (chartBar7 != null) {
 //                        chartBar7.setTooltipIndex(-1);
-                        long viewportMax = calculateBar7Max(data1, r.overlay.zoom.left, r.overlay.zoom.right);
-                        chartBar7.animateMinMax(viewportMax, true, 208);
-                        if (foundIndex != -1) {
-                            chartBar7.animateFade(foundIndex, isChecked, 208);
-                        }
-                        ruler.animateScale(0, viewportMax, 208);
-                    }
-                    if (chartStackedPercent != null) {
+                long viewportMax = calculateBar7Max(data1, r.overlay.zoom.left, r.overlay.zoom.right);
+                chartBar7.animateMinMax(viewportMax, true, 208);
+                if (foundIndex != -1) {
+                    chartBar7.animateFade(foundIndex, isChecked, 208);
+                }
+                ruler.animateScale(0, viewportMax, 208);
+            }
+            if (chartStackedPercent != null) {
 //                        chartStackedPercent.setTooltipIndex(-1);
 //                        viewportMax = calculateBar7Max(data1, r.overlay.left, r.overlay.right);
 //                        chartStackedPercent.animateMinMax(viewportMax, true, 208);
-                        if (foundIndex != -1) {
-                            chartStackedPercent.animateFade(foundIndex, isChecked, 208);
-                        }
+                if (foundIndex != -1) {
+                    chartStackedPercent.animateFade(foundIndex, isChecked, 208);
+                }
 //                        float ratio = prevMax / (float) viewportMax;
 //                        if (prevMax != viewportMax) {
 //                            ruler.animateScale(ratio, 0, viewportMax, checkedCount, prevCheckedCOunt, 208);
 //                            prevMax = viewportMax;
 //                        }
-                    }
-
-//                    drawAndSwap();
-                    invalidateRender();
-                }
-            };
-            postToRender(setCheckedOnRenderThread);
+            }
         }
 
         private long calculateBar7Max(ColumnData[] data1, float left, float right) {

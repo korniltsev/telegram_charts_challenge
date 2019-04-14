@@ -68,7 +68,7 @@ public class MyCheckBox extends View {
         setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                setChecked(!checked);
+                setChecked(!checked, true);
             }
         });
         setWillNotDraw(false);
@@ -119,10 +119,12 @@ public class MyCheckBox extends View {
     float fscale = 1f;
 
     //        @Override
-    public void setChecked(boolean checked) {
-        boolean stateChanged = listener.onCheckedChanged(checked);
-        if (!stateChanged) {
-            return;
+    public void setChecked(boolean checked, boolean notify) {
+        if (notify) {
+            boolean stateChanged = listener.onCheckedChanged(checked);
+            if (!stateChanged) {
+                return;
+            }
         }
         this.checked = checked;
         int duration = 208;

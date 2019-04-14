@@ -164,7 +164,7 @@ public class MainActivity extends Activity {
 
         } else {
 
-            List<MyCheckBox> cbs = new ArrayList<>();
+            final List<MyCheckBox> cbs = new ArrayList<>();
             for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
                 final ColumnData c = data1[i];
                 if (c.id.equals(ChartData.COLUMN_ID_X)) {
@@ -176,6 +176,14 @@ public class MainActivity extends Activity {
                 cb.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
+                        newChart.setSingleChecked(c.id);
+                        for (MyCheckBox it : cbs) {
+                            if (it == cb) {
+                                it.setChecked(true, false);
+                            } else {
+                                it.setChecked(false, false);
+                            }
+                        }
                         return true;
                     }
                 });
