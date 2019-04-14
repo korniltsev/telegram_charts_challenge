@@ -45,6 +45,7 @@ import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyColorDrawable;
+import korniltsev.telegram.charts.ui.MyFonts;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -239,7 +240,7 @@ public class MainActivity extends Activity {
         title.setText("Statistics");
         title.setTextColor(Color.WHITE);
         title.setGravity(Gravity.CENTER_VERTICAL);
-        title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        title.setTypeface(MyFonts.getRobotoMono(this));
         title.setPadding(dimen.dpi(18), 0, dimen.dpi(18), 0);
         title.setLayoutParams(titleLP);
 

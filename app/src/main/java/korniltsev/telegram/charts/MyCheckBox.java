@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -22,10 +23,12 @@ import android.widget.TextView;
 
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
+import korniltsev.telegram.charts.ui.MyFonts;
 
 class MyCheckBox extends View {
-    public static final OvershootInterpolator OVERSHOOT_INTERPOLATOR = new OvershootInterpolator(2.2f);
+    public static final OvershootInterpolator OVERSHOOT_INTERPOLATOR = new OvershootInterpolator(2.5f);
     public static final DecelerateInterpolator DECELERATE_INTERPOLATOR = new DecelerateInterpolator();
+    public static final int IC_MARGIN = 3;
     private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint pText = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final Dimen dimen;
@@ -34,6 +37,7 @@ class MyCheckBox extends View {
 //        private final TextView text;
     private final Drawable icchecked;
     private final int color;
+    private final int icOpticalWidth;
     private int w;
     private int h;
     private final StaticLayout staticLayout;
@@ -51,9 +55,12 @@ class MyCheckBox extends View {
         this.dimen = dimen;
         pText.setTextSize(dimen.dpf(14));
         pText.setColor(Color.WHITE);
+//        pText.setTypeface(Typeface.MONOSPACE);
+
+        pText.setTypeface(MyFonts.getRobotoMono(c));
         int tw = (int) Math.ceil(pText.measureText(str));
         staticLayout = new StaticLayout(str, 0, str.length(), pText, tw, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
-        icchecked = getResources().getDrawable(R.drawable.check).mutate();
+        icchecked = getResources().getDrawable(R.drawable.ic_check).mutate();
         setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -64,10 +71,10 @@ class MyCheckBox extends View {
 
         icchecked.setBounds(0, 0, icchecked.getIntrinsicWidth(), icchecked.getIntrinsicHeight());
         icchecked.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-        int dip4 = dimen.dpi(4);
+        icOpticalWidth = dimen.dpi(10);
         int stroke = dimen.dpi(2);
         h = dimen.dpi(36) - stroke;
-        int contentW = tw + icchecked.getIntrinsicWidth() + dimen.dpi(3);
+        int contentW = tw + icOpticalWidth + dimen.dpi(IC_MARGIN);
         w = contentW + h - stroke - dimen.dpi(8);
 
         path = new Path();
@@ -117,9 +124,9 @@ class MyCheckBox extends View {
         int duration = 208;
         anim = new MyAnimation.Float(duration, this.fchecked, checked ? 1f : 0f);
         if (checked) {
-            scaleAnim = new MyAnimation.Float(OVERSHOOT_INTERPOLATOR, duration, fchecked, 1f);
+            scaleAnim = new MyAnimation.Float(OVERSHOOT_INTERPOLATOR, duration + 16 * 4, fchecked, 1f);
         } else {
-            scaleAnim = new MyAnimation.Float(DECELERATE_INTERPOLATOR, duration, fchecked, 0f);
+            scaleAnim = new MyAnimation.Float(DECELERATE_INTERPOLATOR, duration, fchecked + 16 * 4, 0f);
         }
         textColorAnim = new MyAnimation.Color(duration, pText.getColor(), checked ? Color.WHITE : color);
 
@@ -169,7 +176,7 @@ class MyCheckBox extends View {
         canvas.restore();
 
         boolean checked = this.checked;
-        float icw = fchecked * (icchecked.getBounds().width() + dimen.dpi(4));
+        float icw = fchecked * (icOpticalWidth + dimen.dpi(IC_MARGIN));
         float ty;
         float tx;
         ty = (getMeasuredHeight() - staticLayout.getHeight()) / 2f;
@@ -183,7 +190,7 @@ class MyCheckBox extends View {
         if (checked) {
 
             ty = (getMeasuredHeight() - icchecked.getBounds().height()) / 2f;
-            tx = (getMeasuredWidth() - staticLayout.getWidth() - (icchecked.getBounds().width() + dimen.dpi(4))) / 2f;
+            tx = (getMeasuredWidth() - staticLayout.getWidth() - (icOpticalWidth + dimen.dpi(IC_MARGIN))) / 2f - dimen.dpi(4);
             canvas.save();
             canvas.translate(tx, ty);
             canvas.translate(icchecked.getBounds().width()/2f, icchecked.getBounds().height()/2f);
