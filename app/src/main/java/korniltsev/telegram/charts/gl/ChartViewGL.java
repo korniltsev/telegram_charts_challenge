@@ -52,6 +52,8 @@ high prio
 
     - бонус зум для 1 & 2
         - зум ин скроллбара
+            - соеднинить линии
+
             - не рисовать старый скроллбар если анимация закончилась
         - санимировать x
         - работа тултипа в зуме
@@ -277,6 +279,7 @@ public class ChartViewGL extends TextureView {
         this.r.setChecked(id, isChecked);
         return true;
     }
+
     public void setSingleChecked(final String id) {
         Runnable setCheckedOnRenderThread = new Runnable() {
             @Override
@@ -315,7 +318,6 @@ public class ChartViewGL extends TextureView {
     public static int counter;
 
 
-
     class Render extends HandlerThread implements TextureView.SurfaceTextureListener {
 
         public int id = ++counter;
@@ -330,7 +332,9 @@ public class ChartViewGL extends TextureView {
         public EGLContext mEglContext;
         public EGLSurface mEglSurface;
         public int tooltipIndex;
+
         public LinesChartProgram[] zoomLines;
+        public LinesChartProgram[] zoomScrollbar;
 
         SurfaceTexture surface;
         final Object lock = new Object();//todo fuck locking
@@ -603,32 +607,7 @@ public class ChartViewGL extends TextureView {
             boolean stacked_percent = this.data.stacked && this.data.percentage;
             if (this.data.type == ColumnData.Type.line) {
                 linesShader = new LinesChartProgram.MyShader();
-                scrollbar_lines = new LinesChartProgram[data.length - 1];
-
-                if (this.data.y_scaled) {
-                    for (int i = 1, dataLength = data.length; i < dataLength; i++) {
-                        ColumnData datum = data[i];
-
-
-                        LinesChartProgram it = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors, linesShader, joiningShader);
-                        scrollbar_lines[i - 1] = it;
-                        LinesChartProgram.calculateChartLinesMaxScaled(it, 0f, 1f, ChartViewGL.this);
-                        it.animateMinMax(it.scaledViewporMin, it.scaledViewporMax, false, 0);
-                    }
-                } else {
-                    long max = -1;
-                    long min = Long.MAX_VALUE;
-                    for (int i = 1, dataLength = data.length; i < dataLength; i++) {
-                        ColumnData datum = data[i];
-                        scrollbar_lines[i - 1] = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors, linesShader, joiningShader);
-                        max = Math.max(max, datum.max);
-                        min = Math.min(min, datum.min);
-                    }
-                    for (LinesChartProgram it : scrollbar_lines) {
-                        it.maxValue = max;
-                        it.minValue = min;
-                    }
-                }
+                scrollbar_lines = createScrollbar(data);
             } else if (barSingle) {
                 barShader = new BarChartProgram.MyShader();
                 scrollbar_bars = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, true, barShader);
@@ -669,6 +648,36 @@ public class ChartViewGL extends TextureView {
 
             debugRects = new ArrayList<>();
 //            debugRects.add(new MyRect(w, dimen_chart_usefull_height, 0, dimen.dpf(CHART_BOTTOM_DPI), 0xffffffff, w, h));
+        }
+
+        private LinesChartProgram[] createScrollbar(ColumnData[] data) {
+            LinesChartProgram[] scrollbar_lines = new LinesChartProgram[data.length - 1];
+
+            if (this.data.y_scaled) {
+                for (int i = 1, dataLength = data.length; i < dataLength; i++) {
+                    ColumnData datum = data[i];
+
+
+                    LinesChartProgram it = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors, linesShader, joiningShader);
+                    scrollbar_lines[i - 1] = it;
+                    LinesChartProgram.calculateChartLinesMaxScaled(it, 0f, 1f, ChartViewGL.this);
+                    it.animateMinMax(it.scaledViewporMin, it.scaledViewporMax, false, 0);
+                }
+            } else {
+                long max = -1;
+                long min = Long.MAX_VALUE;
+                for (int i = 1, dataLength = data.length; i < dataLength; i++) {
+                    ColumnData datum = data[i];
+                    scrollbar_lines[i - 1] = new LinesChartProgram(data[i], w, h, dimen, ChartViewGL.this, true, init_colors, linesShader, joiningShader);
+                    max = Math.max(max, datum.max);
+                    min = Math.min(min, datum.min);
+                }
+                for (LinesChartProgram it : scrollbar_lines) {
+                    it.maxValue = max;
+                    it.minValue = min;
+                }
+            }
+            return scrollbar_lines;
         }
 
 
@@ -932,26 +941,7 @@ public class ChartViewGL extends TextureView {
             GLES20.glScissor(scrollbarPos.left, h - scrollbarPos.bottom, scrollbarPos.width(), scrollbarPos.height());
             GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
             if (scrollbar_lines != null) {
-                for (LinesChartProgram chartProgram : scrollbar_lines) {
-                    boolean it_invalid = chartProgram.animateionTick(t);
-                    invalidated = invalidated || it_invalid;
-                }
-                for (LinesChartProgram chartProgram : scrollbar_lines) {
-                    if (chartProgram.animateOutValue != 1f) {
-                        chartProgram.step1(PROJ);
-                    }
-                }
-                MyGL.checkGlError2();
-                for (LinesChartProgram chartProgram : scrollbar_lines) {
-                    if (chartProgram.animateOutValue != 1f) {
-                        chartProgram.shader.use();//todo use only once!
-                        chartProgram.step2(PROJ);
-
-                        chartProgram.lineJoining.shader.use();
-                        chartProgram.step3();
-                    }
-                }
-                MyGL.checkGlError2();
+                invalidated = drawScrollbarLinesIMpl(invalidated, t);
             } else if (scrollbar_bars != null) {
                 boolean it_invalidated = scrollbar_bars.animate(t);
                 scrollbar_bars.prepare(PROJ);
@@ -969,6 +959,68 @@ public class ChartViewGL extends TextureView {
                 invalidated = it_inv || invalidated;
             }
             GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
+            return invalidated;
+        }
+
+        private boolean drawScrollbarLinesIMpl(boolean invalidated, long t) {
+            {
+                boolean invalidated1 = invalidated;
+                for (LinesChartProgram chartProgram : scrollbar_lines) {
+                    boolean it_invalid = chartProgram.animateionTick(t);
+                    invalidated1 = invalidated1 || it_invalid;
+                }
+                for (LinesChartProgram chartProgram : scrollbar_lines) {
+                    if (chartProgram.animateOutValue != 1f) {
+                        chartProgram.step1(PROJ);
+                    }
+                }
+                MyGL.checkGlError2();
+                for (LinesChartProgram chartProgram : scrollbar_lines) {
+                    if (chartProgram.animateOutValue != 1f) {
+                        chartProgram.shader.use();//todo use only once!
+                        chartProgram.step2(PROJ);
+
+                        chartProgram.lineJoining.shader.use();
+                        chartProgram.step3();
+                    }
+                }
+                MyGL.checkGlError2();
+                boolean it_inv = invalidated1;
+                invalidated = it_inv || invalidated;
+            }
+            if (zoomScrollbar != null) {
+                boolean invalidated1 = invalidated;
+                for (LinesChartProgram chartProgram : zoomScrollbar) {
+                    boolean it_invalid = chartProgram.animateionTick(t);
+                    invalidated1 = invalidated1 || it_invalid;
+                }
+                if (!zoomScrollbar[0].zoomedIn && zoomScrollbar[0].animateInValue == -1f) {
+                    for (LinesChartProgram zoomLine : zoomScrollbar) {
+                        zoomLine.release();
+                    }
+                    zoomScrollbar = null;
+                }
+                if (zoomScrollbar != null) {
+                    for (LinesChartProgram chartProgram : zoomScrollbar) {
+                        if (chartProgram.animateOutValue != 1f) {
+                            chartProgram.step1(PROJ);
+                        }
+                    }
+                    MyGL.checkGlError2();
+                    for (LinesChartProgram chartProgram : zoomScrollbar) {
+                        if (chartProgram.animateOutValue != 1f) {
+                            chartProgram.shader.use();//todo use only once!
+                            chartProgram.step2(PROJ);
+
+                            chartProgram.lineJoining.shader.use();
+                            chartProgram.step3();
+                        }
+                    }
+                    MyGL.checkGlError2();
+                    boolean it_inv = invalidated1;
+                    invalidated = it_inv || invalidated;
+                }
+            }
             return invalidated;
         }
 
@@ -1606,54 +1658,85 @@ public class ChartViewGL extends TextureView {
         scroller__right = (int) (scrollbarPos.left + scrollbarPos.width() * newRight);
         zoomedIn = !zoomedIn;
         if (r.chartLines != null) {
-            int duration = 384;
-            if (r.scrollbar_lines != null) {
-                for (LinesChartProgram c : r.scrollbar_lines) {
-                    c.animateOut(duration, zoomedIn, 0, 0);
-                }
-            }
+            int duration = 384 * 20;
+
 
             if (zoomedIn) {
-                r.zoomLines = new LinesChartProgram[details.data.length - 1];
-                for (int i = 1; i < details.data.length; i++) {
-                    LinesChartProgram it = new LinesChartProgram(details.data[i], r.w, r.h, dimen, this, false, currentColors, r.linesShader, r.joiningShader);
-                    int ii = i - 1;
-                    it.alpha = r.chartLines[ii].alpha;
-                    it.checked = r.chartLines[ii].checked;
-                    r.zoomLines[ii] = it;
-                }
-                for (LinesChartProgram it : r.zoomLines) {
-                    it.left = newLeft;
-                    it.zoom = newScale;
-                }
-                LinesChartProgram.initMinMax(details.y_scaled, r.zoomLines, newLeft, newRight, r.ruler, true, ChartViewGL.this);
+                {
+                    r.zoomLines = new LinesChartProgram[details.data.length - 1];
+                    for (int i = 1; i < details.data.length; i++) {
+                        LinesChartProgram it = new LinesChartProgram(details.data[i], r.w, r.h, dimen, this, false, currentColors, r.linesShader, r.joiningShader);
+                        int ii = i - 1;
+                        it.alpha = r.chartLines[ii].alpha;
+                        it.checked = r.chartLines[ii].checked;
+                        r.zoomLines[ii] = it;
+                    }
+                    for (LinesChartProgram it : r.zoomLines) {
+                        it.left = newLeft;
+                        it.zoom = newScale;
+                    }
+                    LinesChartProgram.initMinMax(details.y_scaled, r.zoomLines, newLeft, newRight, r.ruler, true, ChartViewGL.this);
 //                float tooltipScreenpx =  r.chartLines[0].getTooltipX();
-                LinesChartProgram[] zoomLines = r.zoomLines;
-                for (int i = 0; i < zoomLines.length; i++) {
-                    LinesChartProgram it = zoomLines[i];
-                    LinesChartProgram itc = r.chartLines[i];
-                    itc.getTooltipX();
-                    it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX, itc.outTooltipY);
+                    LinesChartProgram[] zoomLines = r.zoomLines;
+                    for (int i = 0; i < zoomLines.length; i++) {
+                        LinesChartProgram it = zoomLines[i];
+                        LinesChartProgram itc = r.chartLines[i];
+                        itc.getTooltipX();
+                        it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX, itc.outTooltipY);
+                    }
+                    LinesChartProgram[] chartLines = r.chartLines;
+                    for (int i = 0; i < chartLines.length; i++) {
+                        LinesChartProgram c = chartLines[i];
+                        LinesChartProgram zc = r.zoomLines[i];
+                        c.animateOut(duration, zoomedIn, zc.leftx, zc.rightx);
+                    }
                 }
-                LinesChartProgram[] chartLines = r.chartLines;
-                for (int i = 0; i < chartLines.length; i++) {
-                    LinesChartProgram c = chartLines[i];
-                    LinesChartProgram zc = r.zoomLines[i];
-                    c.animateOut(duration, zoomedIn, zc.leftx, zc.rightx);
+                {
+                    r.zoomScrollbar = r.createScrollbar(details.data);
+                    LinesChartProgram[] zoomLines = r.zoomScrollbar;
+                    for (int i = 0; i < zoomLines.length; i++) {
+                        LinesChartProgram it = zoomLines[i];
+                        LinesChartProgram itc = r.scrollbar_lines[i];
+                        itc.getTooltipX();
+                        it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX, itc.outTooltipY);
+                    }
+                    LinesChartProgram[] chartLines = r.scrollbar_lines;
+                    for (int i = 0; i < chartLines.length; i++) {
+                        LinesChartProgram c = chartLines[i];
+                        LinesChartProgram zc = r.zoomScrollbar[i];
+                        c.animateOut(duration, zoomedIn, zc.leftx, zc.rightx);
+                    }
                 }
             } else {
-                LinesChartProgram[] zoomLines = r.zoomLines;
-                for (int i = 0; i < zoomLines.length; i++) {
-                    LinesChartProgram it = zoomLines[i];
-                    LinesChartProgram itc = r.chartLines[i];
-                    itc.getTooltipX();
-                    it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX, itc.outTooltipY);
+                {
+                    LinesChartProgram[] zoomLines = r.zoomLines;
+                    for (int i = 0; i < zoomLines.length; i++) {
+                        LinesChartProgram it = zoomLines[i];
+                        LinesChartProgram itc = r.chartLines[i];
+                        itc.getTooltipX();
+                        it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX, itc.outTooltipY);
+                    }
+                    LinesChartProgram[] chartLines = r.chartLines;
+                    for (int i = 0; i < chartLines.length; i++) {
+                        LinesChartProgram c = chartLines[i];
+                        LinesChartProgram zc = r.zoomLines[i];
+                        c.animateOut(duration, zoomedIn, zc.leftx, zc.rightx);
+                    }
                 }
-                LinesChartProgram[] chartLines = r.chartLines;
-                for (int i = 0; i < chartLines.length; i++) {
-                    LinesChartProgram c = chartLines[i];
-                    LinesChartProgram zc = r.zoomLines[i];
-                    c.animateOut(duration, zoomedIn, zc.leftx, zc.rightx);
+                {
+                    LinesChartProgram[] zoomLines = r.zoomScrollbar;
+                    for (int i = 0; i < zoomLines.length; i++) {
+                        LinesChartProgram it = zoomLines[i];
+                        LinesChartProgram itc = r.scrollbar_lines[i];
+                        itc.getTooltipX();
+                        it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX, itc.outTooltipY);
+                    }
+                    LinesChartProgram[] chartLines = r.scrollbar_lines;
+                    for (int i = 0; i < chartLines.length; i++) {
+                        LinesChartProgram c = chartLines[i];
+                        LinesChartProgram zc = r.zoomScrollbar[i];
+                        c.animateOut(duration, zoomedIn, zc.leftx, zc.rightx);
+                    }
                 }
                 if (data.y_scaled) {
                     r.ruler.animateScale(
