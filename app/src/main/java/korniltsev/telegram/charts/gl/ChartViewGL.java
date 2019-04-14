@@ -50,9 +50,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 high prio
 
-    - дизайн чекбоксов
-        - A long tap on any data filter should uncheck all other filters.
-
     - бонус зум для 1 & 2
         - работа зазумленого графика
             - анимация зума
