@@ -730,37 +730,9 @@ public class ChartViewGL extends TextureView {
             }
             // scrollbar
             if (scrollbar_lines != null) {
-                if (data.y_scaled) {
-                    for (LinesChartProgram c : scrollbar_lines) {
-                        if (c.column.id.equals(id)) {
-                            c.animateAlpha(isChecked);
-                            break;
-                        }
-                    }
-                } else {
-
-                    LinesChartProgram found = null;
-                    long max = -1;
-                    long min = Long.MAX_VALUE;
-
-
-                    for (int i = 0; i < scrollbar_lines.length; i++) {
-                        LinesChartProgram c = scrollbar_lines[i];
-                        if (c.column.id.equals(id)) {
-                            found = c;
-                            c.animateAlpha(isChecked);
-                        }
-                        if (c.checked) {
-                            max = Math.max(c.column.max, max);
-                            min = Math.min(c.column.min, min);
-                        }
-                    }
-                    for (LinesChartProgram c : scrollbar_lines) {
-                        if (found == c && !isChecked) {
-                        } else {
-                            c.animateMinMax(min, max, true, 208);
-                        }
-                    }
+                setCheckedLinesScrollbar(id, isChecked, scrollbar_lines);
+                if (zoomScrollbar != null) {
+                    setCheckedLinesScrollbar(id, isChecked, zoomScrollbar);
                 }
             }
             if (scrollbar_bar7 != null) {
@@ -805,6 +777,41 @@ public class ChartViewGL extends TextureView {
 //                            ruler.animateScale(ratio, 0, viewportMax, checkedCount, prevCheckedCOunt, 208);
 //                            prevMax = viewportMax;
 //                        }
+            }
+        }
+
+        private void setCheckedLinesScrollbar(String id, boolean isChecked, LinesChartProgram[] cs) {
+            if (data.y_scaled) {
+                for (LinesChartProgram c : cs) {
+                    if (c.column.id.equals(id)) {
+                        c.animateAlpha(isChecked);
+                        break;
+                    }
+                }
+            } else {
+
+                LinesChartProgram found = null;
+                long max = -1;
+                long min = Long.MAX_VALUE;
+
+
+                for (int i = 0; i < cs.length; i++) {
+                    LinesChartProgram c = cs[i];
+                    if (c.column.id.equals(id)) {
+                        found = c;
+                        c.animateAlpha(isChecked);
+                    }
+                    if (c.checked) {
+                        max = Math.max(c.column.max, max);
+                        min = Math.min(c.column.min, min);
+                    }
+                }
+                for (LinesChartProgram c : cs) {
+                    if (found == c && !isChecked) {
+                    } else {
+                        c.animateMinMax(min, max, true, 208);
+                    }
+                }
             }
         }
 
@@ -1715,6 +1722,8 @@ public class ChartViewGL extends TextureView {
                     for (int i = 0; i < zoomLines.length; i++) {
                         LinesChartProgram it = zoomLines[i];
                         LinesChartProgram itc = r.scrollbar_lines[i];
+                        it.alpha = itc.alpha;
+                        it.checked= itc.checked;
                         itc.getTooltipX();
                         it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX, itc.outTooltipY);
                     }
