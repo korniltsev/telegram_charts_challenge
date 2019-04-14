@@ -1,25 +1,26 @@
 package korniltsev.telegram.charts.ui;
 
 
-import android.graphics.Color;
+import korniltsev.telegram.charts.BuildConfig;
+import korniltsev.telegram.charts.MainActivity;
 
 public class ColorSet {
-        public static final ColorSet DAY = new ColorSet(0xff517DA2,
+    public static final ColorSet DAY = new ColorSet(0xff517DA2,
             0xffF0F0F0,
             0xffffffff,
             0x19182D3B,
             0xff446D91,
             0xff3896D4,
-                0xbff1f5f7, 0x334f89b4,
-                0xff426382,
-                0xffE5EBEF,
-                0xff000000, 0xffffffff,
-                0xff96A2AA,
-                0xff222222,
-                0xffdedede,
-                0xffE4E4E4,
-                0x7f252529, 0x7f252529
-        );
+            0xbff1f5f7, 0x334f89b4,
+            0xff426382,
+            0xffE5EBEF,
+            0xff000000, 0xffffffff,
+            0xff96A2AA,
+            0xff222222,
+            0xffdedede,
+            0xffE4E4E4,
+            0x7f252529, 0x7f252529,
+            true);
     public static final ColorSet NIGHT = new ColorSet(
             0xff212D3B,
             0xff161E27,
@@ -36,7 +37,7 @@ public class ColorSet {
             0xffffffff,
             0xff253242,
             0xff1A232D,
-            0x7fECF2F8, 0x99A3B1C2);
+            0x7fECF2F8, 0x99A3B1C2, false);
     public final int toolbar;
     public final int darkBackground;
     public final int lightBackground;
@@ -57,8 +58,9 @@ public class ColorSet {
 
     public final int messagesYAxisText;
     public final int messagesXAxisText;
+    public final boolean day;
 
-    public ColorSet(int toolbar, int darkBackground, int lightBackground, int ruler, int pressedButton, int legendTitle, int scrollbarOverlay, int scrollbarBorder, int statusbar, int tooltipVerticalLine, int tooltipTitleColor, int tooltipBGColor, int rulerLabelColor, int textColor, int listButtonPressedColor, int tooltipFakeSHadowColor, int messagesYAxisText, int messagesXAxisText) {
+    public ColorSet(int toolbar, int darkBackground, int lightBackground, int ruler, int pressedButton, int legendTitle, int scrollbarOverlay, int scrollbarBorder, int statusbar, int tooltipVerticalLine, int tooltipTitleColor, int tooltipBGColor, int rulerLabelColor, int textColor, int listButtonPressedColor, int tooltipFakeSHadowColor, int messagesYAxisText, int messagesXAxisText, boolean day) {
         this.toolbar = toolbar;
         this.darkBackground = darkBackground;
         this.lightBackground = lightBackground;
@@ -77,5 +79,74 @@ public class ColorSet {
         this.tooltipFakeSHadowColor = tooltipFakeSHadowColor;
         this.messagesYAxisText = messagesYAxisText;
         this.messagesXAxisText = messagesXAxisText;
+        this.day = day;
+    }
+
+    public int mapButtonColor(int color) {
+        switch (color) {
+            case 0xff4BD964: // green
+                return day ? 0xff5FB641 : 0xff5AB34D;
+            case 0xffFE3C30: // red
+                return day ? 0xffE65850 : 0xffCF5D57;
+            case 0xff108BE3: // blue
+                return day ? 0xff3497ED : 0xff4681BB;
+            case 0xffE8AF14: // yellow
+                return day ? 0xffF5BD25 : 0xffC9AF4F;
+            case 0xff3497ED:
+                return day ? 0xff3497ED : 0xff4681BB;
+            case 0xff2373DB:
+                return day ? 0xff3381E8 : 0xff466FB3;
+            case 0xff9ED448:
+                return day ? 0xff9ED448 : 0xff88BA52;
+            case 0xff5FB641:
+                return day ? 0xff5FB641 : 0xff3DA05A;
+            case 0xffF5BD25:
+                return day ? 0xffF5BD25 : 0xffF5BD25;
+            case 0xffF79E39:
+                return day ? 0xffF79E39 : 0xffD49548;
+            case 0xffE65850:
+                return day ? 0xffE65850 : 0xffCF5D57;
+            // Blue 3497ED, Dark Blue 3381E8, Light Green 9ED448, Green 5FB641, Yellow F5BD25, Orange F79E39, Red E65850, Light Blue 35AADC
+            default:
+                if (BuildConfig.DEBUG) {
+                    throw new AssertionError(Integer.toHexString(color));
+                }
+                return color;
+        }
+    }
+
+    public int mapLineColor(int color) {
+        switch (color) {
+            case 0xff4BD964: // green
+                return day ? 0xff4BD964 : 0xff4BD964;
+            case 0xffFE3C30: // red
+                return day ? 0xffFE3C30 : 0xffE6574F;
+            case 0xff108BE3: // blue
+                return day ? 0xff108BE3 : 0xff108BE3;
+            case 0xffE8AF14: // yellow
+                return day ? 0xffE8AF14 : 0xffDEB93F;
+            default:
+                if (BuildConfig.DEBUG) {
+                    throw new AssertionError(Integer.toHexString(color));
+                }
+                return color;
+        }
+    }
+    public int mapLineText(int color) {
+        switch (color) {
+            case 0xff4BD964: // green
+                return day ? 0xff3CC23F : 0xff4BD964;
+            case 0xffFE3C30: // red
+                return day ? 0xffF34C44 : 0xffF7655E;
+            case 0xff108BE3: // blue
+                return day ? 0xff108BE3 : 0xff108BE3;
+            case 0xffE8AF14: // yellow
+                return day ? 0xffE4AE1B : 0xffDEB93F;
+            default:
+                if (BuildConfig.DEBUG) {
+                    throw new AssertionError(Integer.toHexString(color));
+                }
+                return color;
+        }
     }
 }

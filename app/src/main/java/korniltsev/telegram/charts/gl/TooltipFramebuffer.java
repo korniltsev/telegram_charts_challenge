@@ -36,6 +36,7 @@ class TooltipFramebuffer {
     public static final float FONT_SIZE22 = 16f;
     //    public static final int VMARGIN = 8;
     private final int fakeShadowSimulatorLine;
+    private ColorSet colorset;
     int[] fbos = new int[1];
     private final int fbo;
     int[] textures = new int[1];
@@ -72,6 +73,7 @@ class TooltipFramebuffer {
         this.dateColor = set.tooltipTitleColor;
         this.bgColor = set.tooltipBGColor;
         this.shader_ = shader;
+        this.colorset = set;
         this.data = data;
         this.index = index;
         this.dimen = dimen;
@@ -179,7 +181,8 @@ class TooltipFramebuffer {
             drawText(name, dimen.dpf(LEFT_RIGHT_PADDING), ity-l.h, dateColor, l.visibility);
             TextTex value = l.value;
             float vx = w - dimen.dpi(LEFT_RIGHT_PADDING) - value.w;
-            drawText(value, vx, ity-l.h, value.color, l.visibility);
+            int tcolor = colorset.mapLineText(value.color);
+            drawText(value, vx, ity-l.h, tcolor, l.visibility);
             ity -= lh;
 //            currentX += Math.max(name.w, value.w) + dimen.dpf(PADDING_BETWEEN_VALUES);
         }
@@ -352,6 +355,7 @@ class TooltipFramebuffer {
     }
 
     public void animateToColors(ColorSet c, long duration) {
+        this.colorset = c;
         bgAnim = new MyAnimation.Color(duration, bgColor, c.tooltipBGColor);
         titleColorAnim = new MyAnimation.Color(duration, dateColor, c.tooltipTitleColor);
         fakeShadowColorAnim = new MyAnimation.Color(duration, fakeShadowColor, c.tooltipFakeSHadowColor);

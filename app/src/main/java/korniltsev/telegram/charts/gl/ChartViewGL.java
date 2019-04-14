@@ -49,6 +49,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 
 high prio
+    - замапить цвета
 
     - бонус зум для 1 & 2
         - работа зазумленого графика
@@ -1767,6 +1768,12 @@ public class ChartViewGL extends TextureView {
                         glChartProgram.animateColors(colors, duration);
                     }
                 }
+                if (r.scrollbar_lines != null) {
+                    for (LinesChartProgram it : r.scrollbar_lines) {
+                        it.animateColors(colors, duration);
+                    }
+                }
+
                 if (r.tooltip != null) {
                     r.tooltip.animateTo(colors, duration);
                 }

@@ -29,6 +29,7 @@ import korniltsev.telegram.charts.ui.MyFonts;
 public class MyCheckBox extends View {
     public int p_l,p_t, p_r,p_b;
 
+    private ColorSet colorset;
 
     public static final OvershootInterpolator OVERSHOOT_INTERPOLATOR = new OvershootInterpolator(2.5f);
     public static final DecelerateInterpolator DECELERATE_INTERPOLATOR = new DecelerateInterpolator();
@@ -53,8 +54,9 @@ public class MyCheckBox extends View {
     private MyAnimation.Color textColorAnim;
 
 
-    public MyCheckBox(Context c, Dimen dimen, String str, int tint) {
+    public MyCheckBox(Context c, Dimen dimen, String str, int tint, ColorSet init_colors) {
         super(c);
+        this.colorset = init_colors;
         this.color = tint;
         this.dimen = dimen;
         pText.setTextSize(dimen.dpf(14));
@@ -94,7 +96,7 @@ public class MyCheckBox extends View {
 
 
         p.setStrokeWidth(stroke);
-        p.setColor(tint);
+        p.setColor(colorset.mapButtonColor(tint));
         p.setStyle(Paint.Style.STROKE);
         path.setFillType(Path.FillType.WINDING);
 
@@ -112,6 +114,14 @@ public class MyCheckBox extends View {
                 h
 
         );
+    }
+
+    public void animate(ColorSet c) {
+        colorset = c;
+        p.setColor(colorset.mapButtonColor(color));
+        pText.setColor(checked ? Color.WHITE : colorset.mapButtonColor(color));
+        textColorAnim = null;
+        invalidate();
     }
 
     boolean checked = true;
@@ -134,7 +144,7 @@ public class MyCheckBox extends View {
         } else {
             scaleAnim = new MyAnimation.Float(DECELERATE_INTERPOLATOR, duration, fchecked + 16 * 4, 0f);
         }
-        textColorAnim = new MyAnimation.Color(duration, pText.getColor(), checked ? Color.WHITE : color);
+        textColorAnim = new MyAnimation.Color(duration, pText.getColor(), checked ? Color.WHITE : colorset.mapButtonColor(color));
 
         invalidate();
     }

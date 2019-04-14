@@ -172,7 +172,7 @@ public class MainActivity extends Activity {
                 }
                 if (i != 1) {
                 }
-                final MyCheckBox cb = new MyCheckBox(this, dimen, c.name, c.color);
+                final MyCheckBox cb = new MyCheckBox(this, dimen, c.name, c.color, currentColorSet);
                 cb.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {

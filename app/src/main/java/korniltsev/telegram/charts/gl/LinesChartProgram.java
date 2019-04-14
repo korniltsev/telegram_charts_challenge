@@ -30,6 +30,8 @@ public final class LinesChartProgram {
     public final ColumnData column;
     public final MyCircles lineJoining;
     public final MyShader shader;
+    public int chartColor;
+    public int textColor;
     public float zoom = 1f;//1 -- all, 0.2 - partial
     public float left = 0;
     public long scaledViewporMax;
@@ -61,6 +63,7 @@ public final class LinesChartProgram {
     public boolean zoomedIn;
     private float animInCenter;
     private float animInY;
+    private ColorSet colorsset;
 
 
     public LinesChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, ColorSet colors, MyShader shader, MyCircles.Shader joiningShader) {
@@ -70,6 +73,9 @@ public final class LinesChartProgram {
         this.column = column;
         this.dimen = dimen;
         this.root = root;
+        this.colorsset = colors;
+        this.chartColor = colors.mapLineColor(column.color);
+        this.textColor = colors.mapLineText(column.color);
         this.scrollbar = scrollbar;
 
         long[] values = column.values;
@@ -116,8 +122,8 @@ public final class LinesChartProgram {
                 ruler.init(
                         cs[0].scaledViewporMin, cs[0].scaledViewporMax,
                         cs[1].scaledViewporMin, cs[1].scaledViewporMax,
-                        cs[0].column.color,
-                        cs[1].column.color
+                        cs[0].textColor,
+                        cs[1].textColor
                 );
             }
         } else {
@@ -379,9 +385,9 @@ public final class LinesChartProgram {
 
     public void step2(float[]PROJ) {
 
-        colors[0] = MyColor.red(column.color) / 255f;
-        colors[1] = MyColor.green(column.color) / 255f;
-        colors[2] = MyColor.blue(column.color) / 255f;
+        colors[0] = MyColor.red(chartColor) / 255f;
+        colors[1] = MyColor.green(chartColor) / 255f;
+        colors[2] = MyColor.blue(chartColor) / 255f;
 //        if (animateOutValue == -1f) {
             colors[3] = alpha;
 //        } else {
@@ -491,6 +497,9 @@ public final class LinesChartProgram {
     }
 
     public void animateColors(ColorSet colors, long duration) {
+        this.colorsset = colors;
+        this.chartColor = colors.mapLineColor(column.color);
+        this.textColor = colors.mapLineText(column.color);
         tooltipFillColorAnim = new MyAnimation.Color(duration, tooltipFillColor, colors.lightBackground);
     }
 
