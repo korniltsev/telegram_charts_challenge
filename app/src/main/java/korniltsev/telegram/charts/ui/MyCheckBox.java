@@ -1,4 +1,4 @@
-package korniltsev.telegram.charts;
+package korniltsev.telegram.charts.ui;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -21,11 +21,15 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.TextView;
 
+import korniltsev.telegram.charts.R;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyFonts;
 
-class MyCheckBox extends View {
+public class MyCheckBox extends View {
+    public int p_l,p_t, p_r,p_b;
+
+
     public static final OvershootInterpolator OVERSHOOT_INTERPOLATOR = new OvershootInterpolator(2.5f);
     public static final DecelerateInterpolator DECELERATE_INTERPOLATOR = new DecelerateInterpolator();
     public static final int IC_MARGIN = 3;

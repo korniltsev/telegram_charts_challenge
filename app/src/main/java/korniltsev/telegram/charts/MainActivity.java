@@ -1,7 +1,5 @@
 package korniltsev.telegram.charts;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.TimeInterpolator;
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -11,7 +9,6 @@ import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
@@ -22,6 +19,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -44,6 +42,8 @@ import korniltsev.telegram.charts.gl.ChartViewGL;
 import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
+import korniltsev.telegram.charts.ui.MyCheckBox;
+import korniltsev.telegram.charts.ui.MyCheckboxContainer;
 import korniltsev.telegram.charts.ui.MyColorDrawable;
 import korniltsev.telegram.charts.ui.MyFonts;
 
@@ -163,8 +163,8 @@ public class MainActivity extends Activity {
         if (datum.type == ColumnData.Type.bar && datum.data.length == 2) {
 
         } else {
-            LinearLayout checkboxlist = new LinearLayout(this);
-            checkboxlist.setOrientation(LinearLayout.VERTICAL);
+
+            List<MyCheckBox> cbs = new ArrayList<>();
             for (int i = 0, data1Length = data1.length; i < data1Length; i++) {
                 final ColumnData c = data1[i];
                 if (c.id.equals(ChartData.COLUMN_ID_X)) {
@@ -203,18 +203,19 @@ public class MainActivity extends Activity {
                         return b;
                     }
                 });
-                LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-                cblp.gravity = Gravity.BOTTOM;
+                ViewGroup.LayoutParams cblp = new ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
                 cb.setLayoutParams(cblp);
 
-                checkboxlist.addView(cb);
+                cbs.add(cb);
 
                 checkboxes.add(cb);
 
             }
-
+            MyCheckboxContainer checkboxlist = new MyCheckboxContainer(this, cbs, dimen);
             LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
             cblp.gravity = Gravity.BOTTOM;
+            cblp.bottomMargin = dimen.dpi(16);
+            cblp.topMargin = dimen.dpi(17-8);
             list.addView(checkboxlist, cblp);
         }
         chartsRoots.add(list);
