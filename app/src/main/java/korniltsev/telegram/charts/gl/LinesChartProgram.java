@@ -64,6 +64,9 @@ public final class LinesChartProgram {
     private float animInCenter;
     private float animInY;
     private ColorSet colorsset;
+    private DumbShader dumbShader;
+    private int dumbVBO;
+    private FloatBuffer dumpBuf;
 
 
     public LinesChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, ColorSet colors, MyShader shader, MyCircles.Shader joiningShader) {
@@ -146,6 +149,9 @@ public final class LinesChartProgram {
         released = true;
         GLES20.glDeleteBuffers(1, vbos, 0);
         lineJoining.release();
+        if (dumbShader != null) {
+            dumbShader.release();
+        }
     }
 
     float[] colors = new float[4];
@@ -698,6 +704,102 @@ public final class LinesChartProgram {
         animateOutValueAnim = new MyAnimation.Float(duration, animateOutValue, zoomedIn ? 1f : 0f);
     }
 
+    public void calcLastPoints() {
+        if (tooltipIndex == -1 || animateOutValue == -1f) {
+            return;
+        }
+        tmpvec[0] = tooltipIndex;
+        tmpvec[1] = column.values[tooltipIndex];
+        tmpvec[2] = 0f;
+        tmpvec[3] = 1;
+        Matrix.multiplyMV(tmpvec2, 0, MVP_, 0, tmpvec, 0);
+        animateOutLastPointsNdc[0] = tmpvec2[0];
+        animateOutLastPointsNdc[1] = tmpvec2[1];
+        Matrix.multiplyMV(tmpvec2, 0, MVP2_, 0, tmpvec, 0);
+        animateOutLastPointsNdc[2] = tmpvec2[0];
+        animateOutLastPointsNdc[3] = tmpvec2[1];
+    }
+    public float[] animateOutLastPointsNdc = new float[8];//xyxy
+
+    public void drawZommJoining(LinesChartProgram c, float []PROJ) {
+        if (dumbShader == null) {
+            dumbShader = new DumbShader();
+            int[] buf = new int[1];
+            GLES20.glGenBuffers(1, buf, 0);
+            dumbVBO = buf[0];
+            dumpBuf = ByteBuffer.allocateDirect(8 * 4)
+                    .order(ByteOrder.nativeOrder())
+                    .asFloatBuffer();
+            dumpBuf.position(0);
+        }
+        animateOutLastPointsNdc[0] = c.animateOutLastPointsNdc[0];
+        animateOutLastPointsNdc[1] = c.animateOutLastPointsNdc[1];
+
+        //        float diff = u_animate_in_value * (screenPos.y - u_animate_in_y);
+//        gl_Position = u_P * vec4(screenPos.x, u_animate_in_y + diff, 0.0, 1.0);
+        tmpvec[0] = leftxi;
+        tmpvec[1] = column.values[leftxi];
+        tmpvec[2] = 0f;
+        tmpvec[3] = 1;
+        Matrix.multiplyMV(tmpvec2, 0, V_, 0, tmpvec, 0);
+        float screenPosX = tmpvec2[0];
+        float screenPosY = tmpvec2[1];
+        float diff = animateInValue * (screenPosY - animInY);
+        tmpvec[0] = screenPosX;
+        tmpvec[1] = animInY + diff;
+        Matrix.multiplyMV(tmpvec2, 0, PROJ, 0, tmpvec, 0);
+        animateOutLastPointsNdc[2] = tmpvec2[0];
+        animateOutLastPointsNdc[3] = tmpvec2[1];
+
+
+
+        animateOutLastPointsNdc[4] = c.animateOutLastPointsNdc[2];
+        animateOutLastPointsNdc[5] = c.animateOutLastPointsNdc[3];
+
+        tmpvec[0] = rightxi;
+        tmpvec[1] = column.values[rightxi];
+        tmpvec[2] = 0f;
+        tmpvec[3] = 1;
+        Matrix.multiplyMV(tmpvec2, 0, V_, 0, tmpvec, 0);
+        screenPosX = tmpvec2[0];
+        screenPosY = tmpvec2[1];
+        diff = animateInValue * (screenPosY - animInY);
+        tmpvec[0] = screenPosX;
+        tmpvec[1] = animInY + diff;
+        Matrix.multiplyMV(tmpvec2, 0, PROJ, 0, tmpvec, 0);
+
+        animateOutLastPointsNdc[6] = tmpvec2[0];
+        animateOutLastPointsNdc[7] = tmpvec2[1];
+        dumpBuf.position(0);
+        dumpBuf.put(animateOutLastPointsNdc);
+        dumpBuf.position(0);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, dumbVBO);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, 8 * 4, dumpBuf, GLES20.GL_STATIC_DRAW);
+
+        DumbShader shader = dumbShader;
+        shader.use();
+
+
+        colors[0] = MyColor.red(chartColor) / 255f;
+        colors[1] = MyColor.green(chartColor) / 255f;
+        colors[2] = MyColor.blue(chartColor) / 255f;
+        colors[3] = alpha;
+        GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
+
+
+        GLES20.glEnableVertexAttribArray(shader.positionHandle);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, dumbVBO);
+        GLES20.glVertexAttribPointer(shader.positionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false, STRIDE_BYTES, 0);
+
+
+        if (scrollbar) {
+            GLES20.glLineWidth(dimen.dpf(1f));
+        } else {
+            GLES20.glLineWidth(dimen.dpf(2f));
+        }
+        GLES20.glDrawArrays(GLES20.GL_LINES, 0, 4);
+    }
     public static final class MyShader {
         final String fragmentShader =
                 "precision mediump float;       \n"

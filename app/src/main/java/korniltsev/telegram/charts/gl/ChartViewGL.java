@@ -53,7 +53,6 @@ high prio
     - бонус зум для 1 & 2
         - работа зазумленого графика
             - анимация зума
-                - соединиеть линии
                 - заскейлить половинки ( потом )
 
         - зум ин скроллбара
@@ -1116,6 +1115,14 @@ public class ChartViewGL extends TextureView {
                     }
                 }
                 MyGL.checkGlError2();
+            }
+            if (drawCharts && zoomLines != null) {
+                for (int i = 0; i < chartLines.length; i++) {
+                    LinesChartProgram c = chartLines[i];
+                    LinesChartProgram zc = zoomLines[i];
+                    c.calcLastPoints();
+                    zc.drawZommJoining(c, PROJ);
+                }
             }
 
             GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
