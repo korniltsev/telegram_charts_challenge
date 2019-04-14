@@ -90,7 +90,6 @@ high prio
 
 
 low prio
-    убрать touch slop
     цвета
         - bar chart - неправильный цвет при выбранной колонке - заюзать из гайдлайнов
         - в тултипе цвет текста не такой как на графике линия
@@ -1397,12 +1396,18 @@ public class ChartViewGL extends TextureView {
                         if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize left");
                         last_x = x;
                         down_target = DOWN_RESIZE_LEFT;
+                        getParent().getParent().requestDisallowInterceptTouchEvent(true);
+                        dragging = true;
+                        last_x = x;
 //                        resze_scroller_right = scroller_left + scroller_width;
                         return true;
                     } else if (Math.abs(x - (scroller__right)) < resize_touch_area2) {
                         if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize right");
                         last_x = x;
                         down_target = DOWN_RESIZE_RIGHT;
+                        getParent().getParent().requestDisallowInterceptTouchEvent(true);
+                        dragging = true;
+                        last_x = x;
                         return true;
                     } else if (x >= scroller_left && x <= scroller__right) {
                         if (LOGGING) Log.d("tg.chart", "touchevent DOWN inside scrollbar");
@@ -1410,6 +1415,9 @@ public class ChartViewGL extends TextureView {
                         scroller_move_down_x = (int) (x - scroller_left);
                         scroller_move_down_width = scroller__right - scroller_left;
                         down_target = DOWN_MOVE;
+                        getParent().getParent().requestDisallowInterceptTouchEvent(true);
+                        dragging = true;
+                        last_x = x;
                         return true;
                     } else {
                         if (LOGGING) Log.d("tg.chart", "touchevent DOWN miss");
@@ -1474,16 +1482,6 @@ public class ChartViewGL extends TextureView {
 
 //                        invalidate();
                         return true;
-                    } else {
-                        float move = x - last_x;
-                        if (Math.abs(move) > touchSlop) {
-//                            disall
-//                            Log.d("ScrollBug", "request disasllow ");
-                            getParent().getParent().requestDisallowInterceptTouchEvent(true);
-                            dragging = true;
-                            last_x = x;
-                            return true;
-                        }
                     }
                 }
                 break;

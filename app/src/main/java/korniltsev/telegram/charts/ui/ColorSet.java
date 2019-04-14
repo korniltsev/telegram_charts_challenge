@@ -1,6 +1,8 @@
 package korniltsev.telegram.charts.ui;
 
 
+import android.util.Log;
+
 import korniltsev.telegram.charts.BuildConfig;
 import korniltsev.telegram.charts.MainActivity;
 
@@ -144,7 +146,9 @@ public class ColorSet {
                 return day ? 0xffE4AE1B : 0xffDEB93F;
             default:
                 if (BuildConfig.DEBUG) {
-                    throw new AssertionError(Integer.toHexString(color));
+                    AssertionError e = new AssertionError(Integer.toHexString(color));
+                    Log.e(MainActivity.TAG, "err", e);
+//                    throw e;
                 }
                 return color;
         }
