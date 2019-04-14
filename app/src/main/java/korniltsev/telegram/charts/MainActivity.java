@@ -8,7 +8,6 @@ import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -16,35 +15,23 @@ import android.graphics.drawable.RippleDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.SystemClock;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.Choreographer;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewParent;
-import android.view.ViewTreeObserver;
 import android.view.WindowInsets;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,10 +82,7 @@ public class MainActivity extends Activity {
 //    private boolean chartVisible;
     private int textColor;
     private MyAnimation.Color textColorAnim;
-    private List<TextView> checkboxes = new ArrayList<>();
-    private int dividerColor;
-    private MyAnimation.Color dividerAnim;
-    private List<View> dividers = new ArrayList<>();
+    private List<MyCheckBox> checkboxes = new ArrayList<>();
     public static Application ctx;
 
     @Override
@@ -107,7 +91,6 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         currentColorSet = ColorSet.DAY;
         textColor = currentColorSet.textColor;
-        dividerColor = currentColorSet.ruler;
         dimen = new Dimen(this);
 
         data = readData();
@@ -184,32 +167,16 @@ public class MainActivity extends Activity {
                     continue;
                 }
                 if (i != 1) {
-                    View divider = new View(this) {
-                        @Override
-                        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-                            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-                        }
-
-
-                    };
-                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(ChartViewGL.CHECKBOX_DIVIDER_HIEIGHT));
-                    lp.leftMargin = dimen.dpi(56);
-                    lp.gravity = Gravity.BOTTOM;
-                    divider.setBackgroundColor(currentColorSet.ruler);
-                    checkboxlist.addView(divider, lp);
-                    dividers.add(divider);
                 }
                 MyCheckBox cb = new MyCheckBox(this, dimen, c.name, c.color);
-                cb.setPadding(dimen.dpi(56), 0, dimen.dpi(32), 0);
-                cb.setTextColor(textColor);
-                cb.setText(c.name);
+
                 cb.setOnCheckedChangeListener(new MyCheckBox.OnCheckedChangeListener() {
                     @Override
                     public boolean onCheckedChanged(boolean isChecked) {
                         return newChart.setChecked(c.id, isChecked);
                     }
                 });
-                LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, dimen.dpi(ChartViewGL.CHECKBOX_HEIGHT_DPI));
+                LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
                 cblp.gravity = Gravity.BOTTOM;
                 cb.setLayoutParams(cblp);
 
@@ -365,7 +332,7 @@ public class MainActivity extends Activity {
                 b.animate(currentColorSet.lightBackground, colorAnimationDuration);
             }
             textColorAnim = new MyAnimation.Color(colorAnimationDuration, textColor, currentColorSet.textColor);
-            dividerAnim = new MyAnimation.Color(colorAnimationDuration, dividerColor, currentColorSet.ruler);
+
             Runnable r = new Runnable() {
                 @Override
                 public void run() {
@@ -379,29 +346,19 @@ public class MainActivity extends Activity {
                             post = true;
                         }
                     }
-                    if (dividerAnim != null) {
-                        dividerColor = dividerAnim.tick(t);
-                        if (dividerAnim.ended) {
-                            dividerAnim = null;
-                        } else {
-                            post = true;
-                        }
-                    }
+
                     if (post) {
                         root.postOnAnimation(this);
-                    }
-                    for (int i = 0, dividersSize = dividers.size(); i < dividersSize; i++) {
-                        View divider = dividers.get(i);
-                        divider.setBackgroundColor(dividerColor);
                     }
 //                for (int i = 0, buttonsSize = buttons.size(); i < buttonsSize; i++) {
 //                    TextView button = buttons.get(i);
 //                    button.setTextColor(textColor);
 //                }
-                    for (int i = 0, checkboxesSize = checkboxes.size(); i < checkboxesSize; i++) {
-                        TextView button = checkboxes.get(i);
-                        button.setTextColor(textColor);
-                    }
+//                    for (int i = 0, checkboxesSize = checkboxes.size(); i < checkboxesSize; i++) {
+//                        MyCheckBox button = checkboxes.get(i);
+//                        button.setTextColor(textColor);
+//
+//                    }
                 }
             };
             root.postOnAnimation(r);
@@ -582,123 +539,6 @@ public class MainActivity extends Activity {
             } else {
                 canvas.drawRect(0, 0, getWidth(), getHeight(), paintBg);
             }
-        }
-    }
-
-    private static class MyCheckBox extends TextView {
-        private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final Dimen dimen;
-        private final float l;
-        private final float t;
-        private final float b;
-        private final float r;
-        //        private final ImageView img;
-//        private final TextView text;
-        private final Drawable icchecked;
-        private final Drawable icNonChecked;
-        private Drawable ic;
-        private float myalpha;
-        private MyAnimation.Float alphaanim;
-        private final Handler h = new Handler(Looper.getMainLooper());
-        private MyAnimationTick action;
-        private OnCheckedChangeListener listener;
-
-        public MyCheckBox(Context c, Dimen dimen, String str, int tint) {
-            super(c);
-            this.dimen = dimen;
-            p.setColor(Color.WHITE);
-
-            myalpha = 1f;
-            setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    setChecked(!checked);
-                }
-            });
-//            int icl = dimen.dpi()
-            icchecked = getResources().getDrawable(R.drawable.abc_btn_check_to_on_mtrl_015).mutate();
-            icNonChecked = getResources().getDrawable(R.drawable.abc_btn_check_to_on_mtrl_000).mutate();
-            int icw = icchecked.getIntrinsicWidth();
-            int ich = icchecked.getIntrinsicHeight();
-            int icl = dimen.dpi(28) - icw / 2;
-            int ict = dimen.dpi(25) - ich / 2;
-            icchecked.setBounds(icl, ict, icl + icw, ict + ich);
-            icNonChecked.setBounds(icl, ict, icl + icw, ict + ich);
-            int pad = dimen.dpi(8);
-            l = icchecked.getBounds().left + pad;
-            t = icchecked.getBounds().top + pad;
-            b = icchecked.getBounds().bottom - pad;
-            r = icchecked.getBounds().right - pad;
-
-
-            icchecked.setColorFilter(tint, PorterDuff.Mode.SRC_IN);
-            icNonChecked.setColorFilter(tint, PorterDuff.Mode.SRC_IN);
-
-            ic = icchecked;
-            setText(str);
-            setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
-//            setBackgroundColor(Color.RED);
-        }
-
-        boolean checked = true;
-
-        //        @Override
-        public void setChecked(boolean checked) {
-            boolean stateChanged = listener.onCheckedChanged(checked);
-            if (!stateChanged) {
-                return;
-            }
-            this.checked = checked;
-            ic = checked ? icchecked : icNonChecked;
-            if (action != null) {
-                action.canceled = true;
-            }
-//            int d = MyAnimation.ANIM_DRATION;
-            int d = 0;
-            alphaanim = new MyAnimation.Float(d, myalpha, checked ? 1f : 0f);
-            action = new MyAnimationTick();
-            postOnAnimation(action);
-
-        }
-
-        @Override
-        protected void onDraw(Canvas canvas) {
-            if (myalpha != 0f) {
-                canvas.drawRect(l, t, r, b, p);
-            }
-            ic.draw(canvas);
-            super.onDraw(canvas);
-        }
-
-        public void setOnCheckedChangeListener(OnCheckedChangeListener onCheckedChangeListener) {
-            this.listener = onCheckedChangeListener;
-        }
-
-        private class MyAnimationTick implements Runnable {
-            boolean canceled = false;
-
-            @Override
-            public void run() {
-                if (canceled) {
-                    return;
-                }
-                if (alphaanim != null) {
-                    myalpha = alphaanim.tick(SystemClock.uptimeMillis());
-                    p.setAlpha((int) (myalpha * 255));
-                    invalidate();
-                    if (alphaanim.ended) {
-                        alphaanim = null;
-                    } else {
-
-                        postOnAnimation(this);
-                    }
-                }
-            }
-        }
-
-        public interface OnCheckedChangeListener {
-
-            boolean onCheckedChanged(boolean isChecked);
         }
     }
 
