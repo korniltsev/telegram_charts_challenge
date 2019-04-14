@@ -55,8 +55,10 @@ high prio
             - соеднинить линии
 
             - не рисовать старый скроллбар если анимация закончилась
+          - работа тултипа в зуме
+        ---------------------------------- 17:15
         - санимировать x
-        - работа тултипа в зуме
+
         - когда зумишь надо показывать 7 дней
 
     ----------------------
@@ -963,28 +965,35 @@ public class ChartViewGL extends TextureView {
         }
 
         private boolean drawScrollbarLinesIMpl(boolean invalidated, long t) {
+            boolean drawCharts = true;
             {
                 boolean invalidated1 = invalidated;
                 for (LinesChartProgram chartProgram : scrollbar_lines) {
                     boolean it_invalid = chartProgram.animateionTick(t);
                     invalidated1 = invalidated1 || it_invalid;
                 }
-                for (LinesChartProgram chartProgram : scrollbar_lines) {
-                    if (chartProgram.animateOutValue != 1f) {
-                        chartProgram.step1(PROJ);
-                    }
+                if (scrollbar_lines[0].animateOutValue == 1f) {
+                    drawCharts = false;
                 }
-                MyGL.checkGlError2();
-                for (LinesChartProgram chartProgram : scrollbar_lines) {
-                    if (chartProgram.animateOutValue != 1f) {
-                        chartProgram.shader.use();//todo use only once!
-                        chartProgram.step2(PROJ);
+                if (drawCharts) {
 
-                        chartProgram.lineJoining.shader.use();
-                        chartProgram.step3();
+                    for (LinesChartProgram chartProgram : scrollbar_lines) {
+                        if (chartProgram.animateOutValue != 1f) {
+                            chartProgram.step1(PROJ);
+                        }
                     }
+                    MyGL.checkGlError2();
+                    for (LinesChartProgram chartProgram : scrollbar_lines) {
+                        if (chartProgram.animateOutValue != 1f) {
+                            chartProgram.shader.use();//todo use only once!
+                            chartProgram.step2(PROJ);
+
+                            chartProgram.lineJoining.shader.use();
+                            chartProgram.step3();
+                        }
+                    }
+                    MyGL.checkGlError2();
                 }
-                MyGL.checkGlError2();
                 boolean it_inv = invalidated1;
                 invalidated = it_inv || invalidated;
             }
@@ -1019,6 +1028,14 @@ public class ChartViewGL extends TextureView {
                     MyGL.checkGlError2();
                     boolean it_inv = invalidated1;
                     invalidated = it_inv || invalidated;
+                    if (drawCharts) {
+                        for (int i = 0; i < scrollbar_lines.length; i++) {
+                            LinesChartProgram c = scrollbar_lines[i];
+                            LinesChartProgram zc = zoomScrollbar[i];
+                            c.calcLastPoints();
+                            zc.drawZommJoining(c, PROJ);
+                        }
+                    }
                 }
             }
             return invalidated;
@@ -1658,7 +1675,8 @@ public class ChartViewGL extends TextureView {
         scroller__right = (int) (scrollbarPos.left + scrollbarPos.width() * newRight);
         zoomedIn = !zoomedIn;
         if (r.chartLines != null) {
-            int duration = 384 * 20;
+//            int duration = 384 * 20;
+            int duration = 384;
 
 
             if (zoomedIn) {
