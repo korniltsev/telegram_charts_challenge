@@ -24,7 +24,7 @@ import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 
 class MyCheckBox extends View {
-    public static final OvershootInterpolator OVERSHOOT_INTERPOLATOR = new OvershootInterpolator();
+    public static final OvershootInterpolator OVERSHOOT_INTERPOLATOR = new OvershootInterpolator(2.2f);
     public static final DecelerateInterpolator DECELERATE_INTERPOLATOR = new DecelerateInterpolator();
     private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint pText = new TextPaint(Paint.ANTI_ALIAS_FLAG);
@@ -114,13 +114,14 @@ class MyCheckBox extends View {
             return;
         }
         this.checked = checked;
-        anim = new MyAnimation.Float(208, this.fchecked, checked ? 1f : 0f);
+        int duration = 208;
+        anim = new MyAnimation.Float(duration, this.fchecked, checked ? 1f : 0f);
         if (checked) {
-            scaleAnim = new MyAnimation.Float(OVERSHOOT_INTERPOLATOR,208, fchecked, 1f);
+            scaleAnim = new MyAnimation.Float(OVERSHOOT_INTERPOLATOR, duration, fchecked, 1f);
         } else {
-            scaleAnim = new MyAnimation.Float(DECELERATE_INTERPOLATOR, 208, fchecked, 0f);
+            scaleAnim = new MyAnimation.Float(DECELERATE_INTERPOLATOR, duration, fchecked, 0f);
         }
-        textColorAnim = new MyAnimation.Color(208, pText.getColor(), checked ? Color.WHITE : color);
+        textColorAnim = new MyAnimation.Color(duration, pText.getColor(), checked ? Color.WHITE : color);
 
         invalidate();
     }
@@ -156,12 +157,15 @@ class MyCheckBox extends View {
         int dip1 = dimen.dpi(1);
         canvas.save();
         canvas.translate(dip1, dip1);
-        if (checked) {
-            p.setStyle(Paint.Style.FILL_AND_STROKE);
-        } else {
-            p.setStyle(Paint.Style.STROKE);
-        }
+
+        p.setAlpha(255);
+        p.setStyle(Paint.Style.STROKE);
         canvas.drawPath(path, p);
+        if (fchecked != 0f) {
+            p.setAlpha((int) (fchecked * 255));
+            p.setStyle(Paint.Style.FILL);
+            canvas.drawPath(path, p);
+        }
         canvas.restore();
 
         boolean checked = this.checked;
