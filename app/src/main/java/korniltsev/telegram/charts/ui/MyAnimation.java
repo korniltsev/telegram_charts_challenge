@@ -4,6 +4,7 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Interpolator;
 
 //todo create more user friendly api
 public class MyAnimation {
@@ -18,12 +19,24 @@ public class MyAnimation {
         final float from;
         public final float to;
         private final long duration;
+        private final Interpolator interpolator;
 
         long endTime;
         public boolean ended = false;
 
-        public Float(long duration, float from, float to) {
+        public Float(Interpolator i, long duration, float from, float to) {
+            this.interpolator = i;
+            this.duration = duration;
+            endTime = startTime + duration;
+            this.from = from;
+            this.to = to;
+            if (from == to) {
+                ended = true;
+            }
+        }
 
+        public Float(long duration, float from, float to) {
+            this.interpolator = INTERPOLATOR;
             this.duration = duration;
             endTime = startTime + duration;
             this.from = from;
@@ -39,7 +52,7 @@ public class MyAnimation {
                 return to;
             } else {
                 float v = (float) (t - startTime) / duration;
-                float interpolated = INTERPOLATOR.getInterpolation(v);
+                float interpolated = interpolator.getInterpolation(v);
                 return from + (to - from) * interpolated;
             }
         }
