@@ -1,5 +1,6 @@
 package korniltsev.telegram.charts;
 
+import android.animation.TimeInterpolator;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Application;
@@ -168,12 +169,29 @@ public class MainActivity extends Activity {
                 }
                 if (i != 1) {
                 }
-                MyCheckBox cb = new MyCheckBox(this, dimen, c.name, c.color);
+                final MyCheckBox cb = new MyCheckBox(this, dimen, c.name, c.color);
 
                 cb.setOnCheckedChangeListener(new MyCheckBox.OnCheckedChangeListener() {
                     @Override
                     public boolean onCheckedChanged(boolean isChecked) {
-                        return newChart.setChecked(c.id, isChecked);
+                        boolean b = newChart.setChecked(c.id, isChecked);
+                        if (!b) {
+                            final float FREQ = 2f;
+                            final float DECAY = 2f;
+                            // interpolator that goes 1 -> -1 -> 1 -> -1 in a sine wave pattern.
+                            TimeInterpolator decayingSineWave = new TimeInterpolator() {
+                                @Override
+                                public float getInterpolation(float input) {
+                                    double raw = Math.sin(FREQ * input * 2 * Math.PI);
+                                    return (float)(raw * Math.exp(-input * DECAY));
+                                }
+                            };
+                            cb.animate()
+                                    .translationX(dimen.dpi(8))
+                                    .setInterpolator(decayingSineWave)
+                                    .setDuration(320);
+                        }
+                        return b;
                     }
                 });
                 LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
