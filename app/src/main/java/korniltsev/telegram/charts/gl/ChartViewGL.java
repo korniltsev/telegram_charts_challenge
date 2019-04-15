@@ -50,9 +50,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 high prio
 
-    - бонус зум для 3 графика
-        - все тоже самое но в скроллбар
-        -------------- 16:00
     - бонус зум для 4 графика
 
 
