@@ -17,6 +17,7 @@ import java.util.TimeZone;
 import korniltsev.telegram.charts.MainActivity;
 import korniltsev.telegram.charts.R;
 import korniltsev.telegram.charts.data.ChartData;
+import korniltsev.telegram.charts.data.ColumnData;
 import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
@@ -65,6 +66,7 @@ public class Tooltip {
     public final ChartViewGL rot;
     public float xpos;
     public float ypos;
+    private float ndcx2;
     //    private TexShader texShader;
 
     public Tooltip(Dimen dimen, int w, int h, ColorSet colors, ChartData data, SimpleShader simple, ChartViewGL rot) {
@@ -223,7 +225,11 @@ public class Tooltip {
         framebuffer.drawTooltip();
         xpos = ndcx * w - dip8 - framebuffer.realW;
         if (xpos < dip16) {
-            xpos = ndcx * w + dip8;
+            if (data.type == ColumnData.Type.bar) {
+                xpos = ndcx2 * w + dip8;
+            } else {
+                xpos = ndcx * w + dip8;
+            }
             if (xpos + framebuffer.realW > w - dip16) {
                 xpos = ndcx * w - dip16;
                 if (xpos + framebuffer.realW > w - dip16) {
@@ -290,6 +296,11 @@ public class Tooltip {
         vec1[3] = 1;
         Matrix.multiplyMV(vec2, 0, chartMVP, 0, vec1, 0);
         ndcx = (vec2[0] + 1f) / 2f;
+
+        vec1[0] = index+1;
+        vec1[3] = 1;
+        Matrix.multiplyMV(vec2, 0, chartMVP, 0, vec1, 0);
+        ndcx2 = (vec2[0] + 1f) / 2f;
     }
 
     public void rlease() {
