@@ -792,7 +792,7 @@ public class ChartViewGL extends TextureView {
                 }
             }
             LinesChartProgram.setChecked(id, r.overlay.zoom, isChecked, singleBarZoomLines, ruler, false, ChartViewGL.this);
-
+            tooltip.setChecked(id, isChecked);
             invalidateRender();
         }
         private void setCheckedImpl(String id, boolean isChecked) {
