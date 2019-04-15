@@ -21,9 +21,11 @@ import korniltsev.telegram.charts.ui.MyColor;
 
 // vertical line & label with values
 public class Tooltip {
-    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("E, MMM d", Locale.US);
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("E, d MMM yyyy", Locale.US);
+    public static final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.US);
     static {
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        timeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
     private final float[] colorParts= new float[4];

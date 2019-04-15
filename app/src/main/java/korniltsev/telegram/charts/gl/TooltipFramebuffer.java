@@ -266,7 +266,12 @@ class TooltipFramebuffer {
 
     public void prepareTextTexturesAndMeasure(boolean[] checked) {
         long dateTimestamp = data.data[0].values[index];
-        String date = Tooltip.dateFormat.format(dateTimestamp);
+        String date;
+        if (data.index == -1) {
+            date = Tooltip.timeFormat.format(dateTimestamp);
+        } else {
+            date = Tooltip.dateFormat.format(dateTimestamp);
+        }
         Typeface medium = Typeface.create("sans-serif-medium", Typeface.NORMAL);
         TextPaint p16 = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         p16.setColor(Color.BLACK);
