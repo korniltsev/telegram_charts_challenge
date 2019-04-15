@@ -129,8 +129,8 @@ public class MyHeader extends View {
 
     public void animateZoom(boolean zoomedIn) {
         Interpolator i;
-        if (zoomedIn) i = MyAnimation.ACCELERATE;
-        else i = MyAnimation.DECELERATE;
+        if (zoomedIn) i = MyAnimation.DECELERATE;
+        else i = MyAnimation.ACCELERATE;
         zoomAnim = new MyAnimation.Float(i, 208, zoomValue, zoomedIn ? 1f : 0f);
         invalidate();
     }
