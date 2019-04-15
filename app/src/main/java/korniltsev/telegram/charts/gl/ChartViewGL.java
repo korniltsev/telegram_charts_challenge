@@ -2389,7 +2389,11 @@ public class ChartViewGL extends TextureView {
                 if (r.tooltip != null) {
                     r.tooltip.animateTo(colors, duration);
                 }
-//                r.drawAndSwap();
+                if (r.singleBarZoomLines != null) {
+                    for (LinesChartProgram it : r.singleBarZoomLines) {
+                        it.animateColors(colors, duration);
+                    }
+                }
                 r.invalidateRender();
             }
         };
