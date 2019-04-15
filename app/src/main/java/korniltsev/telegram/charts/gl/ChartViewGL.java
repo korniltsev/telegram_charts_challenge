@@ -52,7 +52,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 
 
-- правильная позиция
 
 - дизайн скролбара
     - нарисовать текстуру ползунка

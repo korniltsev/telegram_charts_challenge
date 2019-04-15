@@ -218,17 +218,19 @@ public class Tooltip {
 //        float
 //        Log.d("FUCK", " " + ndcx);
         float dip16 = dimen.dpf(16);
-        if (framebuffer.w <= w - 2 * dip16) {
-            xpos = ndcx * w - dip16;
-            if (xpos < dip16) {
-                xpos = dip16;
-            } else if (xpos + framebuffer.w > w - dip16) {
-                xpos = w - framebuffer.w - dip16;
-            }
-        } else {
-            xpos = w / 2f - framebuffer.w / 2f;
-        }
+        float dip8 = dimen.dpf(8);
+
         framebuffer.drawTooltip();
+        xpos = ndcx * w - dip8 - framebuffer.realW;
+        if (xpos < dip16) {
+            xpos = ndcx * w + dip8;
+            if (xpos + framebuffer.realW > w - dip16) {
+                xpos = ndcx * w - dip16;
+                if (xpos + framebuffer.realW > w - dip16) {
+                    xpos = w - framebuffer.realW;
+                }
+            }
+        }
         GLES20.glViewport(0, 0, w, h);
 
         Matrix.setIdentityM(VIEW, 0);
