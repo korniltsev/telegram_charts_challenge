@@ -56,6 +56,8 @@ public final class LinesChartProgram {
 
     final boolean scrollbar;
     public MyCircles goodCircle;
+    public boolean drawGoodCircle = true;
+
     //    private int goodCircleIndex;
     private MyAnimation.Color tooltipFillColorAnim;
     private final int[] vbos;
@@ -378,7 +380,9 @@ public final class LinesChartProgram {
     }
 
     public void step4() {
-
+        if (!drawGoodCircle) {
+            return;
+        }
         float scalex = 2.0f / w;
         if (scrollbar) {
         } else {
@@ -537,6 +541,7 @@ public final class LinesChartProgram {
 
                 }
                 if (tooltipIndex != -1) {
+                    drawGoodCircle = true;
                     long[] vs = new long[]{column.values[tooltipIndex]};
                     goodCircle = new MyCircles(this.w, this.h, tooltipIndex, vs, 24, new MyCircles.Shader(24));
                 }

@@ -169,6 +169,7 @@ public class ChartViewGL extends TextureView {
     //    public long currentMax;
 //    public ColorSet currentColorsSet;
     public volatile boolean uiLocked = false;
+    private int stashTooltipIndex;
 
     @Override
     public boolean isOpaque() {
@@ -1150,8 +1151,10 @@ public class ChartViewGL extends TextureView {
 
             if (tooltipIndex != -1) {
                 this.tooltip.animationTick(t, tooltipIndex, checked);
-                this.tooltip.calcPos(chartLines[0].MVP_, tooltipIndex);
-                this.tooltip.drawVLine(PROJ, chartLines[0].MVP_, tooltipIndex);
+//                this.tooltip.calcPos(chartLines[0].MVP_, tooltipIndex);
+                if (chartLines[0].animateOutValue == -1f) {
+                    this.tooltip.drawVLine(PROJ, chartLines[0].MVP_, tooltipIndex);
+                }
             }
 
             MyGL.checkGlError2();
@@ -1201,7 +1204,9 @@ public class ChartViewGL extends TextureView {
             GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
 
             if (tooltipIndex != -1) {
-                this.tooltip.drawTooltip(PROJ);
+                if (chartLines[0].animateOutValue == -1f) {
+                    this.tooltip.drawTooltip(PROJ);
+                }
             }
 
             if (uiLocked) {
@@ -1597,7 +1602,8 @@ public class ChartViewGL extends TextureView {
                         float th = r.tooltip.framebuffer.realH;
                         float invy = h - y;
                         if (x >= xpos && x <= xpos + tw && invy >= ypos && invy <= ypos + th) {
-                            onZoom(r.tooltipIndex);
+                            stashTooltipIndex = r.tooltipIndex;
+                            onZoom();
                             return;
                         }
                     }
@@ -1623,6 +1629,10 @@ public class ChartViewGL extends TextureView {
                                 glChartProgram.setTooltipIndex(finali);
                             }
                         }
+                        if (r.tooltip == null) {
+                            r.tooltip = new Tooltip(dimen, r.w, h, currentColors, data, r.simple, ChartViewGL.this);
+                        }
+                        r.tooltip.calcPos(r.chartLines[0].MVP_, finali);
                     }
                     if (r.scrollbar_lines != null) {
                         for (LinesChartProgram glChartProgram : r.scrollbar_lines) {
@@ -1652,8 +1662,7 @@ public class ChartViewGL extends TextureView {
 
     boolean zoomedIn = false;
 
-    private void onZoom(int tooltipIndex) {
-        uiLocked = true;
+    private void onZoom() {
         ChartData details = null;
         float newLeft;
         float newRight;
@@ -1663,7 +1672,7 @@ public class ChartViewGL extends TextureView {
             newRight = r.overlay.zoomStash.right;
             newScale = r.overlay.zoomStash.scale;
         } else {
-            details = data.getDetails(tooltipIndex);
+            details = data.getDetails(stashTooltipIndex);
             if (details == null) {
                 return;
             }
@@ -1674,6 +1683,7 @@ public class ChartViewGL extends TextureView {
             newRight = 0.75f;
             newScale = 0.5f;
         }
+        uiLocked = true;
         scroller_left = (int) (scrollbarPos.left + scrollbarPos.width() * newLeft);
         scroller__right = (int) (scrollbarPos.left + scrollbarPos.width() * newRight);
         zoomedIn = !zoomedIn;
@@ -1702,6 +1712,7 @@ public class ChartViewGL extends TextureView {
                     for (int i = 0; i < zoomLines.length; i++) {
                         LinesChartProgram it = zoomLines[i];
                         LinesChartProgram itc = r.chartLines[i];
+                        itc.drawGoodCircle = false;
                         itc.getTooltipX();
                         it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX, itc.outTooltipY);
                     }

@@ -170,6 +170,7 @@ public class Tooltip {
         return invalidate;
     }
 
+
 //    public void draw(float[] proj, float[] chartMVP, int index) {
 //        drawVLine(proj, chartMVP, index);
 //        drawTooltip(proj);
@@ -271,6 +272,10 @@ public class Tooltip {
         if (framebuffer != null) {
             framebuffer.setChecked(id, isChecked);
         }
+    }
+
+    public void animateAlpha(float alpha) {
+
     }
 
     public int getToooltipIndex() {
