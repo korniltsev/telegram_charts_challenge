@@ -21,6 +21,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.TextView;
 
+import korniltsev.telegram.charts.MainActivity;
 import korniltsev.telegram.charts.R;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
@@ -70,6 +71,9 @@ public class MyCheckBox extends View {
         setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!MainActivity.throttleClicks()) {
+                    return;
+                }
                 setChecked(!checked, true);
             }
         });

@@ -93,6 +93,7 @@ public class MainActivity extends Activity {
     private List<MyCheckBox> checkboxes = new ArrayList<>();
     public static Application ctx;
     private List<MyHeader> legends = new ArrayList<>();
+    public static long lastClickTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -713,6 +714,21 @@ public class MainActivity extends Activity {
                 canvas.drawRect(0, top, getWidth(), getHeight(), paintBg);
             } else {
                 canvas.drawRect(0, 0, getWidth(), getHeight(), paintBg);
+            }
+        }
+    }
+
+    public static boolean throttleClicks() {
+        long t = SystemClock.uptimeMillis();
+        if (lastClickTime == 0) {
+            lastClickTime = t;
+            return true;
+        } else {
+            if (Math.abs(t-lastClickTime) <= 160) {
+                return false;
+            } else {
+                lastClickTime = t;
+                return true;
             }
         }
     }
