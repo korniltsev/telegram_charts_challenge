@@ -7,7 +7,7 @@ public class ColumnData {
     public final long max;
     public final long min;
     public final Type type;
-    public final int color;
+    public int color;
 
 
     public ColumnData(String id, String name, long[] values, Type type, int color) {

@@ -108,11 +108,15 @@ public class ColorSet {
                 return day ? 0xffF79E39 : 0xffD49548;
             case 0xffE65850:
                 return day ? 0xffE65850 : 0xffCF5D57;
+
+            case 0xff3896E8: return day? 0xff3896E8:0xff4082CE;
+            case 0xff558DED: return day? 0xff558DED:0xff4461AB;
+            case 0xff5CBCDF: return day? 0xff5CBCDF:0xff4697B3;
             // Blue 3497ED, Dark Blue 3381E8, Light Green 9ED448, Green 5FB641, Yellow F5BD25, Orange F79E39, Red E65850, Light Blue 35AADC
             default:
-//                if (BuildConfig.DEBUG) {
-//                    throw new AssertionError(Integer.toHexString(color));
-//                }
+                if (BuildConfig.DEBUG) {
+                    throw new AssertionError(Integer.toHexString(color));
+                }
                 return color;
         }
     }
@@ -127,12 +131,16 @@ public class ColorSet {
                 return day ? 0xff108BE3 : 0xff108BE3;
             case 0xffE8AF14: // yellow
                 return day ? 0xffE8AF14 : 0xffDEB93F;
+            case 0xff3896E8: return day? 0xff3896E8:0xff4082CE;
+            case 0xff558DED: return day? 0xff558DED:0xff4461AB;
+            case 0xff5CBCDF: return day? 0xff5CBCDF:0xff4697B3;
             default:
 //                if (BuildConfig.DEBUG) {
 //                    throw new AssertionError(Integer.toHexString(color));
 //                }
                 return color;
         }
+
     }
     public int mapLineText(int color) {
         switch (color) {
@@ -144,6 +152,9 @@ public class ColorSet {
                 return day ? 0xff108BE3 : 0xff108BE3;
             case 0xffE8AF14: // yellow
                 return day ? 0xffE4AE1B : 0xffDEB93F;
+            case 0xff3896E8: return day? 0xff3896E8:0xff4082CE;
+            case 0xff558DED: return day? 0xff558DED:0xff4461AB;
+            case 0xff5CBCDF: return day? 0xff5CBCDF:0xff4697B3;
             default:
                 if (BuildConfig.DEBUG) {
 //                    AssertionError e = new AssertionError(Integer.toHexString(color));
@@ -152,5 +163,6 @@ public class ColorSet {
                 }
                 return color;
         }
+
     }
 }

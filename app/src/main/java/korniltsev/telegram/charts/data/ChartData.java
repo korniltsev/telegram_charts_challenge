@@ -213,10 +213,16 @@ public class ChartData {
         }
 
         ColumnData[] columns = new ColumnData[cs.size()+1];
+        int[] colors = new int[]{
+                0xff3896E8,
+                0xff558DED,
+                0xff5CBCDF
+        };
         for (int i = 0; i < cs.size(); i++) {
             ChartData chartData = cs.get(i);
             ColumnData datum = chartData.data[1];
             datum.id += "_deails_" + i;
+            datum.color = colors[i];
             columns[i+1] = datum;
         }
         columns[0] = cs.get(0).data[0];

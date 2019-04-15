@@ -6,7 +6,7 @@ import android.view.ViewGroup;
 import java.util.List;
 
 public class MyCheckboxContainer extends ViewGroup {
-    final List<MyCheckBox> children;
+    public final List<MyCheckBox> children;
     final Dimen dimen;
     public final int paddingTopBottom;
     public MyCheckboxContainer(Context context, List<MyCheckBox> children, Dimen dimen, int paddingTopBottom) {
