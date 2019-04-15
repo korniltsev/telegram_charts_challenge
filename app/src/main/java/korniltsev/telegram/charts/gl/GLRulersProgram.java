@@ -204,6 +204,13 @@ public final class GLRulersProgram {
     public final void draw(long t) {
 
 
+        drawY(t);
+
+
+        drawX(t);
+    }
+
+    public void drawY(long t) {
         float vpaddingTextOverPadding = dimen.dpf(3);
         final float zero = dimen.dpf(80) + root.checkboxesHeight;
 //        drawLine(hpadding, zero + 0, canvasW - 2 * hpadding, 1f);
@@ -268,9 +275,6 @@ public final class GLRulersProgram {
             }
             GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
         }
-
-
-        drawX(t);
     }
 
     List<XValueLable> xValues = new ArrayList<>();
@@ -771,16 +775,7 @@ public final class GLRulersProgram {
 //            lastn6 =  n6;
 //            float zoomDiff = Math.abs(prevzoom - zoom);
 //            Log.d("FUCK", "n " + n + " " + n6 + " zoom " + zoomDiff);
-            for (int i = 0, xValuesSize = xValues.size(); i < xValuesSize; i++) {
-                XValueLable xValue = xValues.get(i);
-                if (i == xValues.size() - 1) {
-                    xValue.alpha = 0f;
-                } else {
-                    xValue.alphaAnim = new MyAnimation.Float(MyAnimation.ANIM_DRATION, xValue.alpha, 0f);
-                }
-            }
-            animatingOut.addAll(xValues);
-            xValues.clear();
+            removeAllX(MyAnimation.ANIM_DRATION);
             int i = calcColumn.values.length - 1;
 //            int istrid = (int) this.stride;
             for (; i >= 0; i = i - inewStride) {
@@ -836,6 +831,19 @@ public final class GLRulersProgram {
         xValues.clear();
         animatingOut.clear();
 
+    }
+
+    public void removeAllX(int duration) {
+        for (int i = 0, xValuesSize = xValues.size(); i < xValuesSize; i++) {
+            XValueLable xValue = xValues.get(i);
+            if (i == xValues.size() - 1) {
+                xValue.alpha = 0f;
+            } else {
+                xValue.alphaAnim = new MyAnimation.Float(duration, xValue.alpha, 0f);
+            }
+        }
+        animatingOut.addAll(xValues);
+        xValues.clear();
     }
 
     public static class XValueLable {

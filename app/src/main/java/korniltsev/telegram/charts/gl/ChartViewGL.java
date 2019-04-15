@@ -1115,7 +1115,8 @@ public class ChartViewGL extends TextureView {
         }
 
         private boolean drawLinesChart(boolean invalidated, long t) {
-            ruler.draw(t);
+            ruler.drawY(t);
+            ruler.drawX(t);
             int tooltipIndex = r.tooltipIndex;
             if (tooltipIndex != -1) {
                 if (this.tooltip == null) {
@@ -1743,10 +1744,20 @@ public class ChartViewGL extends TextureView {
         });
     }
 
-    private void zoomLines(ChartData details, float newLeft, float newRight, float newScale) {
+    private void zoomLines(final ChartData details, final float newLeft, final float newRight, final float newScale) {
         //            int duration = 384 * 20;
         int duration = 384;
-
+        r.ruler.removeAllX(duration / 2);
+        r.renderHandler2.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (details != null) {
+                    r.ruler.setLeftRight(newLeft, newRight, newScale, details.data[0]);
+                } else {
+                    r.ruler.setLeftRight(newLeft, newRight, newScale, null);
+                }
+            }
+        }, duration / 2);
 
         if (zoomedIn) {
             {
@@ -1906,15 +1917,15 @@ public class ChartViewGL extends TextureView {
 
 
     static {
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                if (DEBUG) {
-                    Log.e(TAG, "err", e);
-                    System.exit(0);
-                }
-            }
-        });
+//        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+//            @Override
+//            public void uncaughtException(Thread t, Throwable e) {
+//                if (DEBUG) {
+//                    Log.e(TAG, "err", e);
+//                    System.exit(0);
+//                }
+//            }
+//        });
     }
 
     public static final long calculateChartBarMax(BarChartProgram p, float left, float right) {
