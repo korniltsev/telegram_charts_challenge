@@ -12,6 +12,7 @@ import java.util.List;
 import korniltsev.telegram.charts.MainActivity;
 import korniltsev.telegram.charts.R;
 import korniltsev.telegram.charts.data.ColumnData;
+import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyColor;
@@ -30,6 +31,7 @@ public class PercentStackedChartProgram {
 
     private final MyShader shader;
     private final int n;
+    private ColorSet colorsset;
     private int vxCount;
     public float zoom;
     public float left;
@@ -53,7 +55,8 @@ public class PercentStackedChartProgram {
         return v;
     }
 
-    public PercentStackedChartProgram(List<ColumnData> columns, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader) {
+    public PercentStackedChartProgram(List<ColumnData> columns, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader, ColorSet colorSet) {
+        this.colorsset = colorSet;
         this.column = columns;
         for (int i = 0; i < visibility.length; i++) {
             visibility[i] = 1f;
@@ -83,19 +86,19 @@ public class PercentStackedChartProgram {
 
             List<Vx> vs = new ArrayList<>();
             int columnNo = j;
-            for (int i = 0; i < n-1; i++) {
+            for (int i = 0; i < n - 1; i++) {
 //            long value = values[i];
                 vs.add(set(i, new Vx(i, 0)));
 
                 vs.add(set(i, new Vx(i, 1)));
 
-                vs.add(set(i+1, new Vx(i + 1, 0)));
+                vs.add(set(i + 1, new Vx(i + 1, 0)));
 
-                vs.add(set(i+1, new Vx(i + 1, 0)));
+                vs.add(set(i + 1, new Vx(i + 1, 0)));
 
                 vs.add(set(i, new Vx(i, 1)));
 
-                vs.add(set(i+1, new Vx(i + 1, 1)));
+                vs.add(set(i + 1, new Vx(i + 1, 1)));
             }
             ByteBuffer buf1 = ByteBuffer.allocateDirect(vs.size() * Vx.SIZE)
                     .order(ByteOrder.nativeOrder());
@@ -120,6 +123,10 @@ public class PercentStackedChartProgram {
             MyGL.checkGlError2();
         }
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+    }
+
+    public void setColorsset(ColorSet colorsset) {
+        this.colorsset = colorsset;
     }
 
     float[] colors = new float[4];
@@ -236,7 +243,8 @@ public class PercentStackedChartProgram {
 //            GLES20.glVertexAttribPointer(shader.a_xNo, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 8);
             MyGL.checkGlError2();
 
-            MyColor.set(colors, column.get(i).color);
+            int color = colorsset.mapLineColor(column.get(i).color);
+            MyColor.set(colors, color);
             GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
 //            GLES20.glUniform1f(shader.u_selected_index, tooltipIndex);
             GLES20.glUniform1f(shader.u_columnNo, i);

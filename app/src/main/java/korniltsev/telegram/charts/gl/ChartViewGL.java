@@ -703,7 +703,7 @@ public class ChartViewGL extends TextureView {
             } else if (stacked_percent) {
                 stackPercentShader = new PercentStackedChartProgram.MyShader();
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 7);
-                scrollbar_stacked_percent = new PercentStackedChartProgram(cs, w, h, dimen, ChartViewGL.this, true, stackPercentShader);
+                scrollbar_stacked_percent = new PercentStackedChartProgram(cs, w, h, dimen, ChartViewGL.this, true, stackPercentShader, currentColors);
             }
 
             if (barSingle) {
@@ -713,7 +713,7 @@ public class ChartViewGL extends TextureView {
                 chartBar7 = new Bar7ChartProgram(cs, w, h, dimen, ChartViewGL.this, false, bar7Shader, currentColors);
             } else if (stacked_percent) {
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 7);
-                chartStackedPercent = new PercentStackedChartProgram(cs, w, h, dimen, ChartViewGL.this, false, stackPercentShader);
+                chartStackedPercent = new PercentStackedChartProgram(cs, w, h, dimen, ChartViewGL.this, false, stackPercentShader, currentColors);
             } else {
                 chartLines = new LinesChartProgram[data.length - 1];
                 for (int i = 1, dataLength = data.length; i < dataLength; i++) {
@@ -2400,6 +2400,12 @@ public class ChartViewGL extends TextureView {
                 }
                 if (r.scrollbar_bar7 != null) {
                     r.scrollbar_bar7.setCurrentColors(colors);
+                }
+                if (r.chartStackedPercent != null) {
+                    r.chartStackedPercent.setColorsset(colors);
+                }
+                if (r.scrollbar_stacked_percent != null) {
+                    r.scrollbar_stacked_percent.setColorsset(colors);
                 }
                 r.invalidateRender();
             }
