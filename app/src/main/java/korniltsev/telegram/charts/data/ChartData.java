@@ -10,6 +10,10 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -95,29 +99,65 @@ public class ChartData {
             dateFormat = new SimpleDateFormat("yyyy-MM/dd", Locale.US);
             dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         }
+        Calendar c = Calendar.getInstance();
         long value = data[0].values[tooltipIndex];
-        String format = dateFormat.format(value);
-        InputStream inputStream = null;
-        try {
-            inputStream = MainActivity.ctx.getAssets().open(index + "/" + format + ".json");
-            byte[] bytes = MainActivity.readAll(inputStream);
-            String s = new String(bytes, "UTF-8");
-            JSONObject o = new JSONObject(s);
-            return ChartData.pareOne(o, -1);
+        Date date = new Date(value);
+        c.setTime(date);
+        c.setTimeZone(TimeZone.getTimeZone("UTC"));
+        c.add(Calendar.DAY_OF_YEAR, -3);
+        List<ChartData> days = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
 
-        } catch (IOException e) {
-            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err " + format, e);
-            return null;
-        } catch (JSONException e) {
-            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err " + format, e);
-            return null;
-        } finally {
+            int year = c.get(Calendar.YEAR);
+            int month = c.get(Calendar.MONTH) + 1;
+            int day = c.get(Calendar.DAY_OF_MONTH);
+            String format = String.format(Locale.US, "%d-%02d/%02d", year, month, day);
+            InputStream inputStream = null;
             try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
+                inputStream = MainActivity.ctx.getAssets().open(index + "/" + format + ".json");
+                byte[] bytes = MainActivity.readAll(inputStream);
+                String s = new String(bytes, "UTF-8");
+                JSONObject o = new JSONObject(s);
+                ChartData chartData = ChartData.pareOne(o, -1);
+                days.add(chartData);
             } catch (IOException e) {
+                if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err " + format, e);
+                continue;
+            } catch (JSONException e) {
+                if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err " + format, e);
+                continue;
+            } finally {
+                try {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                } catch (IOException e) {
+                }
             }
+            c.add(Calendar.DAY_OF_YEAR, 1);
+        }
+        if (days.isEmpty()) {
+            return null;
+        } else {
+            int size = 0;
+            for (ChartData datum : days) {
+                size += datum.data[0].values.length;
+            }
+            ChartData f = days.get(0);
+            ColumnData[] resColumns = new ColumnData[f.data.length];
+            for (int columnIndex = 0; columnIndex < resColumns.length; columnIndex++) {
+                long[] vs = new long[size];
+                int o = 0;
+                for (ChartData datum : days) {
+                    long[] vvs = datum.data[columnIndex].values;
+                    System.arraycopy(vvs, 0, vs, o, vvs.length);
+                    o += vvs.length;
+                }
+                ColumnData d = new ColumnData(f.data[columnIndex].id, f.data[columnIndex].name, vs, f.data[columnIndex].type, f.data[columnIndex].color);
+                resColumns[columnIndex] = d;
+            }
+            ChartData res = new ChartData(resColumns, f.percentage, f.stacked, f.y_scaled, f.type, -1);
+            return res;
         }
 //        Date date = new Date(value);
 

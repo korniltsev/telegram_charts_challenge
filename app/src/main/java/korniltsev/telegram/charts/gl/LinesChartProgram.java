@@ -253,7 +253,7 @@ public final class LinesChartProgram {
                 Matrix.translateM(V_, 0, 0, dy, 0);
                 Matrix.scaleM(V_, 0, w / ((maxx)), yscale, 1.0f);
                 Matrix.multiplyMM(MVP_, 0, PROJ, 0, V_, 0);
-            } else if (animateOutValue != -1f) {
+            } else if (animateOutValue != -1f && tooltipIndex != -1) {
                 float leftAnimDistance = getTooltipX() - dimen.dpf(16);
                 float rightAnimDistance = this.w - tmpvec2[0] - dimen.dpf(16);;
                 float posndcx = (tmpvec2[0] + 1f) / 2f;
@@ -301,7 +301,7 @@ public final class LinesChartProgram {
                 Matrix.scaleM(V_, 0, ws, hs, 1.0f);
                 Matrix.translateM(V_, 0, -left * xdiff, 0f, 0f);
                 Matrix.multiplyMM(MVP_, 0, PROJ, 0, V_, 0);
-            } else if (animateOutValue != -1f) {
+            } else if (animateOutValue != -1f && tooltipIndex != -1) {
                 float x = getTooltipX();
                 float leftAnimDistance = x - leftx + dimen.dpf(16);
                 float rightAnimDistance = rightx-x + dimen.dpf(16);

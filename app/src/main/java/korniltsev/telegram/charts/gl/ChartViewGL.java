@@ -1728,9 +1728,9 @@ public class ChartViewGL extends TextureView {
             r.overlay.zoomStash.scale = r.overlay.zoom.scale;
             r.overlay.zoomStash.left = r.overlay.zoom.left;
             r.overlay.zoomStash.right = r.overlay.zoom.right;
-            newLeft = 0.25f;
-            newRight = 0.75f;
-            newScale = 0.5f;
+            newScale = 1f/7f;
+            newLeft = 0.5f-newScale/2f;
+            newRight = 0.5f+newScale/2f;
             zoomedInData = details;
         }
         uiLocked = true;
