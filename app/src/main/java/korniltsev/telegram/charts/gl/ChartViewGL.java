@@ -337,6 +337,7 @@ public class ChartViewGL extends TextureView {
 
         public LinesChartProgram[] zoomLines;
         public LinesChartProgram[] zoomScrollbar;
+        public Bar7ChartProgram scrollbarBar7Zoomed;
 
         SurfaceTexture surface;
         final Object lock = new Object();//todo fuck locking
@@ -737,10 +738,19 @@ public class ChartViewGL extends TextureView {
                 }
             }
             if (scrollbar_bar7 != null) {
-                long max = calculateBar7Max(data1, 0, 1);
-                scrollbar_bar7.animateMinMax(max, true, 208);
-                if (foundIndex != -1) {
-                    scrollbar_bar7.animateFade(foundIndex, isChecked, 208);
+                {
+                    long max = calculateBar7Max(data1, 0, 1);
+                    scrollbar_bar7.animateMinMax(max, true, 208);
+                    if (foundIndex != -1) {
+                        scrollbar_bar7.animateFade(foundIndex, isChecked, 208);
+                    }
+                }
+                if (scrollbarBar7Zoomed != null) {
+                    long max = calculateBar7Max(zoomedInData.data, 0, 1);
+                    scrollbarBar7Zoomed.animateMinMax(max, true, 208);
+                    if (foundIndex != -1) {
+                        scrollbarBar7Zoomed.animateFade(foundIndex, isChecked, 208);
+                    }
                 }
             }
             if (scrollbar_stacked_percent != null) {
@@ -973,6 +983,18 @@ public class ChartViewGL extends TextureView {
                 scrollbar_bar7.prepare(PROJ);
                 scrollbar_bar7.draw(t, PROJ);
                 invalidated = it_inv || invalidated;
+                if (scrollbarBar7Zoomed != null){
+                    boolean it = scrollbarBar7Zoomed.animate(t);
+                    if (!scrollbarBar7Zoomed.zoomedIn && scrollbarBar7Zoomed.animateInValue == -1f) {
+                        scrollbarBar7Zoomed.release();
+                        scrollbarBar7Zoomed = null;
+                    } else {
+                        scrollbarBar7Zoomed.prepare(PROJ);
+                        scrollbarBar7Zoomed.draw(t, PROJ);
+                        invalidated = it || invalidated;
+                    }
+                    invalidated = it || invalidated;
+                }
             } else if (scrollbar_stacked_percent != null) {
                 boolean it_inv = scrollbar_stacked_percent.animate(t);
                 scrollbar_stacked_percent.prepare(PROJ);
@@ -1828,24 +1850,47 @@ public class ChartViewGL extends TextureView {
         int duration = 384 ;
 //        int duration = 384 * 20;
         swapxValues(details, newLeft, newRight, newScale, duration);
-        float leftx = r.chartBar7.getTooltipX(r.PROJ);
-
-        r.chartBar7.animateOut(duration, zoomedIn, leftx);
+        float leftx1;
+        float leftx2;
+        {
+            leftx1 = r.chartBar7.getTooltipX(r.PROJ);
+            r.chartBar7.animateOut(duration, zoomedIn, leftx1);
+        }
+        {
+            r.scrollbar_bar7.setTooltipIndex(r.chartBar7.getTooltipIndex());
+            leftx2 = r.scrollbar_bar7.getTooltipX(r.PROJ);
+            r.scrollbar_bar7.setTooltipIndex(-1);
+            r.scrollbar_bar7.animateOut(duration, zoomedIn, leftx2);
+        }
         if (zoomedIn) {
             List<ColumnData> cs = Arrays.asList(details.data).subList(1, details.data.length);
-            r.chartBar7Zoomed = new Bar7ChartProgram(cs, r.w, r.h, dimen, this, false, r.bar7Shader);
-            r.chartBar7Zoomed.zoom = newScale;
-            r.chartBar7Zoomed.left = newLeft;
-            r.chartBar7Zoomed.copyState(r.chartBar7);
-            long viewportMax = r.calculateBar7Max(details.data, newLeft, newRight);
-            r.chartBar7Zoomed.animateMinMax(viewportMax, false, 0);
-            r.chartBar7Zoomed.calcAnimOffsets(r.PROJ);
-            r.chartBar7Zoomed.animateIn(duration, zoomedIn, leftx);
-            r.ruler.animateScale(0, viewportMax, duration);
+            {
+                r.chartBar7Zoomed = new Bar7ChartProgram(cs, r.w, r.h, dimen, this, false, r.bar7Shader);
+                r.chartBar7Zoomed.zoom = newScale;
+                r.chartBar7Zoomed.left = newLeft;
+                r.chartBar7Zoomed.copyState(r.chartBar7);
+                long viewportMax = r.calculateBar7Max(details.data, newLeft, newRight);
+                r.chartBar7Zoomed.animateMinMax(viewportMax, false, 0);
+                r.chartBar7Zoomed.calcAnimOffsets(r.PROJ);
+                r.chartBar7Zoomed.animateIn(duration, zoomedIn, leftx1);
+                r.ruler.animateScale(0, viewportMax, duration);
+            }
+            {
+                r.scrollbarBar7Zoomed = new Bar7ChartProgram(cs, r.w, r.h, dimen, this, true, r.bar7Shader);
+                r.scrollbarBar7Zoomed.copyState(r.chartBar7);
+                long viewportMax = r.calculateBar7Max(details.data, 0f, 1f);
+                r.scrollbarBar7Zoomed.animateMinMax(viewportMax, false, 0);
+                r.scrollbarBar7Zoomed.calcAnimOffsets(r.PROJ);
+                r.scrollbarBar7Zoomed.animateIn(duration, zoomedIn, leftx2);
+            }
         } else {
             if (r.chartBar7Zoomed != null) {
                 r.chartBar7Zoomed.calcAnimOffsets(r.PROJ);
                 r.chartBar7Zoomed.animateIn(duration, zoomedIn, 0f);
+            }
+            if (r.scrollbarBar7Zoomed != null) {
+                r.scrollbarBar7Zoomed.calcAnimOffsets(r.PROJ);
+                r.scrollbarBar7Zoomed.animateIn(duration, zoomedIn, 0f);
             }
             long viewportMax = r.calculateBar7Max(data.data, newLeft, newRight);
             r.ruler.animateScale(0, viewportMax, duration);
