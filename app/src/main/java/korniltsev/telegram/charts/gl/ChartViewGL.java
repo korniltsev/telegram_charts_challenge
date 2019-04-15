@@ -693,7 +693,7 @@ public class ChartViewGL extends TextureView {
                 scrollbar_lines = createScrollbar(data);
             } else if (barSingle) {
                 barShader = new BarChartProgram.MyShader();
-                scrollbar_bars = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, true, barShader);
+                scrollbar_bars = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, true, barShader, currentColors);
             } else if (bar7) {
                 bar7Shader = new Bar7ChartProgram.MyShader();
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
@@ -707,7 +707,7 @@ public class ChartViewGL extends TextureView {
             }
 
             if (barSingle) {
-                chartBar = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, false, barShader);
+                chartBar = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, false, barShader, currentColors);
             } else if (bar7) {
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
                 chartBar7 = new Bar7ChartProgram(cs, w, h, dimen, ChartViewGL.this, false, bar7Shader, currentColors);
@@ -2406,6 +2406,12 @@ public class ChartViewGL extends TextureView {
                 }
                 if (r.scrollbar_stacked_percent != null) {
                     r.scrollbar_stacked_percent.setColorsset(colors);
+                }
+                if (r.chartBar != null) {
+                    r.chartBar.setColorSet(colors);
+                }
+                if (r.scrollbar_bars != null) {
+                    r.scrollbar_bars.setColorSet(colors);
                 }
                 r.invalidateRender();
             }

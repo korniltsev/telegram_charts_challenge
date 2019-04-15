@@ -8,6 +8,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import korniltsev.telegram.charts.data.ColumnData;
+import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyColor;
@@ -26,6 +27,12 @@ public class BarChartProgram {
     private final int vbo;
 
     private final MyShader shader;
+    private ColorSet colorSet;
+
+    public void setColorSet(ColorSet colorSet) {
+        this.colorSet = colorSet;
+    }
+
     public float zoom;
     public float left;
     float max;
@@ -41,7 +48,8 @@ public class BarChartProgram {
     public float outX;
     public float outY;
 
-    public BarChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader) {
+    public BarChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader, ColorSet colorSet) {
+        this.colorSet = colorSet;
         this.column = column;
         this.w = w;
         this.h = h;
@@ -58,7 +66,7 @@ public class BarChartProgram {
         vertices = new float[n * 18];
         for (int i = 0, valuesLength = n; i < valuesLength; i++) {
             long value = values[i];
-            vertices[18 * i ] = i;
+            vertices[18 * i] = i;
             vertices[18 * i + 1] = 0;
             vertices[18 * i + 2] = i;
 
@@ -182,17 +190,8 @@ public class BarChartProgram {
         shader.use();
 
 
-        if (animateOutValue != -1 && animateOutValue != 0f) {
-            float colorAlpha = (column.color >>> 24) / 255f;
-            float animOutAlpha = 1f - animateOutValue;
-            colors[0] = ((column.color >> 16) & 0xFF) / 255f;
-            colors[1] = ((column.color >> 8) & 0xFF) / 255f;
-            colors[2] = (column.color & 0xFF) / 255f;
-            colors[3] = colorAlpha * animOutAlpha;
-        } else {
-            MyColor.set(colors, column.color);
-        }
-        GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
+        bindColors();
+
         GLES20.glEnableVertexAttribArray(shader.positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
         GLES20.glVertexAttribPointer(shader.positionHandle, 3, GLES20.GL_FLOAT, false, 12, 0);
@@ -201,6 +200,34 @@ public class BarChartProgram {
         GLES20.glUniformMatrix4fv(shader.MVPHandle, 1, false, MVP, 0);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertices.length / 3);
         MyGL.checkGlError2();
+    }
+
+    private void bindColors() {
+        int color = colorSet.day ? 0xff99CBF6 : 0xff2B6395;
+        if (animateOutValue != -1 && animateOutValue != 0f) {
+            float colorAlpha = (color >>> 24) / 255f;
+            float animOutAlpha = 1f - animateOutValue;
+            colors[0] = ((color >> 16) & 0xFF) / 255f;
+            colors[1] = ((color >> 8) & 0xFF) / 255f;
+            colors[2] = (color & 0xFF) / 255f;
+            colors[3] = colorAlpha * animOutAlpha;
+        } else {
+            MyColor.set(colors, color);
+        }
+        GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
+
+        int color2 = colorSet.day ? 0xff3497ED : 0xff3393E6;
+        if (animateOutValue != -1 && animateOutValue != 0f) {
+            float colorAlpha = (color2 >>> 24) / 255f;
+            float animOutAlpha = 1f - animateOutValue;
+            colors[0] = ((color2 >> 16) & 0xFF) / 255f;
+            colors[1] = ((color2 >> 8) & 0xFF) / 255f;
+            colors[2] = (color2 & 0xFF) / 255f;
+            colors[3] = colorAlpha * animOutAlpha;
+        } else {
+            MyColor.set(colors, color2);
+        }
+        GLES20.glUniform4fv(shader.u_color_selected, 1, colors, 0);
     }
 
     public void animateMinMax(long viewportMax, boolean animate, int druation) {
@@ -249,14 +276,15 @@ public class BarChartProgram {
                         "uniform float u_selected_index;\n" +
                         "attribute vec3 a_Position;\n" +
                         "uniform vec4 u_color;\n" +
+                        "uniform vec4 u_color_selected;\n" +
                         "varying vec4 v_color;\n" +
                         "void main()\n" +
                         "{\n" +
                         "   if (u_selected_index >= 0.0) {\n" +
                         "        if (a_Position.z == u_selected_index) {\n" +
-                        "            v_color = u_color;\n" +
+                        "            v_color = u_color_selected;\n" +
                         "        } else {\n" +
-                        "            v_color = vec4(u_color.xyz,u_color.w * 0.5);\n" +
+                        "            v_color = u_color;//vec4(u_color.xyz,u_color.w * 0.5);\n" +
                         "        }\n" +
                         "   } else {\n" +
                         "        v_color = u_color;\n" +
@@ -275,6 +303,7 @@ public class BarChartProgram {
         public final int program;
         public final int colorHandle;
         public final int u_selected_index;
+        private final int u_color_selected;
         private boolean released;
 
         public MyShader() {
@@ -284,6 +313,7 @@ public class BarChartProgram {
             u_selected_index = GLES20.glGetUniformLocation(program, "u_selected_index");
             positionHandle = GLES20.glGetAttribLocation(program, "a_Position");
             colorHandle = GLES20.glGetUniformLocation(program, "u_color");
+            u_color_selected = GLES20.glGetUniformLocation(program, "u_color_selected");
         }
 
         public final void use() {
