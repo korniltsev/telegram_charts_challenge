@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.TextureView;
 import android.view.ViewConfiguration;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1983,6 +1984,7 @@ public class ChartViewGL extends TextureView {
         } else {
             details = data.getDetails(stashTooltipIndex);
             if (details == null) {
+                srug();
                 return;
             }
             r.overlay.zoomStash.scale = r.overlay.zoom.scale;
@@ -2026,6 +2028,15 @@ public class ChartViewGL extends TextureView {
                 if (zoomListener != null) {
                     zoomListener.onZoom(zoomCopy, finalDetails);
                 }
+            }
+        });
+    }
+
+    private void srug() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getContext(), "¯\\_(ツ)_/¯", Toast.LENGTH_LONG).show();
             }
         });
     }
