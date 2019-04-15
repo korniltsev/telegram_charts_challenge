@@ -1791,8 +1791,8 @@ public class ChartViewGL extends TextureView {
                                 scroller__right = this.scrollbarPos.right;
                             }
                             // check the scrollbar is not too small
-                            if (scroller__right - scroller_left < initial_scroller_dith / 2) {
-                                scroller__right = scroller_left + initial_scroller_dith / 2;
+                            if (scroller__right - scroller_left < initial_scroller_dith *3 / 4) {
+                                scroller__right = scroller_left + initial_scroller_dith *3 / 4;
                             }
                             setOverlayPos(false);
 //                            invalidate();
@@ -1802,9 +1802,9 @@ public class ChartViewGL extends TextureView {
                                 scroller_left = this.scrollbarPos.left;
                             }
 //                            scroller_width = resze_scroller_right - scroller_left;
-                            if (scroller__right - scroller_left < initial_scroller_dith / 2) {
+                            if (scroller__right - scroller_left < initial_scroller_dith *3 / 4) {
 //                                scroller_left = initial_scroller_dith;
-                                scroller_left = scroller__right - initial_scroller_dith / 2;
+                                scroller_left = scroller__right - initial_scroller_dith *3 / 4;
                             }
                             setOverlayPos(false);
 //                            invalidate();
