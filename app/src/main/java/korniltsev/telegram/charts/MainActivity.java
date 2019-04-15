@@ -1,5 +1,7 @@
 package korniltsev.telegram.charts;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.TimeInterpolator;
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -129,7 +131,7 @@ public class MainActivity extends Activity {
         mySetContentVie(scrollView);
         getWindow().getDecorView().setBackgroundDrawable(null);
     }
-
+    final ArrayList<MyCheckboxContainer> extraCheckboxes = new ArrayList<>();
 
     private View createChart(final ChartData datum) {
         LinearLayout.LayoutParams legendLP = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
@@ -181,7 +183,7 @@ public class MainActivity extends Activity {
 //                }
             }
         });
-        final ArrayList<View> extraCheckboxes = new ArrayList<>();
+
         newChart.zoomListener = new ChartViewGL.ZoomListener() {
             @Override
             public void onZoom(boolean zoom, ChartData details) {
@@ -189,12 +191,19 @@ public class MainActivity extends Activity {
                 if (zoom && details != null
                         && datum.type == ColumnData.Type.bar
                         && datum.data.length == 2) {
-                    View p = createteBarZoomCheckboxes(details, newChart);
+                    MyCheckboxContainer p = createteBarZoomCheckboxes(details, newChart);
                     chartParentFrame.addView(p);
                     extraCheckboxes.add(p);
                 } else {
-                    for (View extraCheckbox : extraCheckboxes) {
-                        chartParentFrame.removeView(extraCheckbox);
+                    for (final View extraCheckbox : extraCheckboxes) {
+                        extraCheckbox.animate().alpha(0f).setDuration(208).setListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                extraCheckbox.setVisibility(View.INVISIBLE);
+//                                chartParentFrame.removeView(extraCheckbox);/todo
+                            }
+                        });
+
                     }
                     extraCheckboxes.clear();
 
@@ -270,7 +279,7 @@ public class MainActivity extends Activity {
                 checkboxes.add(cb);
 
             }
-            MyCheckboxContainer checkboxlist = new MyCheckboxContainer(this, cbs, dimen);
+            MyCheckboxContainer checkboxlist = new MyCheckboxContainer(this, cbs, dimen, 0);
             LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
             cblp.gravity = Gravity.BOTTOM;
             cblp.bottomMargin = dimen.dpi(16);
@@ -281,7 +290,7 @@ public class MainActivity extends Activity {
         return list;
     }
 
-    private View createteBarZoomCheckboxes(ChartData details, final ChartViewGL newChart) {
+    private MyCheckboxContainer createteBarZoomCheckboxes(ChartData details, final ChartViewGL newChart) {
         if (Looper.getMainLooper() != Looper.myLooper()) {
             throw new AssertionError();
         }
@@ -303,11 +312,13 @@ public class MainActivity extends Activity {
             });
             cs.add(myCheckBox);
         }
-        MyCheckboxContainer linearLayout = new MyCheckboxContainer(this, cs, dimen);
+        MyCheckboxContainer linearLayout = new MyCheckboxContainer(this, cs, dimen, dimen.dpi(8));
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         linearLayout.setLayoutParams(layoutParams);
+        linearLayout.setBackgroundColor(currentColorSet.lightBackground);
+        linearLayout.animate().alpha(1f).setDuration(208).setListener(null);
         layoutParams.gravity = Gravity.BOTTOM;
-        layoutParams.bottomMargin = dimen.dpi(8);
+//        linearLayout.setPadding(0, dimen.dpi(8), 0, dimen.dpi(8));
         //todo animate theme
         return linearLayout;
     }
@@ -464,6 +475,9 @@ public class MainActivity extends Activity {
         }
 
         if (animateUI) {
+            for (MyCheckboxContainer it : extraCheckboxes) {
+                it.setBackgroundColor(currentColorSet.lightBackground);
+            }
             for (MyColorDrawable b : lightBackgrounds) {
                 b.animate(currentColorSet.lightBackground, colorAnimationDuration);
             }

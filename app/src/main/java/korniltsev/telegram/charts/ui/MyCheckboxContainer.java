@@ -8,10 +8,12 @@ import java.util.List;
 public class MyCheckboxContainer extends ViewGroup {
     final List<MyCheckBox> children;
     final Dimen dimen;
-    public MyCheckboxContainer(Context context, List<MyCheckBox> children, Dimen dimen) {
+    public final int paddingTopBottom;
+    public MyCheckboxContainer(Context context, List<MyCheckBox> children, Dimen dimen, int paddingTopBottom) {
         super(context);
         this.children = children;
         this.dimen = dimen;
+        this.paddingTopBottom = paddingTopBottom;
         for (int i = 0; i < children.size(); i++) {
             MyCheckBox child = children.get(i);
             addView(child);
@@ -20,11 +22,10 @@ public class MyCheckboxContainer extends ViewGroup {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int w = MeasureSpec.getSize(widthMeasureSpec);
         int dip16 = dimen.dpi(16);
         int x = dip16;
-        int y = 0;
+        int y = paddingTopBottom;
         int hz = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         for (int i = 0; i < children.size(); i++) {
             MyCheckBox child = children.get(i);
@@ -41,7 +42,8 @@ public class MyCheckboxContainer extends ViewGroup {
             x += child.getMeasuredWidth();
             x += dimen.dpi(6);
         }
-        setMeasuredDimension(w, children.get(children.size()-1).p_b);
+        int b = children.get(children.size() - 1).p_b;
+        setMeasuredDimension(w, b + paddingTopBottom);
     }
 
     @Override
