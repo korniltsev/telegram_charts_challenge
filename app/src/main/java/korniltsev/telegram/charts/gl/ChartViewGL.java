@@ -52,7 +52,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 high prio
 
     - бонус зум для 4 графика
-        - вертикальная линия
         - цвета в зуме на кнопках и тексте  и линиях
 
         - цвета кнопок кажется не совпадают со скриншотами
@@ -1241,7 +1240,18 @@ public class ChartViewGL extends TextureView {
 
 
             ruler.draw(t);
-
+            if (tooltipIndex != -1) {
+                if (zoomedIn) {
+                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, zoomedInData, checkedDetailsForBar);
+                    invalidated = tooltip_inv || invalidated;
+                } else {
+                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, null, checked);
+                    invalidated = tooltip_inv || invalidated;
+                }
+                if (chartBar.animateOutValue == 1f) {
+                    this.tooltip.drawVLine(PROJ, chartBar.MVP, tooltipIndex);
+                }
+            }
             if (singleBarZoomLines != null) {
                 for (LinesChartProgram chartProgram : singleBarZoomLines) {
                     chartProgram.shader.use();//todo use only once!
@@ -1259,14 +1269,8 @@ public class ChartViewGL extends TextureView {
                 MyGL.checkGlError2();
             }
 
+
             if (tooltipIndex != -1) {
-                if (zoomedIn) {
-                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, zoomedInData, checkedDetailsForBar);
-                    invalidated = tooltip_inv || invalidated;
-                } else {
-                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, null, checked);
-                    invalidated = tooltip_inv || invalidated;
-                }
                 this.tooltip.drawTooltip(PROJ);
             }
             invalidated = it_invalidated || invalidated;

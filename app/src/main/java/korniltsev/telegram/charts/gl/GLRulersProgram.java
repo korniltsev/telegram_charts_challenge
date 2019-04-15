@@ -734,6 +734,9 @@ public final class GLRulersProgram {
 
         float n = Math.round(ir - il);// points between left and right
         float newStride = -1f;
+        if (xValues.size() == 0) {
+            stride = 0;
+        }
         if (stride == 0) {
 //            change = true;
             newStride = Math.round(n / WANT_LABELS);
