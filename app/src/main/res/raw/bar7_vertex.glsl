@@ -31,7 +31,7 @@ void main() {
         if (a_xNo == u_selected_index) {
             v_color = u_color;
         } else {
-            v_color = vec4(u_color.xyz, 0.5);
+            v_color = vec4(u_color.xyz, 0.5 *u_color.w);
         }
     } else {
         v_color = u_color;

@@ -39,6 +39,10 @@ public class Bar7ChartProgram {
     private MyAnimation.Float[] visibilityANim = new MyAnimation.Float[7];
 
     private int tooltipIndex = -1;
+    private float aniamteOutPivot;
+    public MyAnimation.Float animateOutValueAnim;
+    public float animateOutValue = -1f;
+    private boolean zoomedIn;
 
 
     public Bar7ChartProgram.Vx set(int i, Vx v) {
@@ -147,6 +151,17 @@ public class Bar7ChartProgram {
                 }
             }
         }
+        if (animateOutValueAnim != null) {
+            animateOutValue = animateOutValueAnim.tick(t);
+            if (animateOutValueAnim.ended) {
+                animateOutValueAnim = null;
+                if (!zoomedIn) {
+                    animateOutValue = -1f;
+                }
+            } else {
+                invalidate = true;
+            }
+        }
         return invalidate;
     }
 
@@ -166,7 +181,6 @@ public class Bar7ChartProgram {
 
             final float yscale = h / (max - 0);
             final float dy = -yscale * 0;
-
             Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + root.checkboxesHeight, 0);
             Matrix.translateM(V, 0, 0, dy, 0);
             Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
@@ -183,6 +197,11 @@ public class Bar7ChartProgram {
             final float ws = w / xdiff / zoom;
             final float hs = h / (max - 0);
             final float dy = -hs * 0;
+            if (animateOutValue != -1 && animateOutValue != 0f) {
+                Matrix.translateM(V, 0, aniamteOutPivot, 0, 0);
+                Matrix.scaleM(V, 0, 8 * animateOutValue + 1f, 1f, 1f);
+                Matrix.translateM(V, 0, -aniamteOutPivot, 0, 0);
+            }
             Matrix.translateM(V, 0, hpadding, ypx, 0);
             Matrix.translateM(V, 0, 0, dy, 0);
             Matrix.scaleM(V, 0, ws, hs, 1.0f);
@@ -192,6 +211,8 @@ public class Bar7ChartProgram {
         }
 
     }
+    float[] tmpvec = new float[4];
+    float[] tmpvec2 = new float[4];
 
     public void draw(long t, float[] PROJ) {
 
@@ -227,8 +248,17 @@ public class Bar7ChartProgram {
             GLES20.glVertexAttribPointer(shader.a_zeroOrValue, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 8);
             GLES20.glVertexAttribPointer(shader.a_xNo, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 9);
             MyGL.checkGlError2();
+            if (animateOutValue != -1 && animateOutValue != 0f) {
+                float colorAlpha = (column.get(i).color >>> 24) / 255f;
+                float animOutAlpha = 1f - animateOutValue;
+                colors[0] = ((column.get(i).color >> 16) & 0xFF) / 255f;
+                colors[1] = ((column.get(i).color >> 8) & 0xFF) / 255f;
+                colors[2] = (column.get(i).color & 0xFF) / 255f;
+                colors[3] = colorAlpha * animOutAlpha;
 
-            MyColor.set(colors, column.get(i).color);
+            } else {
+                MyColor.set(colors, column.get(i).color);
+            }
             GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
             GLES20.glUniform1f(shader.u_selected_index, tooltipIndex);
             GLES20.glUniform1f(shader.u_columnNo, i);
@@ -269,6 +299,27 @@ public class Bar7ChartProgram {
         visibilityANim[foundIndex] = new MyAnimation.Float(duration, visibility[foundIndex], isChecked ? 1f : 0f);
     }
 
+
+    public void animateOut(int duration, boolean zoomedIn, float leftX) {
+        this.zoomedIn = zoomedIn;
+        if (zoomedIn) {
+            this.aniamteOutPivot = leftX;
+        }
+        if (animateOutValue == -1f) {
+            animateOutValue = 0f;
+        }
+        animateOutValueAnim = new MyAnimation.Float(duration, animateOutValue, zoomedIn ? 1f : 0f);
+    }
+
+    public float getTooltipX(float[] PROJ) {
+        prepare(PROJ);
+        tmpvec[0] = tooltipIndex;
+        tmpvec[1] = 1f;
+        tmpvec[2] = 0f;
+        tmpvec[3] = 1;
+        Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
+        return tmpvec2[0];
+    }
 
 
     static class Vx {

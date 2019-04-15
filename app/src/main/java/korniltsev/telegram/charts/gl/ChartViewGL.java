@@ -1068,25 +1068,7 @@ public class ChartViewGL extends TextureView {
                 }
                 invalidated = it_invalidated || invalidated;
             } else if (chartBar7 != null) {
-                int tooltipIndex = chartBar7.getTooltipIndex();
-                if (tooltipIndex != -1) {
-                    if (this.tooltip == null) {
-                        this.tooltip = new Tooltip(dimen, w, h, currentColors, data, simple, ChartViewGL.this);
-                    }
-                }
-                boolean it_invalidated = chartBar7.animate(t);
-                chartBar7.prepare(PROJ);
-                chartBar7.draw(t, PROJ);
-
-                ruler.draw(t);
-
-                if (tooltipIndex != -1) {
-                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, null, checked);
-                    this.tooltip.calcPos(chartBar7.MVP, tooltipIndex);
-                    this.tooltip.drawTooltip(PROJ);
-                    invalidated = tooltip_inv || invalidated;
-                }
-                invalidated = it_invalidated || invalidated;
+                invalidated = drawChartBar7(invalidated, t);
 
             } else if (chartStackedPercent != null) {
                 int tooltipIndex = chartStackedPercent.getTooltipIndex();
@@ -1110,6 +1092,40 @@ public class ChartViewGL extends TextureView {
                 }
                 invalidated = it_invalidated || invalidated;
 
+            }
+            return invalidated;
+        }
+
+        private boolean drawChartBar7(boolean invalidated, long t) {
+            int tooltipIndex = chartBar7.getTooltipIndex();
+            if (tooltipIndex != -1) {
+                if (this.tooltip == null) {
+                    this.tooltip = new Tooltip(dimen, w, h, currentColors, data, simple, ChartViewGL.this);
+                }
+            }
+            boolean it_invalidated = chartBar7.animate(t);
+            chartBar7.prepare(PROJ);
+            chartBar7.draw(t, PROJ);
+
+            ruler.draw(t);
+
+            if (tooltipIndex != -1) {
+                boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, null, checked);
+                this.tooltip.calcPos(chartBar7.MVP, tooltipIndex);
+                this.tooltip.drawTooltip(PROJ);
+                invalidated = tooltip_inv || invalidated;
+            }
+            invalidated = it_invalidated || invalidated;
+            if (uiLocked) {
+                if (zoomedIn) {
+                    if (chartBar7.animateOutValue == 1f) {
+                        unlockUI();
+                    }
+                } else {
+                    if (chartBar7.animateOutValue == -1f) {
+                        unlockUI();
+                    }
+                }
             }
             return invalidated;
         }
@@ -1738,6 +1754,8 @@ public class ChartViewGL extends TextureView {
         zoomedIn = !zoomedIn;
         if (r.chartLines != null) {
             zoomLines(details, newLeft, newRight, newScale);
+        } else if (r.bar7Shader != null) {
+            zoomBar7(details, newLeft, newRight, newScale);
         }
         r.overlay.zoom.leftAnim = new MyAnimation.Float(208, r.overlay.zoom.left, newLeft);
         r.overlay.zoom.rightAnim = new MyAnimation.Float(208, r.overlay.zoom.right, newRight);
@@ -1752,6 +1770,13 @@ public class ChartViewGL extends TextureView {
                 }
             }
         });
+    }
+
+    private void zoomBar7(ChartData details, float newLeft, float newRight, float newScale) {
+        int duration = 384 * 20;
+        float leftx = r.chartBar7.getTooltipX(r.PROJ);
+
+        r.chartBar7.animateOut(duration, zoomedIn, leftx);
     }
 
     private void zoomLines(final ChartData details, final float newLeft, final float newRight, final float newScale) {
