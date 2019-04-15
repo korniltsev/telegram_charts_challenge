@@ -34,6 +34,7 @@ class TooltipFramebuffer {
     public static final int LEFT_RIGHT_PADDING = 12;
     public static final float FONT_SIZE_16 = 12f;
     public static final float FONT_SIZE22 = 16f;
+    public static final int PADDING_BETWEEN_NAME_AND_VALUE = 32;
     //    public static final int VMARGIN = 8;
     private final int fakeShadowSimulatorLine;
     private ColorSet colorset;
@@ -282,7 +283,7 @@ class TooltipFramebuffer {
         int vw = -1;
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
-            vw = Math.max(vw, line.name.w + line.value.w + dimen.dpi(8));
+            vw = Math.max(vw, line.name.w + line.value.w + dimen.dpi(PADDING_BETWEEN_NAME_AND_VALUE));
         }
 
 
