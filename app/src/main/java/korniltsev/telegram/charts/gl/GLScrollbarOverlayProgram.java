@@ -164,8 +164,8 @@ public final class GLScrollbarOverlayProgram {
         drawRect(l, y + root.dimen_scrollbar_height - vline2h, r - l, vline2h);
 
 //        MyGL.checkGlError2();
-//        drawText(icLeft, l - icLeft.w, y, Color.RED, 1f, proj);
-//        drawText(icRight, r, y, Color.RED, 1f, proj);
+        drawText(icLeft, l - icLeft.w, y, Color.RED, 1f, proj);
+        drawText(icLeft, r, y, Color.RED, 1f, proj);
 //        MyGL.checkGlError2();
         return invalidate;
     }
