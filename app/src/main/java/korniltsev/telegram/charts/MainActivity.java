@@ -138,9 +138,17 @@ public class MainActivity extends Activity {
         legend.setLayoutParams(legendLP);
 
 
+
         final ChartViewGL newChart = new ChartViewGL(this, datum, dimen, currentColorSet);
         newChart.setLayoutParams(new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
         charts.add(newChart);
+
+        legend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                newChart.zoomOut();
+            }
+        });
 
 
         ScrollView.LayoutParams listLP = new ScrollView.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
