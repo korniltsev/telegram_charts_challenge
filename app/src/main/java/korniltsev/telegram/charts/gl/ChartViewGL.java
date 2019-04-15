@@ -147,6 +147,7 @@ public class ChartViewGL extends TextureView {
 //    public ColorSet currentColorsSet;
     public volatile boolean uiLocked = false;
     private int stashTooltipIndex;
+    private boolean[] checkedDetailsForBar;
 
     @Override
     public boolean isOpaque() {
@@ -1133,11 +1134,6 @@ public class ChartViewGL extends TextureView {
 
         private boolean drawChartSingleBar(boolean invalidated, long t) {
             int tooltipIndex = r.tooltipIndex;
-            if (tooltipIndex != -1) {
-                if (this.tooltip == null) {
-                    this.tooltip = new Tooltip(dimen, w, h, currentColors, data, simple, ChartViewGL.this);
-                }
-            }
 
             if (singleBarZoomLines != null) {
                 for (LinesChartProgram c : singleBarZoomLines) {
@@ -1181,10 +1177,14 @@ public class ChartViewGL extends TextureView {
             }
 
             if (tooltipIndex != -1) {
-                boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, null, checked);
-                this.tooltip.calcPos(chartBar.MVP, tooltipIndex);
+                if (zoomedIn) {
+                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, zoomedInData, checkedDetailsForBar);
+                    invalidated = tooltip_inv || invalidated;
+                } else {
+                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, null, checked);
+                    invalidated = tooltip_inv || invalidated;
+                }
                 this.tooltip.drawTooltip(PROJ);
-                invalidated = tooltip_inv || invalidated;
             }
             invalidated = it_invalidated || invalidated;
 
@@ -1656,6 +1656,9 @@ public class ChartViewGL extends TextureView {
             case MotionEvent.ACTION_DOWN:
                 boolean scrollbar = y >= this.scrollbarPos.top && y <= this.scrollbarPos.bottom;
                 if (scrollbar) {
+                    if (zoomedIn && data.type == ColumnData.Type.bar && data.data.length == 2) {
+                        return false;
+                    }
                     if (Math.abs(x - scroller_left) <= resize_touch_area2) {
                         if (LOGGING) Log.d("tg.chart", "touchevent DOWN resize left");
                         last_x = x;
@@ -1801,6 +1804,8 @@ public class ChartViewGL extends TextureView {
                         n = r.zoomLines[0].column.values.length;
                     } else if (r.chartBar7Zoomed != null) {
                         n = r.chartBar7Zoomed.column.get(0).values.length;
+                    } else if (r.singleBarZoomLines != null && zoomedInData != null) {
+                        n = zoomedInData.data[0].values.length;
                     } else {
                         n = r.data.data[0].values.length;
                     }
@@ -1837,7 +1842,18 @@ public class ChartViewGL extends TextureView {
                         }
                     }
                     if (r.chartBar != null) {
-                        r.chartBar.setTooltipIndex(finali);
+                        if (r.tooltip == null) {
+                            r.tooltip = new Tooltip(dimen, r.w, r.h, currentColors, data, r.simple, ChartViewGL.this);
+                        }
+                        if (zoomedIn && r.singleBarZoomLines != null) {
+                            r.tooltip.calcPos(r.singleBarZoomLines[0].MVP_, finali);
+                            for (LinesChartProgram it : r.singleBarZoomLines) {
+                                it.setTooltipIndex(finali);
+                            }
+                        } else {
+                            r.tooltip.calcPos(r.chartBar.MVP, finali);
+                            r.chartBar.setTooltipIndex(finali);
+                        }
                     }
                     if (r.chartBar7 != null) {
                         if (r.tooltip == null) {
@@ -1937,6 +1953,10 @@ public class ChartViewGL extends TextureView {
         swapxValues(details, newLeft, newRight, newScale, duration);
 
         if (zoomedIn) {
+            checkedDetailsForBar = new boolean[details.data.length - 1];
+            for (int i = 0; i < checkedDetailsForBar.length; i++) {
+                checkedDetailsForBar[i] = true;
+            }
             float leftx1;
             {
                 leftx1 = r.chartBar.getTooltipX(r.PROJ);
@@ -1976,10 +1996,12 @@ public class ChartViewGL extends TextureView {
                     LinesChartProgram[] zoomLines = r.singleBarZoomLines;
                     for (int i = 0; i < zoomLines.length; i++) {
                         LinesChartProgram it = zoomLines[i];
+                        it.drawGoodCircle = false;
                         it.animateIn(duration, zoomedIn, r.PROJ, leftx1, -1f);
                     }
                 }
             }
+            r.chartBar.setTooltipIndex(-1);
         }
     }
 
