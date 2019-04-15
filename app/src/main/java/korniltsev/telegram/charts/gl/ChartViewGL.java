@@ -51,7 +51,7 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 high prio
 
     - бонус зум для 3 графика
-        - 15:30 - ленивые текстуры
+        - 15:30 - анимировать линейку
         - все тоже самое но в скроллбар
     - бонус зум для 4 графика
 
