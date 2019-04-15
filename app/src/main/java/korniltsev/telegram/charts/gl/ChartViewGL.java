@@ -52,12 +52,9 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 high prio
 
     - бонус зум для 4 графика
-        - чекбоксы
-        - вертикальная линия
-        - тултип не инвалидейтится
-        - цвет в зуме
         - санимировать тему на зум линиях
-        - longtap
+        - вертикальная линия
+        - цвета в зуме на кнопках и тексте  и линиях
 
 
         - cэмулировать viewportMax = 0 в bar zoom
@@ -357,6 +354,36 @@ public class ChartViewGL extends TextureView {
                 r.setCheckedDetailsImpl(id, isChecked);
             }
         });
+        return true;
+    }
+
+    public boolean setSingleCheckedDetail(final String id) {
+        if (uiLocked) {
+            return false;
+        }
+        Runnable setCheckedOnRenderThread = new Runnable() {
+            @Override
+            public void run() {
+                if (uiLocked || zoomedInData == null || checkedDetailsForBar == null) {
+                    return;
+                }
+                for (int i = 1; i < zoomedInData.data.length; i++) {
+                    ColumnData it = zoomedInData.data[i];
+                    if (id.equals(it.id)) {
+                        if (!checkedDetailsForBar[i-1]) {
+                            r.setCheckedDetailsImpl(id, true);
+                        }
+                    } else {
+                        if (checkedDetailsForBar[i-1]) {
+                            r.setCheckedDetailsImpl(it.id, false);
+                        }
+                    }
+                }
+
+                invalidateRender();
+            }
+        };
+        r.postToRender(setCheckedOnRenderThread);
         return true;
     }
 

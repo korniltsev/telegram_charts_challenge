@@ -295,7 +295,7 @@ public class MainActivity extends Activity {
             throw new AssertionError();
         }
 
-        List<MyCheckBox> cs = new ArrayList<>();
+        final List<MyCheckBox> cs = new ArrayList<>();
         ColumnData[] data1 = details.data;
         for (int i = 1; i < data1.length; i++) {
             final ColumnData datum = data1[i];
@@ -308,6 +308,25 @@ public class MainActivity extends Activity {
                         shake(myCheckBox);
                     }
                     return b;
+                }
+            });
+            myCheckBox.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    boolean b = newChart.setSingleCheckedDetail(datum.id);
+                    if (!b) {
+                        shake(myCheckBox);
+                    } else {
+                        for (MyCheckBox c : cs) {
+                            if (c == myCheckBox) {
+                                c.setChecked(true, false);
+                            } else {
+                                c.setChecked(false, false);
+                            }
+                        }
+                    }
+
+                    return true;
                 }
             });
             cs.add(myCheckBox);
