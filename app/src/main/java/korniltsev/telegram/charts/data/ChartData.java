@@ -92,12 +92,15 @@ public class ChartData {
         return new ChartData(jcolumn, percentage, stacked, y_scaled, lastT, index);
     }
 
-    public static SimpleDateFormat dateFormat;
+//    public static SimpleDateFormat dateFormat;
 
     public ChartData getDetails(int tooltipIndex) {
-        if (dateFormat == null) {
-            dateFormat = new SimpleDateFormat("yyyy-MM/dd", Locale.US);
-            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+//        if (dateFormat == null) {
+//            dateFormat = new SimpleDateFormat("yyyy-MM/dd", Locale.US);
+//            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+//        }
+        if (type == ColumnData.Type.bar && data.length == 2) {
+            return getSingleBarDetails(tooltipIndex);
         }
         Calendar c = Calendar.getInstance();
         long value = data[0].values[tooltipIndex];
@@ -108,33 +111,12 @@ public class ChartData {
         List<ChartData> days = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
 
-            int year = c.get(Calendar.YEAR);
-            int month = c.get(Calendar.MONTH) + 1;
-            int day = c.get(Calendar.DAY_OF_MONTH);
-            String format = String.format(Locale.US, "%d-%02d/%02d", year, month, day);
-            InputStream inputStream = null;
-            try {
-                inputStream = MainActivity.ctx.getAssets().open(index + "/" + format + ".json");
-                byte[] bytes = MainActivity.readAll(inputStream);
-                String s = new String(bytes, "UTF-8");
-                JSONObject o = new JSONObject(s);
-                ChartData chartData = ChartData.pareOne(o, -1);
-                days.add(chartData);
-            } catch (IOException e) {
-                if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err " + format, e);
-                continue;
-            } catch (JSONException e) {
-                if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err " + format, e);
-                continue;
-            } finally {
-                try {
-                    if (inputStream != null) {
-                        inputStream.close();
-                    }
-                } catch (IOException e) {
-                }
-            }
+            String format = getFileName(c);
+            ChartData chartData = readFile(format);
             c.add(Calendar.DAY_OF_YEAR, 1);
+            if (chartData != null) {
+                days.add(chartData);
+            }
         }
         if (days.isEmpty()) {
             return null;
@@ -161,5 +143,73 @@ public class ChartData {
         }
 //        Date date = new Date(value);
 
+    }
+
+    private String getFileName(Calendar c) {
+        String format;
+        int year = c.get(Calendar.YEAR);
+        int month = c.get(Calendar.MONTH) + 1;
+        int day = c.get(Calendar.DAY_OF_MONTH);
+        format = String.format(Locale.US, "%d-%02d/%02d", year, month, day);
+        return format;
+    }
+
+    private ChartData readFile(String format) {
+        ChartData chartData;
+        InputStream inputStream = null;
+        try {
+            inputStream = MainActivity.ctx.getAssets().open(index + "/" + format + ".json");
+            byte[] bytes = MainActivity.readAll(inputStream);
+            String s = new String(bytes, "UTF-8");
+            JSONObject o = new JSONObject(s);
+            chartData = ChartData.pareOne(o, -1);
+
+        } catch (IOException e) {
+            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err " + format, e);
+            return null;
+        } catch (JSONException e) {
+            if (MainActivity.LOGGING) Log.e(MainActivity.TAG, "err " + format, e);
+            return null;
+        } finally {
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+            }
+        }
+        return chartData;
+    }
+
+    private ChartData getSingleBarDetails(int tooltipIndex) {
+        Calendar c = Calendar.getInstance();
+        long value = data[0].values[tooltipIndex];
+        Date date = new Date(value);
+        c.setTime(date);
+        c.setTimeZone(TimeZone.getTimeZone("UTC"));
+        ChartData d0 = readFile(getFileName(c));
+        c.add(Calendar.DAY_OF_YEAR, -1);
+        ChartData d1 = readFile(getFileName(c));
+        c.add(Calendar.DAY_OF_YEAR, -6);
+        ChartData d7 = readFile(getFileName(c));
+        List<ChartData> cs = new ArrayList<>();
+        if (d0 != null) {
+            cs.add(d0);
+        }
+        if (d1 != null) {
+            cs.add(d1);
+        }
+        if (d7 != null) {
+            cs.add(d7);
+        }
+
+        ColumnData[] columns = new ColumnData[cs.size()+1];
+        for (int i = 0; i < cs.size(); i++) {
+            ChartData chartData = cs.get(i);
+            columns[i+1] = chartData.data[1];
+        }
+        columns[0] = cs.get(0).data[0];
+        ChartData res = new ChartData(columns, false, false, false, ColumnData.Type.line, -1);
+        return res;
     }
 }

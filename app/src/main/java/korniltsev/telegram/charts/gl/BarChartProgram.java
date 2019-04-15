@@ -33,11 +33,13 @@ public class BarChartProgram {
     private int tooltipIndex = -1;
 
     float[] tmpvec = new float[4];
-    float[] tmpvec2 = new float[4];
-    private float aniamteOutPivot;
+    public float[] tmpvec2 = new float[4];
+    public float aniamteOutPivot;
     public MyAnimation.Float animateOutValueAnim;
     public float animateOutValue = -1f;
     public boolean zoomedIn;
+    public float outX;
+    public float outY;
 
     public BarChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader) {
         this.column = column;
@@ -232,10 +234,12 @@ public class BarChartProgram {
     public float getTooltipX(float[] PROJ) {
         prepare(PROJ);
         tmpvec[0] = tooltipIndex;
-        tmpvec[1] = 1f;
+        tmpvec[1] = column.values[tooltipIndex];
         tmpvec[2] = 0f;
         tmpvec[3] = 1;
         Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
+        outX = tmpvec2[0];
+        outY = tmpvec2[1];
         return tmpvec2[0];
     }
 

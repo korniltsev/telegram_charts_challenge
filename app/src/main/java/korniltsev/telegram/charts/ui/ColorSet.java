@@ -128,9 +128,9 @@ public class ColorSet {
             case 0xffE8AF14: // yellow
                 return day ? 0xffE8AF14 : 0xffDEB93F;
             default:
-                if (BuildConfig.DEBUG) {
-                    throw new AssertionError(Integer.toHexString(color));
-                }
+//                if (BuildConfig.DEBUG) {
+//                    throw new AssertionError(Integer.toHexString(color));
+//                }
                 return color;
         }
     }
