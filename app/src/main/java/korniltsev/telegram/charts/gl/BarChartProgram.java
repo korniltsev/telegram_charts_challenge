@@ -143,7 +143,7 @@ public class BarChartProgram {
             final float dy = -yscale * 0;
             if (animateOutValue != -1f && animateOutValue != 0f) {
                 Matrix.translateM(V, 0, aniamteOutPivot, 0, 0);
-                Matrix.scaleM(V, 0, 8 * animateOutValue + 1f, 1f, 1f);
+                Matrix.scaleM(V, 0, 4 * animateOutValue + 1f, 1f, 1f);
                 Matrix.translateM(V, 0, -aniamteOutPivot, 0, 0);
             }
             Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + root.checkboxesHeight, 0);
@@ -164,7 +164,7 @@ public class BarChartProgram {
             final float dy = -hs * 0;
             if (animateOutValue != -1f && animateOutValue != 0f) {
                 Matrix.translateM(V, 0, aniamteOutPivot, 0, 0);
-                Matrix.scaleM(V, 0, 8 * animateOutValue + 1f, 1f, 1f);
+                Matrix.scaleM(V, 0, 4 * animateOutValue + 1f, 1f, 1f);
                 Matrix.translateM(V, 0, -aniamteOutPivot, 0, 0);
             }
             Matrix.translateM(V, 0, hpadding, ypx, 0);
