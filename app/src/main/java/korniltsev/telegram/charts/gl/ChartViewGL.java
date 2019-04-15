@@ -52,7 +52,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 high prio
 
     - бонус зум для 4 графика
-        - санимировать тему на зум линиях
         - вертикальная линия
         - цвета в зуме на кнопках и тексте  и линиях
 
