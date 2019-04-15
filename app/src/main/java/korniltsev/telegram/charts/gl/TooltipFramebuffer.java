@@ -10,8 +10,12 @@ import android.text.TextPaint;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.data.ColumnData;
@@ -34,7 +38,7 @@ class TooltipFramebuffer {
     public static final int LEFT_RIGHT_PADDING = 12;
     public static final float FONT_SIZE_16 = 12f;
     public static final float FONT_SIZE22 = 16f;
-    public static final int PADDING_BETWEEN_NAME_AND_VALUE = 32;
+    public static final int PADDING_BETWEEN_NAME_AND_VALUE = 20;
     //    public static final int VMARGIN = 8;
     private final int fakeShadowSimulatorLine;
     private ColorSet colorset;
@@ -69,6 +73,17 @@ class TooltipFramebuffer {
     private boolean released;
     public float realH;
     public int realW;
+
+    private static final DecimalFormat formatter;
+
+    static {
+        formatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
+        DecimalFormatSymbols symbols = formatter.getDecimalFormatSymbols();
+
+        symbols.setGroupingSeparator(' ');
+        formatter.setDecimalFormatSymbols(symbols);
+
+    }
 
     public TooltipFramebuffer(TexShader shader, ChartData data, int index, Dimen dimen, ColorSet set, boolean[] checked, SimpleShader simple) {
         this.dateColor = set.tooltipTitleColor;
@@ -269,7 +284,9 @@ class TooltipFramebuffer {
             name.color = title.color;
 
             p16.setTypeface(medium);
-            TextTex value = new TextTex(String.valueOf(datum.values[index]), p16);
+//            String text = String.valueOf(datum.values[index]);
+            String text = formatter.format(datum.values[index]);
+            TextTex value = new TextTex(text, p16);
             p16.setTypeface(null);
             value.color = datum.color;
             Line e = new Line(name, value, value.h + dimen.dpi(4), datum.id);
