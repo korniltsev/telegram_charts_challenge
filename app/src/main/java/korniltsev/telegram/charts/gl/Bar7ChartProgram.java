@@ -42,7 +42,13 @@ public class Bar7ChartProgram {
     private float aniamteOutPivot;
     public MyAnimation.Float animateOutValueAnim;
     public float animateOutValue = -1f;
-    private boolean zoomedIn;
+    public boolean zoomedIn;
+    public float animateInValue = -1f;
+    public MyAnimation.Float animateInValueAnim;
+    private int leftxi;
+    private int rightxi;
+    private float leftx;
+    private float rightx;
 
 
     public Bar7ChartProgram.Vx set(int i, Vx v) {
@@ -162,6 +168,17 @@ public class Bar7ChartProgram {
                 invalidate = true;
             }
         }
+        if (animateInValueAnim != null) {
+            animateInValue = animateInValueAnim.tick(t);
+            if (animateInValueAnim.ended) {
+                animateInValueAnim = null;
+                if (!zoomedIn) {
+                    animateInValue = -1f;
+                }
+            } else {
+                invalidate = true;
+            }
+        }
         return invalidate;
     }
 
@@ -197,9 +214,13 @@ public class Bar7ChartProgram {
             final float ws = w / xdiff / zoom;
             final float hs = h / (max - 0);
             final float dy = -hs * 0;
-            if (animateOutValue != -1 && animateOutValue != 0f) {
+            if (animateOutValue != -1f && animateOutValue != 0f) {
                 Matrix.translateM(V, 0, aniamteOutPivot, 0, 0);
                 Matrix.scaleM(V, 0, 8 * animateOutValue + 1f, 1f, 1f);
+                Matrix.translateM(V, 0, -aniamteOutPivot, 0, 0);
+            } else if (animateInValue != -1f) {
+                Matrix.translateM(V, 0, aniamteOutPivot, 0, 0);
+                Matrix.scaleM(V, 0, animateInValue, 1f, 1f);
                 Matrix.translateM(V, 0, -aniamteOutPivot, 0, 0);
             }
             Matrix.translateM(V, 0, hpadding, ypx, 0);
@@ -256,6 +277,13 @@ public class Bar7ChartProgram {
                 colors[2] = (column.get(i).color & 0xFF) / 255f;
                 colors[3] = colorAlpha * animOutAlpha;
 
+            } else if (animateInValue != -1f) {
+                float colorAlpha = (column.get(i).color >>> 24) / 255f;
+                colors[0] = ((column.get(i).color >> 16) & 0xFF) / 255f;
+                colors[1] = ((column.get(i).color >> 8) & 0xFF) / 255f;
+                colors[2] = (column.get(i).color & 0xFF) / 255f;
+                colors[3] = colorAlpha * animateInValue;
+
             } else {
                 MyColor.set(colors, column.get(i).color);
             }
@@ -272,7 +300,14 @@ public class Bar7ChartProgram {
             GLES20.glUniform1f(shader.u_v5, visibility[5]);
             GLES20.glUniform1f(shader.u_v6, visibility[6]);
             MyGL.checkGlError2();
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vxCount);
+            if (animateInValue == -1f || animateInValue == 1f) {
+                GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vxCount);
+            } else  {
+                int vperline = 6;
+                int first = vperline * leftxi;
+                int count = (rightxi - leftxi ) * vperline;
+                GLES20.glDrawArrays(GLES20.GL_TRIANGLES, first, count);
+            }
             MyGL.checkGlError2();
         }
     }
@@ -319,6 +354,48 @@ public class Bar7ChartProgram {
         tmpvec[3] = 1;
         Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
         return tmpvec2[0];
+    }
+
+    public void copyState(Bar7ChartProgram chartBar7) {
+        for (int i = 0; i < visibility.length; i++) {
+            visibility[i] = chartBar7.visibility[i];
+        }
+    }
+    public void calcAnimOffsets(float[] PROJ) {
+        prepare(PROJ);
+        leftxi = -1;
+        rightxi = -1;
+        for (int i = 0; i < column.get(0).values.length; i++) {
+            tmpvec[0] = i;
+            tmpvec[1] = 0f;
+            tmpvec[2] = 0f;
+            tmpvec[3] = 1f;
+            Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
+            float x = tmpvec2[0];
+            if (leftxi == -1 || x <= 0) {
+                leftx = x;
+                leftxi = i;
+            } else if (x >= w) {
+                rightx = x;
+                rightxi = i;
+                break;
+            } else if (i == column.get(0).values.length - 1) {
+                rightx = x;
+                rightxi = i;
+            }
+        }
+    }
+
+    public void animateIn(int duration, boolean zoomedIn, float leftx) {
+        this.zoomedIn = zoomedIn;
+        if (zoomedIn) {
+            aniamteOutPivot = leftx;
+
+        }
+        if (animateInValue == -1f) {
+            animateInValue = 0f;
+        }
+        animateInValueAnim = new MyAnimation.Float(duration, animateInValue, zoomedIn ? 1f : 0f);
     }
 
 
@@ -372,8 +449,10 @@ public class Bar7ChartProgram {
 
         public MyShader() {
             try {
-                byte[] fragment = MainActivity.readAll(MainActivity.ctx.getResources().openRawResource(R.raw.bar7_fragment));
-                byte[] vertex = MainActivity.readAll(MainActivity.ctx.getResources().openRawResource(R.raw.bar7_vertex));
+                byte[] fragment = MainActivity.readAll(
+                        MainActivity.ctx.getResources().openRawResource(R.raw.bar7_fragment));
+                byte[] vertex = MainActivity.readAll(
+                        MainActivity.ctx.getResources().openRawResource(R.raw.bar7_vertex));
                 program = MyGL.createProgram(new String(vertex, "UTF-8"), new String(fragment, "UTF-8"));
             } catch (IOException e) {
                 throw new AssertionError();

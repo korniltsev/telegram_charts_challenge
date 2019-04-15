@@ -50,8 +50,13 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 high prio
 
-    - санимировать x значения
     - бонус зум для 3 графика
+        - зумин
+        - зумаут
+        - убрать тултип
+        - анимация скроллбара
+        - тултипы
+        - чек анчек
     - бонус зум для 4 графика
 
 
@@ -359,6 +364,7 @@ public class ChartViewGL extends TextureView {
         public LinesChartProgram[] chartLines;
         private BarChartProgram chartBar;
         private Bar7ChartProgram chartBar7;
+        private Bar7ChartProgram chartBar7Zoomed;
         private PercentStackedChartProgram chartStackedPercent;
 
         public GLScrollbarOverlayProgram overlay;
@@ -813,7 +819,7 @@ public class ChartViewGL extends TextureView {
             }
         }
 
-        private long calculateBar7Max(ColumnData[] data1, float left, float right) {
+        public long calculateBar7Max(ColumnData[] data1, float left, float right) {
 
             int len = data1[0].values.length;
             int from = Math.max(0, (int) Math.ceil(len * (left - 0.02f)));
@@ -1104,9 +1110,22 @@ public class ChartViewGL extends TextureView {
                 }
             }
             boolean it_invalidated = chartBar7.animate(t);
+            //todo do not draw if animateOut is done
             chartBar7.prepare(PROJ);
             chartBar7.draw(t, PROJ);
+            invalidated = it_invalidated || invalidated;
 
+            if (chartBar7Zoomed != null) {
+                boolean inv = chartBar7Zoomed.animate(t);
+                if (!chartBar7Zoomed.zoomedIn && chartBar7Zoomed.animateInValue == -1f) {
+                    chartBar7Zoomed.release();
+                    chartBar7Zoomed = null;
+                } else {
+                    chartBar7Zoomed.prepare(PROJ);
+                    chartBar7Zoomed.draw(t, PROJ);
+                    invalidated = inv || invalidated;
+                }
+            }
             ruler.draw(t);
 
             if (tooltipIndex != -1) {
@@ -1115,7 +1134,6 @@ public class ChartViewGL extends TextureView {
                 this.tooltip.drawTooltip(PROJ);
                 invalidated = tooltip_inv || invalidated;
             }
-            invalidated = it_invalidated || invalidated;
             if (uiLocked) {
                 if (zoomedIn) {
                     if (chartBar7.animateOutValue == 1f) {
@@ -1773,10 +1791,29 @@ public class ChartViewGL extends TextureView {
     }
 
     private void zoomBar7(ChartData details, float newLeft, float newRight, float newScale) {
-        int duration = 384 * 20;
+//        int duration = 384 * 20;
+        int duration = 384 ;
         float leftx = r.chartBar7.getTooltipX(r.PROJ);
 
         r.chartBar7.animateOut(duration, zoomedIn, leftx);
+        if (zoomedIn) {
+            List<ColumnData> cs = Arrays.asList(details.data).subList(1, details.data.length);
+            r.chartBar7Zoomed = new Bar7ChartProgram(cs, r.w, r.h, dimen, this, false, r.bar7Shader);
+            r.chartBar7Zoomed.zoom = newScale;
+            r.chartBar7Zoomed.left = newLeft;
+            r.chartBar7Zoomed.copyState(r.chartBar7);
+            long viewportMax = r.calculateBar7Max(details.data, newLeft, newRight);
+            r.chartBar7Zoomed.animateMinMax(viewportMax, false, 0);
+            r.chartBar7Zoomed.calcAnimOffsets(r.PROJ);
+            r.chartBar7Zoomed.animateIn(duration, zoomedIn, leftx);
+            //todo animate
+            r.ruler.init(0, viewportMax);
+        } else {
+            if (r.chartBar7Zoomed != null) {
+                r.chartBar7Zoomed.animateIn(duration, zoomedIn, 0f);
+            }
+            //todo ruler
+        }
     }
 
     private void zoomLines(final ChartData details, final float newLeft, final float newRight, final float newScale) {
