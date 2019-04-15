@@ -93,7 +93,7 @@ public class ColorSet {
             case 0xff108BE3: // blue
                 return day ? 0xff3497ED : 0xff4681BB;
             case 0xffE8AF14: // yellow
-                return day ? 0xffF5BD25 : 0xffC9AF4F;
+                return day ? 0xffF5BD26 : 0xffC9AF4F;
             case 0xff3497ED:
                 return day ? 0xff3497ED : 0xff4681BB;
             case 0xff2373DB:
@@ -128,9 +128,9 @@ public class ColorSet {
             case 0xffFE3C30: // red
                 return day ? 0xffF34C44 : 0xffCF5D57;
             case 0xff108BE3: // blue
-                return day ? 0xff108BE3 : 0xff108BE3;
+                return day ? 0xff108BE3 : 0xff4892DA;
             case 0xffE8AF14: // yellow
-                return day ? 0xffE8AF14 : 0xffDEB93F;
+                return day ? 0xffE8AF13 : 0xffE3BD3F;
             case 0xff3896E8: return day? 0xff3896E8:0xff4082CE;
             case 0xff558DED: return day? 0xff558DED:0xff4461AB;
             case 0xff5CBCDF: return day? 0xff5CBCDF:0xff4697B3;
@@ -149,9 +149,9 @@ public class ColorSet {
             case 0xffFE3C30: // red
                 return day ? 0xffF34C44 : 0xffCF5D57;
             case 0xff108BE3: // blue
-                return day ? 0xff108BE3 : 0xff108BE3;
+                return day ? 0xffE8AF13 : 0xff1C8BE3;
             case 0xffE8AF14: // yellow
-                return day ? 0xffE4AE1B : 0xffDEB93F;
+                return day ? 0xffE8AF13 : 0xffE9B219;
             case 0xff3896E8: return day? 0xff3896E8:0xff4082CE;
             case 0xff558DED: return day? 0xff558DED:0xff4461AB;
             case 0xff5CBCDF: return day? 0xff5CBCDF:0xff4697B3;

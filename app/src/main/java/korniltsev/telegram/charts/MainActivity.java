@@ -501,6 +501,9 @@ public class MainActivity extends Activity {
                     c.animate(currentColorSet);
                 }
             }
+            for (MyCheckBox checkbox : checkboxes) {
+                checkbox.animate(currentColorSet);
+            }
             for (MyColorDrawable b : lightBackgrounds) {
                 b.animate(currentColorSet.lightBackground, colorAnimationDuration);
             }
