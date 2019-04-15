@@ -51,7 +51,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 high prio
 
-        - цвета кнопок кажется не совпадают со скриншотами
         - формат цифр в тултипе
 
         - cэмулировать viewportMax = 0 в bar zoom
