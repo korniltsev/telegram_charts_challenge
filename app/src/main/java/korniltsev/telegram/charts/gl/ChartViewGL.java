@@ -1060,9 +1060,10 @@ public class ChartViewGL extends TextureView {
                 chartBar.draw(t);
                 ruler.draw(t);
                 if (tooltipIndex != -1) {
-                    this.tooltip.animationTick(t, tooltipIndex,null,checked);
+                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex,null,checked);
                     this.tooltip.calcPos(chartBar.MVP, tooltipIndex);
                     this.tooltip.drawTooltip(PROJ);
+                    invalidated = tooltip_inv || invalidated;
                 }
                 invalidated = it_invalidated || invalidated;
             } else if (chartBar7 != null) {
@@ -1079,9 +1080,10 @@ public class ChartViewGL extends TextureView {
                 ruler.draw(t);
 
                 if (tooltipIndex != -1) {
-                    this.tooltip.animationTick(t, tooltipIndex, null, checked);
+                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, null, checked);
                     this.tooltip.calcPos(chartBar7.MVP, tooltipIndex);
                     this.tooltip.drawTooltip(PROJ);
+                    invalidated = tooltip_inv || invalidated;
                 }
                 invalidated = it_invalidated || invalidated;
 
@@ -1099,10 +1101,11 @@ public class ChartViewGL extends TextureView {
                 ruler.draw(t);
 
                 if (tooltipIndex != -1) {
-                    this.tooltip.animationTick(t, tooltipIndex, null, checked);
+                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, null, checked);
                     this.tooltip.calcPos(chartStackedPercent.MVP, tooltipIndex);
                     this.tooltip.drawVLine(PROJ, chartStackedPercent.MVP, tooltipIndex);
                     this.tooltip.drawTooltip(PROJ);
+                    invalidated = tooltip_inv || invalidated;
                 }
                 invalidated = it_invalidated || invalidated;
 
@@ -1151,9 +1154,11 @@ public class ChartViewGL extends TextureView {
 
             if (tooltipIndex != -1) {
                 if (zoomedIn) {
-                    this.tooltip.animationTick(t, tooltipIndex, zoomedInData, checked);
+                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, zoomedInData, checked);
+                    invalidated = tooltip_inv || invalidated;
                 } else {
-                    this.tooltip.animationTick(t, tooltipIndex, null, checked);
+                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, null, checked);
+                    invalidated = tooltip_inv || invalidated;
                 }
 //                this.tooltip.calcPos(chartLines[0].MVP_, tooltipIndex);
                 if (chartLines[0].animateOutValue == -1f) {
@@ -1944,6 +1949,11 @@ public class ChartViewGL extends TextureView {
                 }
                 if (r.scrollbar_lines != null) {
                     for (LinesChartProgram it : r.scrollbar_lines) {
+                        it.animateColors(colors, duration);
+                    }
+                }
+                if (r.zoomLines != null) {
+                    for (LinesChartProgram it : r.zoomLines) {
                         it.animateColors(colors, duration);
                     }
                 }
