@@ -907,17 +907,20 @@ public final class GLRulersProgram {
                 for (int i = 0; i < 6; i++) {
                     String text;
                     rValues[i] = from;
-                    long ifrom = (long) from;
+
                     if (minZero) {
-                        if (ifrom < 1000) {
+
+                        if (from < 1000) {
+                            long ifrom = (long) from;
                             text = String.valueOf(ifrom);
-                        } else if (ifrom < 1000000) {
-                            text = String.valueOf(ifrom / 1000) + "K";
+                        } else if (from < 1000000) {
+                            text = String.format(Locale.US, "%.1f", from / 1000) + "K";
                         } else {
-                            text = String.valueOf(ifrom / 1000000) + "M";
+                            text = String.format(Locale.US, "%.1f", from / 1000000) + "M";
                         }
                     } else {
                         // todo shorten
+                        long ifrom = (long) from;
                         text = String.valueOf(ifrom);
                     }
                     values.add(new TextTex(text, p));
