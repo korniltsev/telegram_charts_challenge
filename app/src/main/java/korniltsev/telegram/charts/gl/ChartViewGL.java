@@ -51,7 +51,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 high prio
 
     - бонус зум для 1 & 2
-        - когда зумишь надо показывать 7 дней
         - иконка + текст вверху zoomOut
         - санимировать x
         ---------------------------------- 10:00
