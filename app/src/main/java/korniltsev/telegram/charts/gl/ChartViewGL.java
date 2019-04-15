@@ -1876,9 +1876,12 @@ public class ChartViewGL extends TextureView {
                         float invy = h - y;
                         if (x >= xpos && x <= xpos + tw && invy >= ypos && invy <= ypos + th) {
                             if (!zoomedIn) {
-                                stashTooltipIndex = r.tooltipIndex;
-                                r.tooltipIndex = -1;
-                                onZoom();
+                                boolean zoomRes = onZoom();
+                                if (zoomRes) {
+                                    stashTooltipIndex = r.tooltipIndex;
+                                    r.tooltipIndex = -1;
+
+                                }
                             }
                             return;
                         }
@@ -1970,7 +1973,7 @@ public class ChartViewGL extends TextureView {
     volatile boolean zoomedIn = false;
     ChartData zoomedInData = null;
 
-    private void onZoom() {
+    private boolean onZoom() {
         ChartData details = null;
         float newLeft;
         float newRight;
@@ -1985,7 +1988,7 @@ public class ChartViewGL extends TextureView {
             details = data.getDetails(stashTooltipIndex);
             if (details == null) {
                 srug();
-                return;
+                return false;
             }
             r.overlay.zoomStash.scale = r.overlay.zoom.scale;
             r.overlay.zoomStash.left = r.overlay.zoom.left;
@@ -2030,6 +2033,7 @@ public class ChartViewGL extends TextureView {
                 }
             }
         });
+        return true;
     }
 
     private void srug() {
