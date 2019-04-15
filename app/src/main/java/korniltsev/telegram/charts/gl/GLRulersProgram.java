@@ -25,9 +25,11 @@ import korniltsev.telegram.charts.ui.MyColor;
 
 public final class GLRulersProgram {
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d", Locale.US);
+    public static final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm", Locale.US);
 
     static {
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        timeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
     private static final int BYTES_PER_FLOAT = 4;
@@ -307,11 +309,16 @@ public final class GLRulersProgram {
 
         int index = xValue.index;
         final float scaledWidth = wpx / zoom;
-        final float npos = (float) index / (xColumn.values.length - 1);
+        final float npos = (float) index / (xValue.n - 1);
         final float pos = npos * scaledWidth - scaledWidth * left;
         if (xValue.tex == null) {
-            long v = xColumn.values[xValue.index];
-            String format = dateFormat.format(v);
+            long v = xValue.value;
+            String format;
+            if (xValue.zoomed) {
+                format = timeFormat.format(v);
+            } else {
+                format = dateFormat.format(v);
+            }
             TextTex lazyTex = new TextTex(format, paint);
             xValue.tex = lazyTex;
         }
@@ -695,15 +702,21 @@ public final class GLRulersProgram {
     public static final int WANT_LABELS_MIN = 3;
     float zoom;
 
-    public void setLeftRight(float left, float right, float scale) {
+    public void setLeftRight(float left, float right, float scale, ColumnData zoomColumn) {
 //        float prevzoom = zoom;
         this.left = left;
         this.zoom = scale;
-        float ir = (right * (xColumn.values.length - 1));
+        ColumnData calcColumn;
+        if (zoomColumn != null) {
+            calcColumn = zoomColumn;
+        } else {
+            calcColumn = xColumn;
+        }
+        float ir = (right * (calcColumn.values.length - 1));
 //        if (ir >= xColumn.values.length) {
 //            ir = xColumn.values.length - 1;
 //        }
-        float il = (left * (xColumn.values.length - 1));
+        float il = (left * (calcColumn.values.length - 1));
 //        if (il < 0) {
 //            il = 0;
 //        } else if (il >= ir) {
@@ -768,12 +781,13 @@ public final class GLRulersProgram {
             }
             animatingOut.addAll(xValues);
             xValues.clear();
-            int i = xColumn.values.length - 1;
+            int i = calcColumn.values.length - 1;
 //            int istrid = (int) this.stride;
             for (; i >= 0; i = i - inewStride) {
-                long v = xColumn.values[i];
-                XValueLable e = new XValueLable(i, null);
-                if (first || i == xColumn.values.length - 1) {
+                long v = calcColumn.values[i];
+                boolean zoomed = zoomColumn != null;
+                XValueLable e = new XValueLable(zoomed, null, v, i, calcColumn.values.length);
+                if (first || i == calcColumn.values.length - 1) {
                     e.alpha = 1f;
                 } else {
                     e.alpha = 0f;
@@ -825,14 +839,20 @@ public final class GLRulersProgram {
     }
 
     public static class XValueLable {
+        public final boolean zoomed;
+        public final long value;
         public final int index;
+        public final int n;
         public TextTex tex;
         public float alpha = 1f;
         public MyAnimation.Float alphaAnim = null;
 
-        XValueLable(int index, TextTex tex) {
-            this.index = index;
+        XValueLable(boolean zoomed, TextTex tex, long value, int i, int n) {
+            this.zoomed = zoomed;
+            this.value = value;
             this.tex = tex;
+            this.index = i;
+            this.n = n;
         }
     }
 

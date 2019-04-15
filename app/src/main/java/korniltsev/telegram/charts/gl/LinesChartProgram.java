@@ -639,7 +639,7 @@ public final class LinesChartProgram {
                 c.left = left;
                 c.animateMinMax(c.scaledViewporMin, c.scaledViewporMax, !firstLeftRightUpdate, 256);
             }
-            ruler.setLeftRight(left, right, scale);
+//            ruler.setLeftRight(left, right, scale);
             if (rulerInitDone) {
                 ruler.animateScale(
                         cs[0].scaledViewporMin, cs[0].scaledViewporMax,
@@ -655,7 +655,7 @@ public final class LinesChartProgram {
                 glChartProgram.left = left;
                 glChartProgram.animateMinMax(glChartProgram.scaledViewporMin, glChartProgram.scaledViewporMax, !firstLeftRightUpdate, 256);
             }
-            ruler.setLeftRight(left, right, scale);
+//            ruler.setLeftRight(left, right, scale);
 
             if (rulerInitDone) {
                 ruler.animateScale(cs[0].scaledViewporMin, cs[0].scaledViewporMax, 256);

@@ -52,7 +52,7 @@ high prio
 
     - бонус зум для 1 & 2
         - санимировать x
-        ---------------------------------- 11:00
+        ---------------------------------- 12:00
 
 
     ----------------------
@@ -1425,6 +1425,11 @@ public class ChartViewGL extends TextureView {
 
         public void updateLeftRight(float left, float right, float scale) {
             overlay.setLeftRight(left, right, scale);
+            if (zoomedIn && zoomedInData != null) {
+                ruler.setLeftRight(left, right, scale, zoomedInData.data[0]);
+            } else {
+                ruler.setLeftRight(left, right, scale, null);
+            }
             if (chartLines != null) {
                 if (zoomLines != null) {
                     LinesChartProgram.updateLeftRight(zoomLines, left, right, scale, rulerInitDone, ruler, data.y_scaled, firstLeftRightUpdate, ChartViewGL.this);
@@ -1433,7 +1438,6 @@ public class ChartViewGL extends TextureView {
                 }
             }
             if (chartBar != null) {
-                ruler.setLeftRight(left, right, scale);
                 chartBar.zoom = scale;
                 chartBar.left = left;
                 long viewportMax = calculateChartBarMax(chartBar, left, right);
@@ -1443,7 +1447,7 @@ public class ChartViewGL extends TextureView {
                 }
             }
             if (chartBar7 != null) {
-                ruler.setLeftRight(left, right, scale);
+//                ruler.setLeftRight(left, right, scale);
                 chartBar7.zoom = scale;
                 chartBar7.left = left;
                 long viewportMax = calculateBar7Max(data.data, r.overlay.zoom.left, r.overlay.zoom.right);
@@ -1453,7 +1457,7 @@ public class ChartViewGL extends TextureView {
                 }
             }
             if (chartStackedPercent != null) {
-                ruler.setLeftRight(left, right, scale);
+//                ruler.setLeftRight(left, right, scale);
                 chartStackedPercent.zoom = scale;
                 chartStackedPercent.left = left;
             }
