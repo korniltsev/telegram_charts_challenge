@@ -25,7 +25,7 @@ import korniltsev.telegram.charts.ui.MyColor;
 
 public final class GLRulersProgram {
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d", Locale.US);
-    public static final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm", Locale.US);
+    public static final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.US);
 
     static {
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
