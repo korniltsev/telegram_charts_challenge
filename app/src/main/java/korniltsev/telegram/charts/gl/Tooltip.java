@@ -1,5 +1,9 @@
 package korniltsev.telegram.charts.gl;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
@@ -10,6 +14,8 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import korniltsev.telegram.charts.MainActivity;
+import korniltsev.telegram.charts.R;
 import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
@@ -44,6 +50,7 @@ public class Tooltip {
     private final TexShader texShaderNoflip
             ;
     private final int[] vbos;
+    private final TextTex arrow;
     private ColorSet colorsSet;
     public TooltipFramebuffer framebuffer;
     private final ChartData data;
@@ -71,6 +78,8 @@ public class Tooltip {
         this.simple = simple;
         this.rot = rot;
 
+        arrow = loadTex(R.drawable.ic_arrow);
+
 
         FloatBuffer buf1 = ByteBuffer.allocateDirect(lineVertices.length * 4)
                 .order(ByteOrder.nativeOrder())
@@ -91,6 +100,24 @@ public class Tooltip {
         texShaderFlip = new TexShader(true, true);//todo reuse and cleanup
         texShaderNoflip = new TexShader(false, false);//todo reuse and cleanup
 
+    }
+
+    private TextTex loadTex(int ic_arrow) {
+        TextTex t;
+        Bitmap b;
+        Drawable icArrow = MainActivity.ctx.getResources().getDrawable(ic_arrow);
+        if (icArrow instanceof BitmapDrawable) {
+            b = ((BitmapDrawable) icArrow).getBitmap();
+            t = new TextTex(b);
+        } else {
+            b = Bitmap.createBitmap(icArrow.getIntrinsicWidth(), icArrow.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+            Canvas c = new Canvas(b);
+            icArrow.setBounds(0, 0, icArrow.getIntrinsicWidth(), icArrow.getIntrinsicHeight());
+            icArrow.draw(c);
+            t = new TextTex(b);
+            b.recycle();
+        }
+        return t;
     }
 
 
@@ -172,7 +199,7 @@ public class Tooltip {
                 } else {
                     data = zoomData;
                 }
-                framebuffer = new TooltipFramebuffer(texShaderFlip, data, index, dimen, colorsSet, checked, simple);
+                framebuffer = new TooltipFramebuffer(texShaderFlip, data, index, dimen, colorsSet, checked, simple, arrow);
             }
         }
 

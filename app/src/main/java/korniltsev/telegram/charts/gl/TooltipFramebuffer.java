@@ -40,6 +40,7 @@ class TooltipFramebuffer {
     public static final float FONT_SIZE22 = 16f;
     public static final int PADDING_BETWEEN_NAME_AND_VALUE = 20;
     public static final int PERCENT_P = 6;
+    private static final int ARROW_P = 12;
     //    public static final int VMARGIN = 8;
     private final int fakeShadowSimulatorLine;
     private ColorSet colorset;
@@ -87,8 +88,10 @@ class TooltipFramebuffer {
     }
 
     private int maxPercent;
+    final TextTex arrow;
+    private boolean zoomable;
 
-    public TooltipFramebuffer(TexShader shader, ChartData data, int index, Dimen dimen, ColorSet set, boolean[] checked, SimpleShader simple) {
+    public TooltipFramebuffer(TexShader shader, ChartData data, int index, Dimen dimen, ColorSet set, boolean[] checked, SimpleShader simple, TextTex arrow) {
         this.dateColor = set.tooltipTitleColor;
         this.bgColor = set.tooltipBGColor;
         this.shader_ = shader;
@@ -98,6 +101,7 @@ class TooltipFramebuffer {
         this.dimen = dimen;
         this.simple = simple;
         fakeShadowColor = set.tooltipFakeSHadowColor;
+        this.arrow = arrow;
 
         FloatBuffer buf2 = ByteBuffer.allocateDirect(shadowSimulatorLines.length * 4)
                 .order(ByteOrder.nativeOrder())
@@ -186,6 +190,11 @@ class TooltipFramebuffer {
 
         float titleY = realH - title.h - dimen.dpi(8);
         drawText(title, dimen.dpf(LEFT_RIGHT_PADDING), titleY, dateColor, 1f);
+        if (zoomable) {
+            float x = realW - dimen.dpf(LEFT_RIGHT_PADDING) - arrow.w + dimen.dpi(2);
+            float y = titleY + dimen.dpi(2);
+            drawText(arrow, x, y, 0xffD2D5D7, 1f);
+        }
         float ity = titleY;
 
 //        float currentX = dimen.dpf(LEFT_RIGHT_PADDING);
@@ -275,10 +284,11 @@ class TooltipFramebuffer {
     public void prepareTextTexturesAndMeasure(boolean[] checked) {
         long dateTimestamp = data.data[0].values[index];
         String date;
-        if (data.index == -1) {
-            date = Tooltip.timeFormat.format(dateTimestamp);
-        } else {
+        zoomable = data.index != -1;
+        if (zoomable) {
             date = Tooltip.dateFormat.format(dateTimestamp);
+        } else {
+            date = Tooltip.timeFormat.format(dateTimestamp);
         }
         Typeface medium = Typeface.create("sans-serif-medium", Typeface.NORMAL);
         TextPaint p16 = new TextPaint(Paint.ANTI_ALIAS_FLAG);
@@ -357,11 +367,17 @@ class TooltipFramebuffer {
 
 
         //todo rename to maxW maxH
-        w = 2 * dimen.dpi(LEFT_RIGHT_PADDING) + Math.max(title.w + 0/*arror*/, vw);
+        int arrowSpace;
+        if (zoomable) {
+            arrowSpace = arrow.w + dimen.dpi(ARROW_P);
+        } else {
+            arrowSpace = 0;
+        }
+        this.w = 2 * dimen.dpi(LEFT_RIGHT_PADDING) + Math.max(title.w + arrowSpace, vw);
         int hspace = dimen.dpi(8) * 2;//top and bottom margin
         h = hspace + title.h + lines.get(0).h * lines.size();
 
-        Matrix.orthoM(PROJ, 0, 0, w, 0, h, -1.0f, 1.0f);
+        Matrix.orthoM(PROJ, 0, 0, this.w, 0, h, -1.0f, 1.0f);
     }
 
     public void release() {
