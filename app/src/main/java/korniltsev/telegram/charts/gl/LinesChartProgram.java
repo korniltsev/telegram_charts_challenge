@@ -112,7 +112,8 @@ public final class LinesChartProgram {
 
     }
 
-    public static void initMinMax(boolean y_scaled, LinesChartProgram[]cs, float left, float right, GLRulersProgram ruler, boolean animateRuler, ChartViewGL root) {
+    public static void initMinMax(boolean y_scaled, LinesChartProgram[] cs, float left, float right, GLRulersProgram ruler, boolean animateRuler, ChartViewGL root, int rulerAnimDuration1) {
+        int rulerAnimDuration = rulerAnimDuration1;
         if (y_scaled) {
             for (LinesChartProgram c : cs) {
                 LinesChartProgram.calculateChartLinesMaxScaled(c, left, right, root);
@@ -121,7 +122,7 @@ public final class LinesChartProgram {
             if (animateRuler) {
                 ruler.animateScale(
                         cs[0].scaledViewporMin, cs[0].scaledViewporMax,
-                        cs[1].scaledViewporMin, cs[1].scaledViewporMax, 208
+                        cs[1].scaledViewporMin, cs[1].scaledViewporMax, rulerAnimDuration
                 );
             } else {
                 ruler.init(
@@ -134,7 +135,7 @@ public final class LinesChartProgram {
         } else {
             LinesChartProgram.calculateChartLinesMax3(cs, left, right, root); // draw ( init)
             if (animateRuler) {
-                ruler.animateScale(cs[0].scaledViewporMin, cs[0].scaledViewporMax, 208);
+                ruler.animateScale(cs[0].scaledViewporMin, cs[0].scaledViewporMax, rulerAnimDuration);
             } else {
                 ruler.init(cs[0].scaledViewporMin, cs[0].scaledViewporMax);
             }

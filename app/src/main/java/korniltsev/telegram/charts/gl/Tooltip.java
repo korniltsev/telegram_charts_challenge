@@ -139,7 +139,7 @@ public class Tooltip {
     final float vec2[] = new float[4];
     final float []VIEW = new float[16];
     final float []MVP = new float[16];
-    public boolean animationTick(long time, int index, boolean[]checked) {
+    public boolean animationTick(long time, int index, ChartData zoomData, boolean[]checked) {
         boolean invalidate = false;
         if (lineANim != null) {
             lineColor = lineANim.tick(time);
@@ -163,6 +163,13 @@ public class Tooltip {
             }
             fbindex = index;
             if (index != -1) {
+
+                ChartData data;
+                if (zoomData == null) {
+                    data = this.data;
+                } else {
+                    data = zoomData;
+                }
                 framebuffer = new TooltipFramebuffer(texShaderFlip, data, index, dimen, colorsSet, checked, simple);
             }
         }

@@ -51,9 +51,8 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 high prio
 
     - бонус зум для 1 & 2
-          - работа тултипа в зуме
-            - значения
         - когда зумишь надо показывать 7 дней
+        - иконка + текст вверху zoomOut
         - санимировать x
         ---------------------------------- 10:00
 
@@ -879,7 +878,7 @@ public class ChartViewGL extends TextureView {
             boolean invalidated = false;
             if (!rulerInitDone) {
                 if (chartLines != null) {
-                    LinesChartProgram.initMinMax(data.y_scaled, chartLines, r.overlay.zoom.left, r.overlay.zoom.right, ruler, false, ChartViewGL.this);
+                    LinesChartProgram.initMinMax(data.y_scaled, chartLines, r.overlay.zoom.left, r.overlay.zoom.right, ruler, false, ChartViewGL.this, 208);
                 }
                 if (chartBar != null) {
                     long viewportMax = calculateChartBarMax(chartBar, r.overlay.zoom.left, r.overlay.zoom.right);
@@ -1083,7 +1082,7 @@ public class ChartViewGL extends TextureView {
                 chartBar.draw(t);
                 ruler.draw(t);
                 if (tooltipIndex != -1) {
-                    this.tooltip.animationTick(t, tooltipIndex, checked);
+                    this.tooltip.animationTick(t, tooltipIndex,null,checked);
                     this.tooltip.calcPos(chartBar.MVP, tooltipIndex);
                     this.tooltip.drawTooltip(PROJ);
                 }
@@ -1102,7 +1101,7 @@ public class ChartViewGL extends TextureView {
                 ruler.draw(t);
 
                 if (tooltipIndex != -1) {
-                    this.tooltip.animationTick(t, tooltipIndex, checked);
+                    this.tooltip.animationTick(t, tooltipIndex, null, checked);
                     this.tooltip.calcPos(chartBar7.MVP, tooltipIndex);
                     this.tooltip.drawTooltip(PROJ);
                 }
@@ -1122,7 +1121,7 @@ public class ChartViewGL extends TextureView {
                 ruler.draw(t);
 
                 if (tooltipIndex != -1) {
-                    this.tooltip.animationTick(t, tooltipIndex, checked);
+                    this.tooltip.animationTick(t, tooltipIndex, null, checked);
                     this.tooltip.calcPos(chartStackedPercent.MVP, tooltipIndex);
                     this.tooltip.drawVLine(PROJ, chartStackedPercent.MVP, tooltipIndex);
                     this.tooltip.drawTooltip(PROJ);
@@ -1173,7 +1172,11 @@ public class ChartViewGL extends TextureView {
             }
 
             if (tooltipIndex != -1) {
-                this.tooltip.animationTick(t, tooltipIndex, checked);
+                if (zoomedIn) {
+                    this.tooltip.animationTick(t, tooltipIndex, zoomedInData, checked);
+                } else {
+                    this.tooltip.animationTick(t, tooltipIndex, null, checked);
+                }
 //                this.tooltip.calcPos(chartLines[0].MVP_, tooltipIndex);
                 if (chartLines[0].animateOutValue == -1f) {
                     this.tooltip.drawVLine(PROJ, chartLines[0].MVP_, tooltipIndex);
@@ -1705,6 +1708,7 @@ public class ChartViewGL extends TextureView {
     }
 
     volatile boolean zoomedIn = false;
+    ChartData zoomedInData = null;
 
     private void onZoom() {
         ChartData details = null;
@@ -1715,6 +1719,7 @@ public class ChartViewGL extends TextureView {
             newLeft = r.overlay.zoomStash.left;
             newRight = r.overlay.zoomStash.right;
             newScale = r.overlay.zoomStash.scale;
+            zoomedInData = null;
         } else {
             details = data.getDetails(stashTooltipIndex);
             if (details == null) {
@@ -1726,6 +1731,7 @@ public class ChartViewGL extends TextureView {
             newLeft = 0.25f;
             newRight = 0.75f;
             newScale = 0.5f;
+            zoomedInData = details;
         }
         uiLocked = true;
         scroller_left = (int) (scrollbarPos.left + scrollbarPos.width() * newLeft);
@@ -1750,7 +1756,7 @@ public class ChartViewGL extends TextureView {
                         it.left = newLeft;
                         it.zoom = newScale;
                     }
-                    LinesChartProgram.initMinMax(details.y_scaled, r.zoomLines, newLeft, newRight, r.ruler, true, ChartViewGL.this);
+                    LinesChartProgram.initMinMax(details.y_scaled, r.zoomLines, newLeft, newRight, r.ruler, true, ChartViewGL.this, duration);
 //                float tooltipScreenpx =  r.chartLines[0].getTooltipX();
                     LinesChartProgram[] zoomLines = r.zoomLines;
                     for (int i = 0; i < zoomLines.length; i++) {
@@ -1786,6 +1792,7 @@ public class ChartViewGL extends TextureView {
                     }
                 }
             } else {
+                r.tooltipIndex = -1;
                 {
                     LinesChartProgram[] zoomLines = r.zoomLines;
                     for (int i = 0; i < zoomLines.length; i++) {
@@ -1809,6 +1816,7 @@ public class ChartViewGL extends TextureView {
                     for (int i = 0; i < zoomLines.length; i++) {
                         LinesChartProgram it = zoomLines[i];
                         LinesChartProgram itc = r.scrollbar_lines[i];
+                        itc.setTooltipIndex(stashTooltipIndex);
                         itc.getTooltipX();
                         it.animateIn(duration, zoomedIn, r.PROJ, itc.outTooltipX, itc.outTooltipY);
                     }
@@ -1878,6 +1886,11 @@ public class ChartViewGL extends TextureView {
         }
         if (r.chartStackedPercent != null) {
             r.chartStackedPercent.setTooltipIndex(-1);
+        }
+        if (r.zoomLines != null) {
+            for (LinesChartProgram zoomLine : r.zoomLines) {
+                zoomLine.setTooltipIndex(-1);
+            }
         }
         r.tooltipIndex = -1;
 //                r.drawAndSwap();
