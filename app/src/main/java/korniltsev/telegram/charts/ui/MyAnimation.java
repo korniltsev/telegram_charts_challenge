@@ -16,6 +16,7 @@ public class MyAnimation {
     //    public static final AccelerateDecelerateInterpolator INTERPOLATOR = new AccelerateDecelerateInterpolator();
     public static final DecelerateInterpolator DECELERATE = new DecelerateInterpolator();
     public static final AccelerateInterpolator ACCELERATE = new AccelerateInterpolator();
+    public static final AccelerateDecelerateInterpolator ACCELERATE_DECELERATE = new AccelerateDecelerateInterpolator();
     public static final LinearInterpolator LINEAR = new LinearInterpolator();
     public static final DecelerateInterpolator INTERPOLATOR = DECELERATE;
     public static final class Float {

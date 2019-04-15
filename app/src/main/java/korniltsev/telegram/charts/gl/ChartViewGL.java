@@ -1234,15 +1234,25 @@ public class ChartViewGL extends TextureView {
             if (uiLocked) {
                 if (zoomedIn) {
                     if (chartLines[0].animateOutValue == 1f) {
-                        uiLocked = false;
+                        unlockUI();
                     }
                 } else {
                     if (chartLines[0].animateOutValue == -1f) {
-                        uiLocked = false;
+                        unlockUI();
                     }
                 }
             }
             return invalidated;
+        }
+
+        private void unlockUI() {
+            Runnable unlock = new Runnable() {
+                @Override
+                public void run() {
+                    uiLocked = false;
+                }
+            };
+            renderHandler2.postDelayed(unlock, 16 * 3);
         }
 
         public void log_trace(String name, long t5, long t4) {
