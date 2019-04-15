@@ -1876,9 +1876,9 @@ public class ChartViewGL extends TextureView {
                         float invy = h - y;
                         if (x >= xpos && x <= xpos + tw && invy >= ypos && invy <= ypos + th) {
                             if (!zoomedIn) {
+                                stashTooltipIndex = r.tooltipIndex;
                                 boolean zoomRes = onZoom();
                                 if (zoomRes) {
-                                    stashTooltipIndex = r.tooltipIndex;
                                     r.tooltipIndex = -1;
 
                                 }
