@@ -283,14 +283,17 @@ class TooltipFramebuffer {
         title = new TextTex(date, p16);
         p16.setTypeface(null);
 
+        long total = 0;
         for (int i = 1; i < data.data.length; i++) {
             ColumnData datum = data.data[i];
-            TextTex name = new TextTex(datum.name, p16);
+            String name1 = datum.name;
+            long v = datum.values[index];
+            total += v;
+            TextTex name = new TextTex(name1, p16);
             name.color = title.color;
-
             p16.setTypeface(medium);
-//            String text = String.valueOf(datum.values[index]);
-            String text = formatter.format(datum.values[index]);
+
+            String text = formatter.format(v);
             TextTex value = new TextTex(text, p16);
             p16.setTypeface(null);
             value.color = datum.color;
@@ -300,6 +303,23 @@ class TooltipFramebuffer {
             } else {
                 e.visibility = 0f;
             }
+            lines.add(e);
+        }
+
+        if (data.stacked && data.type == ColumnData.Type.bar) {
+            String name1 = "All";
+            long v = total;
+            total += v;
+            TextTex name = new TextTex(name1, p16);
+            name.color = title.color;
+            p16.setTypeface(medium);
+
+            String text = formatter.format(v);
+            TextTex value = new TextTex(text, p16);
+            p16.setTypeface(null);
+            value.color = dateColor;
+            Line e = new Line(name, value, value.h + dimen.dpi(4), "unknown");
+            e.visibility = 1f;
             lines.add(e);
         }
         int vw = -1;
