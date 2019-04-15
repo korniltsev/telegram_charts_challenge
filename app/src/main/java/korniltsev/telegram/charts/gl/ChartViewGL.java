@@ -54,6 +54,8 @@ high prio
         - чекбоксы
         - вертикальная линия
         - цвет в зуме
+        - санимировать тему на зум линиях
+        - longtap
 
 
         - cэмулировать viewportMax = 0 в bar zoom
@@ -109,7 +111,6 @@ low prio
     - когда скроллбар не меняется - отрендерить его во фреймбуффер
     - попробовать отрендерить все на SurfaceView для Android N
     - мб сначала создать один график, потом остальные
-    - почему когда водишь пальцем то не лагает, а когда анимируется лагает? попробовать postDelayed для анимации сделать?, Choreographer Callback
 ---------
 
 
@@ -319,6 +320,35 @@ public class ChartViewGL extends TextureView {
                 onZoom();
             }
         });
+        return true;
+    }
+
+    public boolean setCheckedDetail(String id, boolean isChecked) {
+
+        boolean[] checked = checkedDetailsForBar;
+        ChartData data = this.zoomedInData;
+        if (checked == null || data == null) {
+            return false;
+        }
+        int checkedCount = 0;
+        ColumnData[] data1 = data.data;
+        int foundI = -1;
+        for (int i = 1; i < data1.length; i++) {
+            ColumnData datum = data1[i];
+            int ci = i - 1;
+            if (checked[ci]) {
+                checkedCount++;
+            }
+            if (datum.id.equals(id)) {
+                foundI = ci;
+            }
+        }
+        if (foundI == -1) {
+            return false;
+        }
+        if (checkedCount == 1 && checked[foundI] && !isChecked) {
+            return false;
+        }
         return true;
     }
 
@@ -1938,11 +1968,12 @@ public class ChartViewGL extends TextureView {
         r.overlay.zoom.scale = newScale;
         r.invalidateRender();
         final boolean zoomCopy = zoomedIn;
+        final ChartData finalDetails = details;
         post(new Runnable() {
             @Override
             public void run() {
                 if (zoomListener != null) {
-                    zoomListener.onZoom(zoomCopy);
+                    zoomListener.onZoom(zoomCopy, finalDetails);
                 }
             }
         });
@@ -2180,7 +2211,7 @@ public class ChartViewGL extends TextureView {
     public ZoomListener zoomListener;
 
     public interface ZoomListener {
-        void onZoom(boolean zoom);
+        void onZoom(boolean zoom, ChartData details);
 
     }
 

@@ -16,6 +16,7 @@ import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.view.Gravity;
 import android.view.View;
@@ -130,7 +131,7 @@ public class MainActivity extends Activity {
     }
 
 
-    private View createChart(ChartData datum) {
+    private View createChart(final ChartData datum) {
         LinearLayout.LayoutParams legendLP = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         String followers;
         switch (datum.index) {
@@ -163,9 +164,12 @@ public class MainActivity extends Activity {
         legends.add(legend);
 
 
+        final FrameLayout chartParentFrame = new FrameLayout(this);
+        chartParentFrame.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
 
         final ChartViewGL newChart = new ChartViewGL(this, datum, dimen, currentColorSet);
         newChart.setLayoutParams(new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+        chartParentFrame.addView(newChart);
         charts.add(newChart);
 
         legend.setOnClickListener(new View.OnClickListener() {
@@ -177,11 +181,26 @@ public class MainActivity extends Activity {
 //                }
             }
         });
+        final ArrayList<View> extraCheckboxes = new ArrayList<>();
         newChart.zoomListener = new ChartViewGL.ZoomListener() {
             @Override
-            public void onZoom(boolean zoom) {
+            public void onZoom(boolean zoom, ChartData details) {
                 legend.animateZoom(zoom);
+                if (zoom && details != null
+                        && datum.type == ColumnData.Type.bar
+                        && datum.data.length == 2) {
+                    View p = createteBarZoomCheckboxes(details, newChart);
+                    chartParentFrame.addView(p);
+                    extraCheckboxes.add(p);
+                } else {
+                    for (View extraCheckbox : extraCheckboxes) {
+                        chartParentFrame.removeView(extraCheckbox);
+                    }
+                    extraCheckboxes.clear();
+
+                }
             }
+
         };
 
 
@@ -198,7 +217,7 @@ public class MainActivity extends Activity {
         list.setOrientation(LinearLayout.VERTICAL);
         list.setLayoutParams(listLP);
         list.addView(legend);
-        list.addView(newChart);
+        list.addView(chartParentFrame);
 
 
         ColumnData[] data1 = datum.data;
@@ -255,11 +274,42 @@ public class MainActivity extends Activity {
             LinearLayout.LayoutParams cblp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
             cblp.gravity = Gravity.BOTTOM;
             cblp.bottomMargin = dimen.dpi(16);
-            cblp.topMargin = dimen.dpi(17-8);
+            cblp.topMargin = dimen.dpi(17 - 8);
             list.addView(checkboxlist, cblp);
         }
         chartsRoots.add(list);
         return list;
+    }
+
+    private View createteBarZoomCheckboxes(ChartData details, final ChartViewGL newChart) {
+        if (Looper.getMainLooper() != Looper.myLooper()) {
+            throw new AssertionError();
+        }
+
+        List<MyCheckBox> cs = new ArrayList<>();
+        ColumnData[] data1 = details.data;
+        for (int i = 1; i < data1.length; i++) {
+            final ColumnData datum = data1[i];
+            final MyCheckBox myCheckBox = new MyCheckBox(this, dimen, datum.name, datum.color, currentColorSet);
+            myCheckBox.setOnCheckedChangeListener(new MyCheckBox.OnCheckedChangeListener() {
+                @Override
+                public boolean onCheckedChanged(boolean isChecked) {
+                    boolean b = newChart.setCheckedDetail(datum.id, isChecked);
+                    if (!b) {
+                        shake(myCheckBox);
+                    }
+                    return b;
+                }
+            });
+            cs.add(myCheckBox);
+        }
+        MyCheckboxContainer linearLayout = new MyCheckboxContainer(this, cs, dimen);
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+        linearLayout.setLayoutParams(layoutParams);
+        layoutParams.gravity = Gravity.BOTTOM;
+        layoutParams.bottomMargin = dimen.dpi(8);
+        //todo animate theme
+        return linearLayout;
     }
 
     private void shake(MyCheckBox cb) {
@@ -270,7 +320,7 @@ public class MainActivity extends Activity {
             @Override
             public float getInterpolation(float input) {
                 double raw = Math.sin(FREQ * input * 2 * Math.PI);
-                return (float)(raw * Math.exp(-input * DECAY));
+                return (float) (raw * Math.exp(-input * DECAY));
             }
         };
         cb.setTranslationX(0);
@@ -478,7 +528,7 @@ public class MainActivity extends Activity {
                     byte[] bytes = readAll(inputStream);
                     String s = new String(bytes, "UTF-8");
                     JSONObject o = new JSONObject(s);
-                    ChartData it = ChartData.pareOne(o, i+1);
+                    ChartData it = ChartData.pareOne(o, i + 1);
                     res.add(it);
                 } catch (IOException e) {
                     throw new RuntimeException(e);

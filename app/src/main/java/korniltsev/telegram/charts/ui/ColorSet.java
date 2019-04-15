@@ -110,9 +110,9 @@ public class ColorSet {
                 return day ? 0xffE65850 : 0xffCF5D57;
             // Blue 3497ED, Dark Blue 3381E8, Light Green 9ED448, Green 5FB641, Yellow F5BD25, Orange F79E39, Red E65850, Light Blue 35AADC
             default:
-                if (BuildConfig.DEBUG) {
-                    throw new AssertionError(Integer.toHexString(color));
-                }
+//                if (BuildConfig.DEBUG) {
+//                    throw new AssertionError(Integer.toHexString(color));
+//                }
                 return color;
         }
     }
