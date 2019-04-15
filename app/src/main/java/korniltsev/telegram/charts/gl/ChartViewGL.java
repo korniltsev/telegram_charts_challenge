@@ -27,6 +27,7 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
+import korniltsev.telegram.charts.BuildConfig;
 import korniltsev.telegram.charts.MainActivity;
 import korniltsev.telegram.charts.data.ChartData;
 import korniltsev.telegram.charts.data.ColumnData;
@@ -52,8 +53,8 @@ high prio
 
     - бонус зум для 4 графика
         - чекбоксы
-        - названия колонок
         - вертикальная линия
+        - тултип не инвалидейтится
         - цвет в зуме
         - санимировать тему на зум линиях
         - longtap
@@ -324,7 +325,7 @@ public class ChartViewGL extends TextureView {
         return true;
     }
 
-    public boolean setCheckedDetail(String id, boolean isChecked) {
+    public boolean setCheckedDetail(final String id, final boolean isChecked) {
 
         boolean[] checked = checkedDetailsForBar;
         ChartData data = this.zoomedInData;
@@ -350,6 +351,12 @@ public class ChartViewGL extends TextureView {
         if (checkedCount == 1 && checked[foundI] && !isChecked) {
             return false;
         }
+        r.postToRender(new Runnable() {
+            @Override
+            public void run() {
+                r.setCheckedDetailsImpl(id, isChecked);
+            }
+        });
         return true;
     }
 
@@ -438,7 +445,11 @@ public class ChartViewGL extends TextureView {
                     if (released) {
                         return;
                     }
-                    target.run();
+                    try {
+                        target.run();
+                    } catch (Throwable e) {
+                        if (MainActivity.LOGGING) Log.e(TAG, "err", e);
+                    }
                 }
             });
         }
@@ -767,6 +778,23 @@ public class ChartViewGL extends TextureView {
             postToRender(setCheckedOnRenderThread);
         }
 
+        private void setCheckedDetailsImpl(String id, boolean isChecked) {
+            if (!zoomedIn) {
+                return;
+            }
+            if (singleBarZoomLines == null || zoomedInData == null || checkedDetailsForBar == null) {
+                return;
+            }
+            for (int i = 1; i < zoomedInData.data.length; i++) {
+                ColumnData datum = zoomedInData.data[i];
+                if (datum.id.equals(id)) {
+                    checkedDetailsForBar[i - 1] = isChecked;
+                }
+            }
+            LinesChartProgram.setChecked(id, r.overlay.zoom, isChecked, singleBarZoomLines, ruler, false, ChartViewGL.this);
+
+            invalidateRender();
+        }
         private void setCheckedImpl(String id, boolean isChecked) {
             ColumnData[] data1 = data.data;
             int foundIndex = -1;

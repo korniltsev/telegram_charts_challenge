@@ -154,6 +154,9 @@ public class ChartData {
         return format;
     }
 
+    public static SimpleDateFormat barFormat;
+
+
     private ChartData readFile(String format) {
         ChartData chartData;
         InputStream inputStream = null;
@@ -182,31 +185,39 @@ public class ChartData {
     }
 
     private ChartData getSingleBarDetails(int tooltipIndex) {
+        if (barFormat == null) {
+            barFormat = new SimpleDateFormat("MMM d", Locale.US);
+        }
         Calendar c = Calendar.getInstance();
         long value = data[0].values[tooltipIndex];
         Date date = new Date(value);
         c.setTime(date);
         c.setTimeZone(TimeZone.getTimeZone("UTC"));
-        ChartData d0 = readFile(getFileName(c));
-        c.add(Calendar.DAY_OF_YEAR, -1);
-        ChartData d1 = readFile(getFileName(c));
-        c.add(Calendar.DAY_OF_YEAR, -6);
-        ChartData d7 = readFile(getFileName(c));
         List<ChartData> cs = new ArrayList<>();
+        ChartData d0 = readFile(getFileName(c));
         if (d0 != null) {
+            d0.data[1].name = barFormat.format(c.getTime());
             cs.add(d0);
         }
+        c.add(Calendar.DAY_OF_YEAR, -1);
+        ChartData d1 = readFile(getFileName(c));
         if (d1 != null) {
+            d1.data[1].name = barFormat.format(c.getTime());
             cs.add(d1);
         }
+        c.add(Calendar.DAY_OF_YEAR, -6);
+        ChartData d7 = readFile(getFileName(c));
         if (d7 != null) {
+            d7.data[1].name = barFormat.format(c.getTime());
             cs.add(d7);
         }
 
         ColumnData[] columns = new ColumnData[cs.size()+1];
         for (int i = 0; i < cs.size(); i++) {
             ChartData chartData = cs.get(i);
-            columns[i+1] = chartData.data[1];
+            ColumnData datum = chartData.data[1];
+            datum.id += "_deails_" + i;
+            columns[i+1] = datum;
         }
         columns[0] = cs.get(0).data[0];
         ChartData res = new ChartData(columns, false, false, false, ColumnData.Type.line, -1);

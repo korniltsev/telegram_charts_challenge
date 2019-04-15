@@ -1,8 +1,8 @@
 package korniltsev.telegram.charts.data;
 
 public class ColumnData {
-    public final String id;
-    public final String name;
+    public String id;
+    public String name;
     public final long[] values;
     public final long max;
     public final long min;
