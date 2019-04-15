@@ -50,8 +50,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 /*
 
 
-total в тултипе
-процент в тултипе в 5 графике
 
 стрелочку в тултипе
 
