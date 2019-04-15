@@ -51,7 +51,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 
 
-стрелочку в тултипе
 
 - правильная позиция
 
