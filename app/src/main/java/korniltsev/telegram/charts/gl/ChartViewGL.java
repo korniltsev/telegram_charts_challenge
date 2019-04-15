@@ -460,6 +460,20 @@ public class ChartViewGL extends TextureView {
                         } catch (Throwable e) {
                             if (LOGGING) Log.e(TAG, "release err", e);
                         }
+                        if (chartBar7Zoomed != null) {
+                            try {
+                                chartBar7Zoomed.release();
+                            } catch (Throwable e) {
+                                if (LOGGING) Log.e(TAG, "release err", e);
+                            }
+                        }
+                        if (chartBar7Zoomed != null) {
+                            try {
+                                chartBar7Zoomed.release();
+                            } catch (Throwable e) {
+                                if (LOGGING) Log.e(TAG, "release err", e);
+                            }
+                        }
                     }
                     {
                         try {
