@@ -315,6 +315,13 @@ public final class GLRulersProgram {
         final float scaledWidth = wpx / zoom;
         final float npos = (float) index / (xValue.n - 1);
         final float pos = npos * scaledWidth - scaledWidth * left;
+
+        float fakew = dimen.dpi(50);
+        float left = hpadding + pos - fakew;
+        if (left > canvasW || left + fakew < 0) {//todo lazy x labels
+            return;
+        }
+
         if (xValue.tex == null) {
             long v = xValue.value;
             String format;
@@ -325,10 +332,6 @@ public final class GLRulersProgram {
             }
             TextTex lazyTex = new TextTex(format, paint);
             xValue.tex = lazyTex;
-        }
-        float left = hpadding + pos - xValue.tex.w;
-        if (left > canvasW || left + xValue.tex.w < 0) {//todo lazy x labels
-            return;
         }
 
 
