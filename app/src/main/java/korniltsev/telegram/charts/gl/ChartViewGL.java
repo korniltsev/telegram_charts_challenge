@@ -51,7 +51,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 high prio
 
     - бонус зум для 3 графика
-        - 15:30 - анимировать линейку
         - все тоже самое но в скроллбар
     - бонус зум для 4 графика
 
@@ -1829,7 +1828,7 @@ public class ChartViewGL extends TextureView {
         swapxValues(details, newLeft, newRight, newScale, duration);
         float leftx = r.chartBar7.getTooltipX(r.PROJ);
 
-        r.chartBar7.animateOut(duration / 2, zoomedIn, leftx);
+        r.chartBar7.animateOut(duration, zoomedIn, leftx);
         if (zoomedIn) {
             List<ColumnData> cs = Arrays.asList(details.data).subList(1, details.data.length);
             r.chartBar7Zoomed = new Bar7ChartProgram(cs, r.w, r.h, dimen, this, false, r.bar7Shader);
@@ -1840,14 +1839,14 @@ public class ChartViewGL extends TextureView {
             r.chartBar7Zoomed.animateMinMax(viewportMax, false, 0);
             r.chartBar7Zoomed.calcAnimOffsets(r.PROJ);
             r.chartBar7Zoomed.animateIn(duration, zoomedIn, leftx);
-            //todo animate
-            r.ruler.init(0, viewportMax);
+            r.ruler.animateScale(0, viewportMax, duration);
         } else {
             if (r.chartBar7Zoomed != null) {
                 r.chartBar7Zoomed.calcAnimOffsets(r.PROJ);
                 r.chartBar7Zoomed.animateIn(duration, zoomedIn, 0f);
             }
-            //todo ruler
+            long viewportMax = r.calculateBar7Max(data.data, newLeft, newRight);
+            r.ruler.animateScale(0, viewportMax, duration);
             r.chartBar7.setTooltipIndex(-1);
         }
     }
