@@ -276,9 +276,9 @@ public class ChartViewGL extends TextureView {
         return true;
     }
 
-    public void setSingleChecked(final String id) {
+    public boolean setSingleChecked(final String id) {
         if (uiLocked) {
-            return;
+            return false;
         }
         Runnable setCheckedOnRenderThread = new Runnable() {
             @Override
@@ -304,7 +304,7 @@ public class ChartViewGL extends TextureView {
             }
         };
         r.postToRender(setCheckedOnRenderThread);
-
+        return true;
     }
 
     public void invalidateRender() {
@@ -1841,6 +1841,21 @@ public class ChartViewGL extends TextureView {
         r.overlay.zoom.rightAnim = new MyAnimation.Float(208, r.overlay.zoom.right, newRight);
         r.overlay.zoom.scale = newScale;
         r.invalidateRender();
+        final boolean zoomCopy = zoomedIn;
+        post(new Runnable() {
+            @Override
+            public void run() {
+                if (zoomListener != null) {
+                    zoomListener.onZoom(zoomCopy);
+                }
+            }
+        });
+    }
+
+    public ZoomListener zoomListener;
+    public interface ZoomListener {
+        void onZoom(boolean zoom);
+
     }
 
 //    public static final BlockingQueue<MyMotionEvent> motionEvents = new ArrayBlockingQueue<MyMotionEvent>(100);

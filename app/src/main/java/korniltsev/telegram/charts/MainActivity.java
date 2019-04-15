@@ -172,11 +172,17 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 boolean b = newChart.zoomOut();
-                if (b) {
-                    legend.animateZoom(false);
-                }
+//                if (b) {
+//                    legend.animateZoom(false);
+//                }
             }
         });
+        newChart.zoomListener = new ChartViewGL.ZoomListener() {
+            @Override
+            public void onZoom(boolean zoom) {
+                legend.animateZoom(zoom);
+            }
+        };
 
 
         ScrollView.LayoutParams listLP = new ScrollView.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
@@ -212,13 +218,17 @@ public class MainActivity extends Activity {
                 cb.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
-                        newChart.setSingleChecked(c.id);
-                        for (MyCheckBox it : cbs) {
-                            if (it == cb) {
-                                it.setChecked(true, false);
-                            } else {
-                                it.setChecked(false, false);
+                        boolean ok = newChart.setSingleChecked(c.id);
+                        if (ok) {
+                            for (MyCheckBox it : cbs) {
+                                if (it == cb) {
+                                    it.setChecked(true, false);
+                                } else {
+                                    it.setChecked(false, false);
+                                }
                             }
+                        } else {
+                            shake(cb);
                         }
                         return true;
                     }
@@ -228,21 +238,7 @@ public class MainActivity extends Activity {
                     public boolean onCheckedChanged(boolean isChecked) {
                         boolean b = newChart.setChecked(c.id, isChecked);
                         if (!b) {
-                            final float FREQ = 2f;
-                            final float DECAY = 2f;
-                            // interpolator that goes 1 -> -1 -> 1 -> -1 in a sine wave pattern.
-                            TimeInterpolator decayingSineWave = new TimeInterpolator() {
-                                @Override
-                                public float getInterpolation(float input) {
-                                    double raw = Math.sin(FREQ * input * 2 * Math.PI);
-                                    return (float)(raw * Math.exp(-input * DECAY));
-                                }
-                            };
-                            cb.setTranslationX(0);
-                            cb.animate()
-                                    .translationX(dimen.dpi(8))
-                                    .setInterpolator(decayingSineWave)
-                                    .setDuration(320);
+                            shake(cb);
                         }
                         return b;
                     }
@@ -264,6 +260,24 @@ public class MainActivity extends Activity {
         }
         chartsRoots.add(list);
         return list;
+    }
+
+    private void shake(MyCheckBox cb) {
+        final float FREQ = 2f;
+        final float DECAY = 2f;
+        // interpolator that goes 1 -> -1 -> 1 -> -1 in a sine wave pattern.
+        TimeInterpolator decayingSineWave = new TimeInterpolator() {
+            @Override
+            public float getInterpolation(float input) {
+                double raw = Math.sin(FREQ * input * 2 * Math.PI);
+                return (float)(raw * Math.exp(-input * DECAY));
+            }
+        };
+        cb.setTranslationX(0);
+        cb.animate()
+                .translationX(dimen.dpi(8))
+                .setInterpolator(decayingSineWave)
+                .setDuration(320);
     }
 
     private void mySetContentVie(View v) {
