@@ -12,7 +12,7 @@ public class ColorSet {
             0xffffffff,
             0x19182D3B,
             0xff446D91,
-            0xff3896D4,
+            0xff000000,
             0xbff1f5f7, 0x334f89b4,
             0xff426382,
             0xffE5EBEF,

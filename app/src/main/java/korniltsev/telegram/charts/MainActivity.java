@@ -46,6 +46,7 @@ import korniltsev.telegram.charts.ui.MyCheckBox;
 import korniltsev.telegram.charts.ui.MyCheckboxContainer;
 import korniltsev.telegram.charts.ui.MyColorDrawable;
 import korniltsev.telegram.charts.ui.MyFonts;
+import korniltsev.telegram.charts.ui.MyHeader;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -88,6 +89,7 @@ public class MainActivity extends Activity {
     private MyAnimation.Color textColorAnim;
     private List<MyCheckBox> checkboxes = new ArrayList<>();
     public static Application ctx;
+    private List<MyHeader> legends = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,12 +132,35 @@ public class MainActivity extends Activity {
 
     private View createChart(ChartData datum) {
         LinearLayout.LayoutParams legendLP = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-        final TextView legend = new TextView(this);
-        legend.setPadding(dimen.dpi(16), dimen.dpi(16), 0, dimen.dpi(8));
-        legend.setTextSize(16f);
-        legend.setTextColor(currentColorSet.legendTitle);
-        legend.setText("Followers");
+        String followers;
+        switch (datum.index) {
+            case 1:
+                followers = "Followers";
+                break;
+            case 2:
+                followers = "Interactions";
+                break;
+            case 3:
+                followers = "Messages";
+                break;
+            case 4:
+                followers = "Views";
+                break;
+            case 5:
+                followers = "Apps";
+                break;
+            default:
+                followers = "Followers";
+                break;
+        }
+        final MyHeader legend = new MyHeader(this, followers, dimen, currentColorSet);
+//        final TextView legend = new TextView(this);
+//        legend.setPadding(dimen.dpi(16), dimen.dpi(16), 0, dimen.dpi(8));
+//        legend.setTextSize(16f);
+//        legend.setTextColor(currentColorSet.legendTitle);
+//        legend.setText("Followers");
         legend.setLayoutParams(legendLP);
+        legends.add(legend);
 
 
 
@@ -146,7 +171,10 @@ public class MainActivity extends Activity {
         legend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                newChart.zoomOut();
+                boolean b = newChart.zoomOut();
+                if (b) {
+                    legend.animateZoom(false);
+                }
             }
         });
 
@@ -374,6 +402,9 @@ public class MainActivity extends Activity {
         if (animateUI) {
             for (MyColorDrawable b : lightBackgrounds) {
                 b.animate(currentColorSet.lightBackground, colorAnimationDuration);
+            }
+            for (MyHeader legend : legends) {
+                legend.animate(currentColorSet);
             }
             textColorAnim = new MyAnimation.Color(colorAnimationDuration, textColor, currentColorSet.textColor);
 

@@ -319,12 +319,12 @@ public class ChartViewGL extends TextureView {
 
     public static int counter;
 
-    public void zoomOut() {
+    public boolean zoomOut() {
         if (uiLocked) {
-            return;
+            return false;
         }
         if (!zoomedIn) {
-            return;
+            return false;
         }
         r.postToRender(new Runnable() {
             @Override
@@ -335,6 +335,7 @@ public class ChartViewGL extends TextureView {
                 onZoom();
             }
         });
+        return true;
     }
 
 
