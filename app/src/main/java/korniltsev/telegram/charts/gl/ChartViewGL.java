@@ -52,8 +52,9 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 high prio
 
         - цвета кнопок кажется не совпадают со скриншотами
-        - cэмулировать viewportMax = 0 в bar zoom
         - формат цифр в тултипе
+
+        - cэмулировать viewportMax = 0 в bar zoom
     ----------------------------------  СТОПУДОВО
 
     тудушки из записной книжки

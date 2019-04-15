@@ -87,9 +87,9 @@ public class ColorSet {
     public int mapButtonColor(int color) {
         switch (color) {
             case 0xff4BD964: // green
-                return day ? 0xff5FB641 : 0xff5AB34D;
+                return day ? 0xff3CC23F : 0xff5AB34E;
             case 0xffFE3C30: // red
-                return day ? 0xffE65850 : 0xffCF5D57;
+                return day ? 0xffF34C44 : 0xffCF5D57;
             case 0xff108BE3: // blue
                 return day ? 0xff3497ED : 0xff4681BB;
             case 0xffE8AF14: // yellow
@@ -124,9 +124,9 @@ public class ColorSet {
     public int mapLineColor(int color) {
         switch (color) {
             case 0xff4BD964: // green
-                return day ? 0xff4BD964 : 0xff4BD964;
+                return day ? 0xff3CC23F : 0xff5AB34E;
             case 0xffFE3C30: // red
-                return day ? 0xffFE3C30 : 0xffE6574F;
+                return day ? 0xffF34C44 : 0xffCF5D57;
             case 0xff108BE3: // blue
                 return day ? 0xff108BE3 : 0xff108BE3;
             case 0xffE8AF14: // yellow
@@ -145,9 +145,9 @@ public class ColorSet {
     public int mapLineText(int color) {
         switch (color) {
             case 0xff4BD964: // green
-                return day ? 0xff3CC23F : 0xff4BD964;
+                return day ? 0xff3CC23F : 0xff5AB34E;
             case 0xffFE3C30: // red
-                return day ? 0xffF34C44 : 0xffF7655E;
+                return day ? 0xffF34C44 : 0xffCF5D57;
             case 0xff108BE3: // blue
                 return day ? 0xff108BE3 : 0xff108BE3;
             case 0xffE8AF14: // yellow
