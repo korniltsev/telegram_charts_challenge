@@ -32,6 +32,13 @@ public class BarChartProgram {
     private MyAnimation.Float maxAnim;
     private int tooltipIndex = -1;
 
+    float[] tmpvec = new float[4];
+    float[] tmpvec2 = new float[4];
+    private float aniamteOutPivot;
+    public MyAnimation.Float animateOutValueAnim;
+    public float animateOutValue = -1f;
+    public boolean zoomedIn;
+
     public BarChartProgram(ColumnData column, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader) {
         this.column = column;
         this.w = w;
@@ -102,6 +109,17 @@ public class BarChartProgram {
                 invalidate = true;
             }
         }
+        if (animateOutValueAnim != null) {
+            animateOutValue = animateOutValueAnim.tick(t);
+            if (animateOutValueAnim.ended) {
+                animateOutValueAnim = null;
+                if (!zoomedIn) {
+                    animateOutValue = -1f;
+                }
+            } else {
+                invalidate = true;
+            }
+        }
         return invalidate;
     }
 
@@ -121,7 +139,11 @@ public class BarChartProgram {
 
             final float yscale = h / (max - 0);
             final float dy = -yscale * 0;
-
+            if (animateOutValue != -1f && animateOutValue != 0f) {
+                Matrix.translateM(V, 0, aniamteOutPivot, 0, 0);
+                Matrix.scaleM(V, 0, 8 * animateOutValue + 1f, 1f, 1f);
+                Matrix.translateM(V, 0, -aniamteOutPivot, 0, 0);
+            }
             Matrix.translateM(V, 0, hpadding, root.dimen_v_padding8 + root.checkboxesHeight, 0);
             Matrix.translateM(V, 0, 0, dy, 0);
             Matrix.scaleM(V, 0, w / ((maxx)), yscale, 1.0f);
@@ -138,6 +160,11 @@ public class BarChartProgram {
             final float ws = w / xdiff / zoom;
             final float hs = h / (max - 0);
             final float dy = -hs * 0;
+            if (animateOutValue != -1f && animateOutValue != 0f) {
+                Matrix.translateM(V, 0, aniamteOutPivot, 0, 0);
+                Matrix.scaleM(V, 0, 8 * animateOutValue + 1f, 1f, 1f);
+                Matrix.translateM(V, 0, -aniamteOutPivot, 0, 0);
+            }
             Matrix.translateM(V, 0, hpadding, ypx, 0);
             Matrix.translateM(V, 0, 0, dy, 0);
             Matrix.scaleM(V, 0, ws, hs, 1.0f);
@@ -153,7 +180,16 @@ public class BarChartProgram {
         shader.use();
 
 
-        MyColor.set(colors, column.color);
+        if (animateOutValue != -1 && animateOutValue != 0f) {
+            float colorAlpha = (column.color >>> 24) / 255f;
+            float animOutAlpha = 1f - animateOutValue;
+            colors[0] = ((column.color >> 16) & 0xFF) / 255f;
+            colors[1] = ((column.color >> 8) & 0xFF) / 255f;
+            colors[2] = (column.color & 0xFF) / 255f;
+            colors[3] = colorAlpha * animOutAlpha;
+        } else {
+            MyColor.set(colors, column.color);
+        }
         GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
         GLES20.glEnableVertexAttribArray(shader.positionHandle);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo);
@@ -183,6 +219,26 @@ public class BarChartProgram {
         return tooltipIndex;
     }
 
+    public void animateOut(int duration, boolean zoomedIn, float leftX) {
+        this.zoomedIn = zoomedIn;
+        if (zoomedIn) {
+            this.aniamteOutPivot = leftX;
+        }
+        if (animateOutValue == -1f) {
+            animateOutValue = 0f;
+        }
+        animateOutValueAnim = new MyAnimation.Float(duration, animateOutValue, zoomedIn ? 1f : 0f);
+    }
+    public float getTooltipX(float[] PROJ) {
+        prepare(PROJ);
+        tmpvec[0] = tooltipIndex;
+        tmpvec[1] = 1f;
+        tmpvec[2] = 0f;
+        tmpvec[3] = 1;
+        Matrix.multiplyMV(tmpvec2, 0, V, 0, tmpvec, 0);
+        return tmpvec2[0];
+    }
+
     public static final class MyShader {
         final String vertexShader =
                 "uniform mat4 u_MVPMatrix;\n" +
@@ -196,7 +252,7 @@ public class BarChartProgram {
                         "        if (a_Position.z == u_selected_index) {\n" +
                         "            v_color = u_color;\n" +
                         "        } else {\n" +
-                        "            v_color = vec4(u_color.xyz, 0.5);\n" +
+                        "            v_color = vec4(u_color.xyz,u_color.w * 0.5);\n" +
                         "        }\n" +
                         "   } else {\n" +
                         "        v_color = u_color;\n" +

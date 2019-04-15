@@ -1840,6 +1840,8 @@ public class ChartViewGL extends TextureView {
             zoomLines(details, newLeft, newRight, newScale);
         } else if (r.bar7Shader != null) {
             zoomBar7(details, newLeft, newRight, newScale);
+        } else if (r.chartBar != null) {
+            zoomBar(details, newLeft, newRight, newScale);
         }
         r.overlay.zoom.leftAnim = new MyAnimation.Float(208, r.overlay.zoom.left, newLeft);
         r.overlay.zoom.rightAnim = new MyAnimation.Float(208, r.overlay.zoom.right, newRight);
@@ -1854,6 +1856,26 @@ public class ChartViewGL extends TextureView {
                 }
             }
         });
+    }
+
+    private void zoomBar(ChartData details, float newLeft, float newRight, float newScale) {
+
+        r.tooltipIndex = -1;
+        int duration = 384 ;
+//        int duration = 384 * 20;
+        swapxValues(details, newLeft, newRight, newScale, duration);
+        float leftx1;
+        float leftx2;
+        {
+            leftx1 = r.chartBar.getTooltipX(r.PROJ);
+            r.chartBar.animateOut(duration, zoomedIn, leftx1);
+        }
+        {
+            r.scrollbar_bars.setTooltipIndex(r.chartBar.getTooltipIndex());
+            leftx2 = r.scrollbar_bars.getTooltipX(r.PROJ);
+            r.scrollbar_bars.setTooltipIndex(-1);
+            r.scrollbar_bars.animateOut(duration, zoomedIn, leftx2);
+        }
     }
 
     private void zoomBar7(ChartData details, float newLeft, float newRight, float newScale) {

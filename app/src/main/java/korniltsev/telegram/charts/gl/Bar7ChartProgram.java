@@ -367,11 +367,6 @@ public class Bar7ChartProgram {
         return tmpvec2[0];
     }
 
-    public void copyState(Bar7ChartProgram chartBar7) {
-        for (int i = 0; i < visibility.length; i++) {
-            visibility[i] = chartBar7.visibility[i];
-        }
-    }
     public void calcAnimOffsets(float[] PROJ) {
         prepare(PROJ);
         leftxi = -1;
@@ -394,6 +389,11 @@ public class Bar7ChartProgram {
                 rightx = x;
                 rightxi = i;
             }
+        }
+    }
+    public void copyState(Bar7ChartProgram chartBar7) {
+        for (int i = 0; i < visibility.length; i++) {
+            visibility[i] = chartBar7.visibility[i];
         }
     }
 
