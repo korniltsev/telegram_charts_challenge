@@ -322,7 +322,7 @@ public final class GLRulersProgram {
             return;
         }
 
-        if (xValue.tex == null) {
+        if (xValue.tex_ == null) {
             long v = xValue.value;
             String format;
             if (xValue.zoomed) {
@@ -331,12 +331,13 @@ public final class GLRulersProgram {
                 format = dateFormat.format(v);
             }
             TextTex lazyTex = new TextTex(format, paint);
-            xValue.tex = lazyTex;
+            xValue.tex_ = lazyTex;
         }
+        left = hpadding + pos - xValue.tex_.w;
 
 
         Matrix.translateM(MVP, 0, left, dimen.dpf(80 - 20) + root.checkboxesHeight, 0);
-        Matrix.scaleM(MVP, 0, xValue.tex.w, xValue.tex.h, 1f);
+        Matrix.scaleM(MVP, 0, xValue.tex_.w, xValue.tex_.h, 1f);
 
 
         float alpha = xValue.alpha;
@@ -358,7 +359,7 @@ public final class GLRulersProgram {
         GLES20.glUniform4fv(texShader.u_color, 1, colorParts, 0);
         GLES20.glUniform1f(texShader.texAlphaHandle, alpha * colorAlpha);
 
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, xValue.tex.tex[0]);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, xValue.tex_.tex[0]);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, TexShader.texVertices.length / 2);
     }
 
@@ -491,8 +492,8 @@ public final class GLRulersProgram {
                 if (x.alphaAnim.ended) {
                     x.alphaAnim = null;
                     try {
-                        if (x.tex != null) {
-                            x.tex.release();
+                        if (x.tex_ != null) {
+                            x.tex_.release();
                         }
                         animatingOut.remove(i);
                     } catch (Throwable e) {
@@ -823,13 +824,17 @@ public final class GLRulersProgram {
         }
         for (int i = 0, xValuesSize = xValues.size(); i < xValuesSize; i++) {
             XValueLable xValue = xValues.get(i);
-            xValue.tex.release();
-            xValue.tex = null;
+            if (xValue.tex_ != null) {
+                xValue.tex_.release();
+                xValue.tex_ = null;
+            }
         }
         for (int i = 0, animatingOutSize = animatingOut.size(); i < animatingOutSize; i++) {
             XValueLable xValueLable = animatingOut.get(i);
-            xValueLable.tex.release();
-            xValueLable.tex = null;
+            if (xValueLable.tex_ != null) {
+                xValueLable.tex_.release();
+                xValueLable.tex_ = null;
+            }
         }
         xValues.clear();
         animatingOut.clear();
@@ -854,14 +859,14 @@ public final class GLRulersProgram {
         public final long value;
         public final int index;
         public final int n;
-        public TextTex tex;
+        public TextTex tex_;
         public float alpha = 1f;
         public MyAnimation.Float alphaAnim = null;
 
         XValueLable(boolean zoomed, TextTex tex, long value, int i, int n) {
             this.zoomed = zoomed;
             this.value = value;
-            this.tex = tex;
+            this.tex_ = tex;
             this.index = i;
             this.n = n;
         }
