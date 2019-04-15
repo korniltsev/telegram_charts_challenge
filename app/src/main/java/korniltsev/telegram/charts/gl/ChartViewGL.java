@@ -51,9 +51,8 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 high prio
 
     - бонус зум для 1 & 2
-        - иконка + текст вверху zoomOut
         - санимировать x
-        ---------------------------------- 10:00
+        ---------------------------------- 11:00
 
 
     ----------------------
@@ -93,12 +92,6 @@ low prio
         - bar chart - неправильный цвет при выбранной колонке - заюзать из гайдлайнов
         - в тултипе цвет текста не такой как на графике линия
     - в баре тултип показывать около значения а не вверху
-    - в линейных графика кажется неправильно считается максимум или неправильно кропаются значения справа
-    - когда скейлишь x левую надпись пидорасит
-    [ ? ] Matrix -> MyMatrix for inlining? test if it does something
-
-
-    line alpha animation blending - render to fbo
     - проверить цвета в колоночных графиках day/night
 
 ---------------------------------------
@@ -113,21 +106,6 @@ low prio
     - мб сначала создать один график, потом остальные
     - почему когда водишь пальцем то не лагает, а когда анимируется лагает? попробовать postDelayed для анимации сделать?, Choreographer Callback
 ---------
-
-
-// todo testing
-// write ui test monkey
-
-
-
-after contest replace GL_LINE with triangles & dithering
-ACHTUNG
-    chart line dithering
-    https://blog.mapbox.com/drawing-antialiased-lines-with-opengl-8766f34192dc
-    calculating normal in vertex shader
-    https://github.com/learnopengles/Learn-OpenGLES-Tutorials/blob/641fcc25158dc30f45a7b2faaab165ec61ebb54b/android/AndroidOpenGLESLessonsCpp/app/src/main/assets/vertex/per_pixel_vertex_shader_tex_and_light.glsl#L22
-    render to msa fbo https://stackoverflow.com/a/8338881/1321940
-
 
 
 */
