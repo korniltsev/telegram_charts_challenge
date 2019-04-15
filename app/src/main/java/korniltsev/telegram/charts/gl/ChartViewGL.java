@@ -51,12 +51,8 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 high prio
 
     - бонус зум для 3 графика
-        - зумин
-        - зумаут
-        - убрать тултип
-        - анимация скроллбара
-        - тултипы
-        - чек анчек
+        - 15:30 - ленивые текстуры
+        - все тоже самое но в скроллбар
     - бонус зум для 4 графика
 
 
@@ -762,12 +758,12 @@ public class ChartViewGL extends TextureView {
             }
             if (chartBar7 != null) {
 //                        chartBar7.setTooltipIndex(-1);
-                long viewportMax = calculateBar7Max(data1, r.overlay.zoom.left, r.overlay.zoom.right);
-                chartBar7.animateMinMax(viewportMax, true, 208);
-                if (foundIndex != -1) {
-                    chartBar7.animateFade(foundIndex, isChecked, 208);
+                if (chartBar7Zoomed != null && zoomedInData != null) {
+                    setCheckedBar7(chartBar7Zoomed, r.overlay.zoom, isChecked, zoomedInData.data, foundIndex, ruler);
+                    setCheckedBar7(chartBar7, r.overlay.zoomStash, isChecked, data1, foundIndex, null);
+                } else {
+                    setCheckedBar7(chartBar7, r.overlay.zoom, isChecked, data1, foundIndex, ruler);
                 }
-                ruler.animateScale(0, viewportMax, 208);
             }
             if (chartStackedPercent != null) {
 //                        chartStackedPercent.setTooltipIndex(-1);
@@ -781,6 +777,17 @@ public class ChartViewGL extends TextureView {
 //                            ruler.animateScale(ratio, 0, viewportMax, checkedCount, prevCheckedCOunt, 208);
 //                            prevMax = viewportMax;
 //                        }
+            }
+        }
+
+        private void setCheckedBar7(Bar7ChartProgram p, ZoomState zoom, boolean isChecked, ColumnData[] data1, int foundIndex, GLRulersProgram ruler) {
+            long viewportMax = calculateBar7Max(data1, zoom.left, zoom.right);
+            p.animateMinMax(viewportMax, true, 208);
+            if (foundIndex != -1) {
+                p.animateFade(foundIndex, isChecked, 208);
+            }
+            if (ruler != null) {
+                ruler.animateScale(0, viewportMax, 208);
             }
         }
 
@@ -1103,12 +1110,8 @@ public class ChartViewGL extends TextureView {
         }
 
         private boolean drawChartBar7(boolean invalidated, long t) {
-            int tooltipIndex = chartBar7.getTooltipIndex();
-            if (tooltipIndex != -1) {
-                if (this.tooltip == null) {
-                    this.tooltip = new Tooltip(dimen, w, h, currentColors, data, simple, ChartViewGL.this);
-                }
-            }
+            int tooltipIndex = r.tooltipIndex;
+
             boolean it_invalidated = chartBar7.animate(t);
             //todo do not draw if animateOut is done
             chartBar7.prepare(PROJ);
@@ -1129,10 +1132,14 @@ public class ChartViewGL extends TextureView {
             ruler.draw(t);
 
             if (tooltipIndex != -1) {
-                boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, null, checked);
-                this.tooltip.calcPos(chartBar7.MVP, tooltipIndex);
+                if (zoomedIn) {
+                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, zoomedInData, checked);
+                    invalidated = tooltip_inv || invalidated;
+                } else {
+                    boolean tooltip_inv = this.tooltip.animationTick(t, tooltipIndex, null, checked);
+                    invalidated = tooltip_inv || invalidated;
+                }
                 this.tooltip.drawTooltip(PROJ);
-                invalidated = tooltip_inv || invalidated;
             }
             if (uiLocked) {
                 if (zoomedIn) {
@@ -1494,12 +1501,26 @@ public class ChartViewGL extends TextureView {
             }
             if (chartBar7 != null) {
 //                ruler.setLeftRight(left, right, scale);
-                chartBar7.zoom = scale;
-                chartBar7.left = left;
-                long viewportMax = calculateBar7Max(data.data, r.overlay.zoom.left, r.overlay.zoom.right);
-                if (rulerInitDone) {
-                    chartBar7.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
-                    ruler.animateScale(0, viewportMax, 256);
+
+                if (chartBar7Zoomed != null) {
+                    chartBar7Zoomed.zoom = scale;
+                    chartBar7Zoomed.left = left;
+                    long viewportMax = calculateBar7Max(zoomedInData.data, r.overlay.zoom.left, r.overlay.zoom.right);
+                    if (rulerInitDone) {
+                        chartBar7Zoomed.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
+                        ruler.animateScale(0, viewportMax, 256);
+                    }
+                } else {
+                    {
+                        chartBar7.zoom = scale;
+                        chartBar7.left = left;
+                        long viewportMax = calculateBar7Max(data.data, r.overlay.zoom.left, r.overlay.zoom.right);
+                        if (rulerInitDone) {
+                            chartBar7.animateMinMax(viewportMax, !firstLeftRightUpdate, 256);
+                            ruler.animateScale(0, viewportMax, 256);
+                        }
+                    }
+
                 }
             }
             if (chartStackedPercent != null) {
@@ -1684,6 +1705,8 @@ public class ChartViewGL extends TextureView {
                     int n;
                     if (r.zoomLines != null) {
                         n = r.zoomLines[0].column.values.length;
+                    } else if (r.chartBar7Zoomed != null){
+                        n = r.chartBar7Zoomed.column.get(0).values.length;
                     } else {
                         n = r.data.data[0].values.length;
                     }
@@ -1723,7 +1746,16 @@ public class ChartViewGL extends TextureView {
                         r.chartBar.setTooltipIndex(finali);
                     }
                     if (r.chartBar7 != null) {
-                        r.chartBar7.setTooltipIndex(finali);
+                        if (r.tooltip == null) {
+                            r.tooltip = new Tooltip(dimen, r.w, r.h, currentColors, data, r.simple, ChartViewGL.this);
+                        }
+                        if (zoomedIn && r.chartBar7Zoomed != null) {
+                            r.tooltip.calcPos(r.chartBar7Zoomed.MVP, finali);
+                            r.chartBar7Zoomed.setTooltipIndex(finali);
+                        } else {
+                            r.tooltip.calcPos(r.chartBar7.MVP, finali);
+                            r.chartBar7.setTooltipIndex(finali);
+                        }
                     }
                     if (r.chartStackedPercent != null) {
                         r.chartStackedPercent.setTooltipIndex(finali);
@@ -1791,11 +1823,13 @@ public class ChartViewGL extends TextureView {
     }
 
     private void zoomBar7(ChartData details, float newLeft, float newRight, float newScale) {
-//        int duration = 384 * 20;
+        r.tooltipIndex = -1;
         int duration = 384 ;
+//        int duration = 384 * 20;
+        swapxValues(details, newLeft, newRight, newScale, duration);
         float leftx = r.chartBar7.getTooltipX(r.PROJ);
 
-        r.chartBar7.animateOut(duration, zoomedIn, leftx);
+        r.chartBar7.animateOut(duration / 2, zoomedIn, leftx);
         if (zoomedIn) {
             List<ColumnData> cs = Arrays.asList(details.data).subList(1, details.data.length);
             r.chartBar7Zoomed = new Bar7ChartProgram(cs, r.w, r.h, dimen, this, false, r.bar7Shader);
@@ -1810,26 +1844,19 @@ public class ChartViewGL extends TextureView {
             r.ruler.init(0, viewportMax);
         } else {
             if (r.chartBar7Zoomed != null) {
+                r.chartBar7Zoomed.calcAnimOffsets(r.PROJ);
                 r.chartBar7Zoomed.animateIn(duration, zoomedIn, 0f);
             }
             //todo ruler
+            r.chartBar7.setTooltipIndex(-1);
         }
     }
 
     private void zoomLines(final ChartData details, final float newLeft, final float newRight, final float newScale) {
+        r.tooltipIndex = -1;
         //            int duration = 384 * 20;
         int duration = 384;
-        r.ruler.removeAllX(duration / 2);
-        r.renderHandler2.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (details != null) {
-                    r.ruler.setLeftRight(newLeft, newRight, newScale, details.data[0]);
-                } else {
-                    r.ruler.setLeftRight(newLeft, newRight, newScale, null);
-                }
-            }
-        }, duration / 2);
+        swapxValues(details, newLeft, newRight, newScale, duration);
 
         if (zoomedIn) {
             {
@@ -1881,7 +1908,7 @@ public class ChartViewGL extends TextureView {
                 }
             }
         } else {
-            r.tooltipIndex = -1;
+
             {
                 LinesChartProgram[] zoomLines = r.zoomLines;
                 for (int i = 0; i < zoomLines.length; i++) {
@@ -1925,6 +1952,20 @@ public class ChartViewGL extends TextureView {
                 r.ruler.animateScale(r.chartLines[0].scaledViewporMin, r.chartLines[0].scaledViewporMax, 208);
             }
         }
+    }
+
+    private void swapxValues(final ChartData details, final float newLeft, final float newRight, final float newScale, int duration) {
+        r.ruler.removeAllX(duration / 2);
+        r.renderHandler2.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (details != null) {
+                    r.ruler.setLeftRight(newLeft, newRight, newScale, details.data[0]);
+                } else {
+                    r.ruler.setLeftRight(newLeft, newRight, newScale, null);
+                }
+            }
+        }, duration / 2);
     }
 
     public ZoomListener zoomListener;
@@ -1973,6 +2014,9 @@ public class ChartViewGL extends TextureView {
         }
         if (r.chartBar7 != null) {
             r.chartBar7.setTooltipIndex(-1);
+        }
+        if (r.chartBar7Zoomed != null) {
+            r.chartBar7Zoomed.setTooltipIndex(-1);
         }
         if (r.chartStackedPercent != null) {
             r.chartStackedPercent.setTooltipIndex(-1);

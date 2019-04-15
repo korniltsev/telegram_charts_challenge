@@ -300,7 +300,9 @@ public class Bar7ChartProgram {
             GLES20.glUniform1f(shader.u_v5, visibility[5]);
             GLES20.glUniform1f(shader.u_v6, visibility[6]);
             MyGL.checkGlError2();
-            if (animateInValue == -1f || animateInValue == 1f) {
+            if (animateOutValue == 1f) {
+
+            } else if (animateInValue == -1f || animateInValue == 1f) {
                 GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vxCount);
             } else  {
                 int vperline = 6;
