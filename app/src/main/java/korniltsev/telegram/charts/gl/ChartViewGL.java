@@ -49,7 +49,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 /*
 
-- сокращалка
 
 total в тултипе
 год в тултипе, день неделе, формат!!!
