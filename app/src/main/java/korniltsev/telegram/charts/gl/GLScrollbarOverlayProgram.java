@@ -1,5 +1,6 @@
 package korniltsev.telegram.charts.gl;
 
+import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
@@ -7,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import korniltsev.telegram.charts.R;
 import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
@@ -25,10 +27,14 @@ public final class GLScrollbarOverlayProgram {
     private final FloatBuffer buf1;
     private final SimpleShader shader;
     private final int[] vbos;
+    private final TextTex icLeft;
+    private final TextTex icRight;
+    private final TexShader texShader;
     private int color_overlay;
     private int color_border;
 
     private float[] MVP = new float[16];
+    private float[] VIEW = new float[16];
 
     public final int canvasW;
     public final int canvasH;
@@ -81,6 +87,9 @@ public final class GLScrollbarOverlayProgram {
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * BYTES_PER_FLOAT, buf1, GLES20.GL_STATIC_DRAW);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
+        texShader = new TexShader(true, false);
+        icLeft = Tooltip.loadTex(R.drawable.ic_roller_left);
+        icRight = Tooltip.loadTex(R.drawable.ic_roller_right);
     }
 
     float[] color_parts = new float[4];
@@ -92,7 +101,7 @@ public final class GLScrollbarOverlayProgram {
 //            MyColor.alpha(BORDER_COLOR) / 255f,
 //    };
 
-    public final boolean draw(long t) {
+    public final boolean draw(long t, float[]proj) {
         boolean invalidate = false;
         float left = zoom.left;
         float right = zoom.right;
@@ -141,22 +150,47 @@ public final class GLScrollbarOverlayProgram {
         MyColor.set(color_parts, color_overlay);
         GLES20.glUniform4fv(shader.colorHandle, 1, color_parts, 0);
         int y = root.dimen_v_padding8 + root.checkboxesHeight;
-        if (left != 0.0f) {
-            drawRect(hpadding, y, left * scrollerW, root.dimen_scrollbar_height);
-        }
-        if (right != 1.0f) {
-            drawRect(hpadding + scrollerW * right, y, scrollerW * (1.0f - right), root.dimen_scrollbar_height);
-        }
+        drawRect(hpadding , y, left * scrollerW + icLeft.w, root.dimen_scrollbar_height);
+        drawRect(hpadding + scrollerW * right - icLeft.w, y, icLeft.w + scrollerW * (1.0f - right), root.dimen_scrollbar_height);
 
         MyColor.set(color_parts, color_border);
         GLES20.glUniform4fv(shader.colorHandle, 1, color_parts, 0);
-        drawRect(hpadding + scrollerW * left, y, vline1w, root.dimen_scrollbar_height);
-        drawRect(hpadding + scrollerW * right - vline1w, y, vline1w, root.dimen_scrollbar_height);
-        float l = hpadding + scrollerW * left + vline1w;
-        float r = hpadding + scrollerW * right - vline1w;
+//        drawText(ic);
+        drawRect(hpadding + scrollerW * left, y, icLeft.w, root.dimen_scrollbar_height);
+        drawRect(hpadding + scrollerW * right - icLeft.w, y, icLeft.w, root.dimen_scrollbar_height);
+        float l = hpadding + scrollerW * left + icLeft.w;
+        float r = hpadding + scrollerW * right - icLeft.w;
         drawRect(l, y, r - l, vline2h);
         drawRect(l, y + root.dimen_scrollbar_height - vline2h, r - l, vline2h);
+
+//        MyGL.checkGlError2();
+//        drawText(icLeft, l - icLeft.w, y, Color.RED, 1f, proj);
+//        drawText(icRight, r, y, Color.RED, 1f, proj);
+//        MyGL.checkGlError2();
         return invalidate;
+    }
+
+
+    private void drawText(TextTex text, float x, float y, int color, float alpha, float []proj) {
+
+        Matrix.setIdentityM(VIEW, 0);
+        Matrix.translateM(VIEW, 0, x, y, 0);
+        Matrix.scaleM(VIEW, 0, text.w, text.h, 1);
+        Matrix.multiplyMM(MVP, 0, proj, 0, VIEW, 0);
+
+        GLES20.glUseProgram(texShader.texProgram);
+        GLES20.glEnableVertexAttribArray(texShader.texPositionHandle);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, texShader.texVerticesVBO);
+        GLES20.glVertexAttribPointer(texShader.texPositionHandle, 2, GLES20.GL_FLOAT, false, 8, 0);
+        GLES20.glUniform1f(texShader.texAlphaHandle, alpha);
+
+        GLES20.glUniformMatrix4fv(texShader.texMVPHandle, 1, false, MVP, 0);
+
+        MyColor.set(color_parts, color);
+        GLES20.glUniform4fv(texShader.u_color, 1, color_parts, 0);
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, text.tex[0]);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, TexShader.texVertices.length / 2);
     }
 
 
@@ -196,6 +230,11 @@ public final class GLScrollbarOverlayProgram {
         }
         released = true;
         GLES20.glDeleteBuffers(1, vbos, 0);
-
+//        texShader = new TexShader(true, true);
+//        icLeft = Tooltip.loadTex(R.drawable.ic_roller_left);
+//        icRight = Tooltip.loadTex(R.drawable.ic_roller_left);
+        icLeft.release();
+        icRight.release();
+        texShader.release();
     }
 }

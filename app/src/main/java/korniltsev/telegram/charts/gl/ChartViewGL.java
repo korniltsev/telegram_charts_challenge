@@ -996,7 +996,7 @@ public class ChartViewGL extends TextureView {
 
             invalidated = drawScrollbar(invalidated, t);
 //                long t3 = System.nanoTime();
-            overlay.draw(t);
+            overlay.draw(t, PROJ);
 //                long t4 = System.nanoTime();
             boolean rulerInvalidated = ruler.animationTick(t);
             invalidated = rulerInvalidated | invalidated;

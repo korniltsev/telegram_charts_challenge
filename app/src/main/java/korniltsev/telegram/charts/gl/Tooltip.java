@@ -104,7 +104,7 @@ public class Tooltip {
 
     }
 
-    private TextTex loadTex(int ic_arrow) {
+    public static TextTex loadTex(int ic_arrow) {
         TextTex t;
         Bitmap b;
         Drawable icArrow = MainActivity.ctx.getResources().getDrawable(ic_arrow);
