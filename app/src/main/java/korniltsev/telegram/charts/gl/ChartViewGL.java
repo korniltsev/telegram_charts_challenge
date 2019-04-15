@@ -51,10 +51,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 high prio
 
-    - бонус зум для 4 графика
-        - цвета в зуме на кнопках и тексте  и линиях
-            - санимировать чекбоксы
-
         - цвета кнопок кажется не совпадают со скриншотами
         - cэмулировать viewportMax = 0 в bar zoom
         - формат цифр в тултипе
