@@ -51,8 +51,8 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 high prio
 
     - бонус зум для 4 графика
-        - тултипы,
         - чекбоксы
+        - вертикальная линия
 
 
         - cэмулировать viewportMax = 0 в bar zoom
