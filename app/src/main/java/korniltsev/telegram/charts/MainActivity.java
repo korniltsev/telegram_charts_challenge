@@ -189,25 +189,27 @@ public class MainActivity extends Activity {
             @Override
             public void onZoom(boolean zoom, ChartData details) {
                 legend.animateZoom(zoom);
-                if (zoom && details != null
+                if (details != null
                         && datum.type == ColumnData.Type.bar
                         && datum.data.length == 2) {
-                    MyCheckboxContainer p = createteBarZoomCheckboxes(details, newChart);
-                    chartParentFrame.addView(p);
-                    extraCheckboxes.add(p);
-                } else {
-                    for (final View extraCheckbox : extraCheckboxes) {
-                        extraCheckbox.animate().alpha(0f).setDuration(208).setListener(new AnimatorListenerAdapter() {
-                            @Override
-                            public void onAnimationEnd(Animator animation) {
-                                extraCheckbox.setVisibility(View.INVISIBLE);
+                    if (zoom) {
+
+                        MyCheckboxContainer p = createteBarZoomCheckboxes(details, newChart);
+                        chartParentFrame.addView(p);
+                        extraCheckboxes.add(p);
+                    } else {
+                        for (final View extraCheckbox : extraCheckboxes) {
+                            extraCheckbox.animate().alpha(0f).setDuration(208).setListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    extraCheckbox.setVisibility(View.INVISIBLE);
 //                                chartParentFrame.removeView(extraCheckbox);/todo
-                            }
-                        });
+                                }
+                            });
 
+                        }
+                        extraCheckboxes.clear();
                     }
-                    extraCheckboxes.clear();
-
                 }
             }
 
