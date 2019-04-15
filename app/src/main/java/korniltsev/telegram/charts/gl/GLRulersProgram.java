@@ -911,7 +911,7 @@ public final class GLRulersProgram {
                     String text;
                     rValues[i] = from;
 
-                    if (minZero) {
+                    if (true) {
 
                         if (from < 1000) {
                             long ifrom = (long) from;
