@@ -39,6 +39,7 @@ class TooltipFramebuffer {
     public static final float FONT_SIZE_16 = 12f;
     public static final float FONT_SIZE22 = 16f;
     public static final int PADDING_BETWEEN_NAME_AND_VALUE = 20;
+    public static final int PERCENT_P = 6;
     //    public static final int VMARGIN = 8;
     private final int fakeShadowSimulatorLine;
     private ColorSet colorset;
@@ -84,6 +85,8 @@ class TooltipFramebuffer {
         formatter.setDecimalFormatSymbols(symbols);
 
     }
+
+    private int maxPercent;
 
     public TooltipFramebuffer(TexShader shader, ChartData data, int index, Dimen dimen, ColorSet set, boolean[] checked, SimpleShader simple) {
         this.dateColor = set.tooltipTitleColor;
@@ -194,7 +197,12 @@ class TooltipFramebuffer {
 //            realH += lh;
 
 //            int ny = titleY - dimen.dpi(VMARGIN) - i * (dimen.dpi(VMARGIN) + name.h);
-            drawText(name, dimen.dpf(LEFT_RIGHT_PADDING), ity-l.h, dateColor, l.visibility);
+            if (l.percent != null) {
+                drawText(name, dimen.dpf(LEFT_RIGHT_PADDING) + maxPercent + dimen.dpi(PERCENT_P), ity-l.h, dateColor, l.visibility);
+                drawText(l.percent, dimen.dpf(LEFT_RIGHT_PADDING) + maxPercent -l.percent.w, ity-l.h, dateColor, l.visibility);
+            } else {
+                drawText(name, dimen.dpf(LEFT_RIGHT_PADDING), ity-l.h, dateColor, l.visibility);
+            }
             TextTex value = l.value;
             float vx = w - dimen.dpi(LEFT_RIGHT_PADDING) - value.w;
             int tcolor = colorset.mapLineText(value.color);
@@ -297,13 +305,26 @@ class TooltipFramebuffer {
             TextTex value = new TextTex(text, p16);
             p16.setTypeface(null);
             value.color = datum.color;
-            Line e = new Line(name, value, value.h + dimen.dpi(4), datum.id);
+            Line e = new Line(name, value, value.h + dimen.dpi(4), datum.id, v);
             if (checked[i - 1]) {
                 e.visibility = 1f;
             } else {
                 e.visibility = 0f;
             }
             lines.add(e);
+        }
+        maxPercent = 0;
+        if (data.percentage) {
+            for (Line line : lines) {
+                int percent = (int) (100 * line.v/ total);
+                p16.setTypeface(medium);
+
+                String text = formatter.format(percent ) + "%";
+                TextTex percentTex = new TextTex(text, p16);
+                p16.setTypeface(null);
+                line.percent = percentTex;
+                maxPercent = Math.max(percentTex.w, maxPercent);
+            }
         }
 
         if (data.stacked && data.type == ColumnData.Type.bar) {
@@ -318,14 +339,20 @@ class TooltipFramebuffer {
             TextTex value = new TextTex(text, p16);
             p16.setTypeface(null);
             value.color = dateColor;
-            Line e = new Line(name, value, value.h + dimen.dpi(4), "unknown");
+            Line e = new Line(name, value, value.h + dimen.dpi(4), "unknown", v);
             e.visibility = 1f;
             lines.add(e);
         }
         int vw = -1;
         for (int i = 0; i < lines.size(); i++) {
             Line line = lines.get(i);
-            vw = Math.max(vw, line.name.w + line.value.w + dimen.dpi(PADDING_BETWEEN_NAME_AND_VALUE));
+            int percentSpace;
+            if (maxPercent == 0) {
+                percentSpace = 0;
+            } else {
+                percentSpace = maxPercent + dimen.dpi(PERCENT_P);
+            }
+            vw = Math.max(vw, percentSpace + line.name.w + line.value.w + dimen.dpi(PADDING_BETWEEN_NAME_AND_VALUE));
         }
 
 
@@ -414,13 +441,17 @@ class TooltipFramebuffer {
     }
 
     public static class Line {
+        public final long v;
         public float visibility = 1f;
         public TextTex name;
         public TextTex value;
+        public TextTex percent;
         public final int h;
         public MyAnimation.Float visibilityANim;
         final String id;
-        public Line(TextTex name, TextTex value, int h, String id) {
+
+        public Line(TextTex name, TextTex value, int h, String id, long v) {
+            this.v = v;
             this.name = name;
             this.value = value;
             this.h = h;
