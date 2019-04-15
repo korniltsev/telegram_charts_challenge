@@ -49,7 +49,6 @@ import static korniltsev.telegram.charts.MainActivity.TAG;
 
 /*
 
-в 2 линейке желтый цвет текста
 
 total в тултипе
 год в тултипе, день неделе, формат!!!

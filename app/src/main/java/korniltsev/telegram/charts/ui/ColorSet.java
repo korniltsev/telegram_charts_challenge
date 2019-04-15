@@ -157,7 +157,7 @@ public class ColorSet {
             case 0xffFE3C30: // red
                 return day ? 0xffF34C44 : 0xffCF5D57;
             case 0xff108BE3: // blue
-                return day ? 0xffE8AF13 : 0xff1C8BE3;
+                return day ? 0xff108BE3 : 0xff1C8BE3;
             case 0xffE8AF14: // yellow
                 return day ? 0xffE8AF13 : 0xffE9B219;
             case 0xff3896E8: return day? 0xff3896E8:0xff4082CE;

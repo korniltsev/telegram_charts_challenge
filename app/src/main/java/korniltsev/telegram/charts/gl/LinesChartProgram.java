@@ -80,7 +80,7 @@ public final class LinesChartProgram {
         this.root = root;
         this.colorsset = colors;
         this.chartColor = colors.mapLineColor(column.color);
-        this.textColor = colors.mapLineText(column.color);
+        this.textColor = colors.mapLineColor(column.color);
         this.scrollbar = scrollbar;
 
         long[] values = column.values;
@@ -518,7 +518,7 @@ public final class LinesChartProgram {
     public void animateColors(ColorSet colors, long duration) {
         this.colorsset = colors;
         this.chartColor = colors.mapLineColor(column.color);
-        this.textColor = colors.mapLineText(column.color);
+        this.textColor = colors.mapLineColor(column.color);
         tooltipFillColorAnim = new MyAnimation.Color(duration, tooltipFillColor, colors.lightBackground);
     }
 
