@@ -189,10 +189,9 @@ public class MainActivity extends Activity {
             @Override
             public void onZoom(boolean zoom, ChartData details) {
                 legend.animateZoom(zoom);
-                if (details != null
-                        && datum.type == ColumnData.Type.bar
+                if (datum.type == ColumnData.Type.bar
                         && datum.data.length == 2) {
-                    if (zoom) {
+                    if (zoom && details != null) {
 
                         MyCheckboxContainer p = createteBarZoomCheckboxes(details, newChart);
                         chartParentFrame.addView(p);
