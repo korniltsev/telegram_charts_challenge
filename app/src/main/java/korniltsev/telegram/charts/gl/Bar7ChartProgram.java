@@ -12,6 +12,7 @@ import java.util.List;
 import korniltsev.telegram.charts.MainActivity;
 import korniltsev.telegram.charts.R;
 import korniltsev.telegram.charts.data.ColumnData;
+import korniltsev.telegram.charts.ui.ColorSet;
 import korniltsev.telegram.charts.ui.Dimen;
 import korniltsev.telegram.charts.ui.MyAnimation;
 import korniltsev.telegram.charts.ui.MyColor;
@@ -30,6 +31,7 @@ public class Bar7ChartProgram {
 
     private final MyShader shader;
     private final int n;
+    private  ColorSet currentColors;
     private int vxCount;
     public float zoom;
     public float left;
@@ -63,7 +65,8 @@ public class Bar7ChartProgram {
         return v;
     }
 
-    public Bar7ChartProgram(List<ColumnData> columns, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader) {
+    public Bar7ChartProgram(List<ColumnData> columns, int w, int h, Dimen dimen, ChartViewGL root, boolean scrollbar, MyShader shader, ColorSet colorSet) {
+        currentColors = colorSet;
         this.column = columns;
         for (int i = 0; i < visibility.length; i++) {
             visibility[i] = 1f;
@@ -130,6 +133,10 @@ public class Bar7ChartProgram {
             MyGL.checkGlError2();
         }
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+    }
+
+    public void setCurrentColors(ColorSet currentColors) {
+        this.currentColors = currentColors;
     }
 
     float[] colors = new float[4];
@@ -278,23 +285,24 @@ public class Bar7ChartProgram {
             GLES20.glVertexAttribPointer(shader.a_zeroOrValue, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 8);
             GLES20.glVertexAttribPointer(shader.a_xNo, 1, GLES20.GL_FLOAT, false, Vx.SIZE, 4 * 9);
             MyGL.checkGlError2();
+            int color = currentColors.mapLineColor(column.get(i).color);
             if (animateOutValue != -1 && animateOutValue != 0f) {
-                float colorAlpha = (column.get(i).color >>> 24) / 255f;
+                float colorAlpha = (color >>> 24) / 255f;
                 float animOutAlpha = 1f - animateOutValue;
-                colors[0] = ((column.get(i).color >> 16) & 0xFF) / 255f;
-                colors[1] = ((column.get(i).color >> 8) & 0xFF) / 255f;
-                colors[2] = (column.get(i).color & 0xFF) / 255f;
+                colors[0] = ((color >> 16) & 0xFF) / 255f;
+                colors[1] = ((color >> 8) & 0xFF) / 255f;
+                colors[2] = (color & 0xFF) / 255f;
                 colors[3] = colorAlpha * animOutAlpha;
 
             } else if (animateInValue != -1f) {
-                float colorAlpha = (column.get(i).color >>> 24) / 255f;
-                colors[0] = ((column.get(i).color >> 16) & 0xFF) / 255f;
-                colors[1] = ((column.get(i).color >> 8) & 0xFF) / 255f;
-                colors[2] = (column.get(i).color & 0xFF) / 255f;
+                float colorAlpha = (color >>> 24) / 255f;
+                colors[0] = ((color >> 16) & 0xFF) / 255f;
+                colors[1] = ((color >> 8) & 0xFF) / 255f;
+                colors[2] = (color & 0xFF) / 255f;
                 colors[3] = colorAlpha * animateInValue;
 
             } else {
-                MyColor.set(colors, column.get(i).color);
+                MyColor.set(colors, color);
             }
             GLES20.glUniform4fv(shader.colorHandle, 1, colors, 0);
             GLES20.glUniform1f(shader.u_selected_index, tooltipIndex);

@@ -697,7 +697,7 @@ public class ChartViewGL extends TextureView {
             } else if (bar7) {
                 bar7Shader = new Bar7ChartProgram.MyShader();
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
-                scrollbar_bar7 = new Bar7ChartProgram(cs, w, h, dimen, ChartViewGL.this, true, bar7Shader);
+                scrollbar_bar7 = new Bar7ChartProgram(cs, w, h, dimen, ChartViewGL.this, true, bar7Shader, currentColors);
                 long m = calculateBar7Max(data, 0, 1);
                 scrollbar_bar7.animateMinMax(m, false, 0);
             } else if (stacked_percent) {
@@ -710,7 +710,7 @@ public class ChartViewGL extends TextureView {
                 chartBar = new BarChartProgram(data[1], w, h, dimen, ChartViewGL.this, false, barShader);
             } else if (bar7) {
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 8);
-                chartBar7 = new Bar7ChartProgram(cs, w, h, dimen, ChartViewGL.this, false, bar7Shader);
+                chartBar7 = new Bar7ChartProgram(cs, w, h, dimen, ChartViewGL.this, false, bar7Shader, currentColors);
             } else if (stacked_percent) {
                 List<ColumnData> cs = Arrays.asList(data).subList(1, 7);
                 chartStackedPercent = new PercentStackedChartProgram(cs, w, h, dimen, ChartViewGL.this, false, stackPercentShader);
@@ -2111,7 +2111,7 @@ public class ChartViewGL extends TextureView {
         if (zoomedIn) {
             List<ColumnData> cs = Arrays.asList(details.data).subList(1, details.data.length);
             {
-                r.chartBar7Zoomed = new Bar7ChartProgram(cs, r.w, r.h, dimen, this, false, r.bar7Shader);
+                r.chartBar7Zoomed = new Bar7ChartProgram(cs, r.w, r.h, dimen, this, false, r.bar7Shader, currentColors);
                 r.chartBar7Zoomed.zoom = newScale;
                 r.chartBar7Zoomed.left = newLeft;
                 r.chartBar7Zoomed.copyState(r.chartBar7);
@@ -2122,7 +2122,7 @@ public class ChartViewGL extends TextureView {
                 r.ruler.animateScale(0, viewportMax, duration);
             }
             {
-                r.scrollbarBar7Zoomed = new Bar7ChartProgram(cs, r.w, r.h, dimen, this, true, r.bar7Shader);
+                r.scrollbarBar7Zoomed = new Bar7ChartProgram(cs, r.w, r.h, dimen, this, true, r.bar7Shader, currentColors);
                 r.scrollbarBar7Zoomed.copyState(r.chartBar7);
                 long viewportMax = r.calculateBar7Max(details.data, 0f, 1f);
                 r.scrollbarBar7Zoomed.animateMinMax(viewportMax, false, 0);
@@ -2394,6 +2394,12 @@ public class ChartViewGL extends TextureView {
                     for (LinesChartProgram it : r.singleBarZoomLines) {
                         it.animateColors(colors, duration);
                     }
+                }
+                if (r.chartBar7 != null) {
+                    r.chartBar7.setCurrentColors(colors);
+                }
+                if (r.scrollbar_bar7 != null) {
+                    r.scrollbar_bar7.setCurrentColors(colors);
                 }
                 r.invalidateRender();
             }

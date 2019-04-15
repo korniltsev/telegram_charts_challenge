@@ -131,6 +131,14 @@ public class ColorSet {
                 return day ? 0xff108BE3 : 0xff4892DA;
             case 0xffE8AF14: // yellow
                 return day ? 0xffE8AF13 : 0xffE3BD3F;
+            case 0xff3497ED :               return day ? 0xff3497ED : 0xff4681BB;
+            case 0xff2373DB :               return day ? 0xff2373DB : 0xff345B9C;
+            case 0xff9ED448 :               return day ? 0xff9ED448 : 0xff88BA52;
+            case 0xff5FB641 :               return day ? 0xff5FB641 : 0xff3DA05A;
+            case 0xffF5BD25 :               return day ? 0xffF5BD25 : 0xffD9B856;
+            case 0xffF79E39 :               return day ? 0xffF79E39 : 0xffD49548;
+            case 0xffE65850 :               return day ? 0xffE65850 : 0xffCF5D57;
+
             case 0xff3896E8: return day? 0xff3896E8:0xff4082CE;
             case 0xff558DED: return day? 0xff558DED:0xff4461AB;
             case 0xff5CBCDF: return day? 0xff5CBCDF:0xff4697B3;
